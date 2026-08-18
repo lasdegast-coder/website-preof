@@ -103,7 +103,11 @@ const SCENES = {
 
 /* ── thema's, niveaus, logo's ────────────────────────────────────── */
 const themeColor = (id) => (THEMES.find((t) => t.id === id) || {}).color || "#000";
-const themeLabel = (id) => (THEMES.find((t) => t.id === id) || {}).label || id;
+/* De Engelse namen staan in THEMES in data.js, de Nederlandse in
+   vertalingen.js onder thema.<id>. Zo hoeft data.js niet tweetalig te
+   worden en blijft er één lijst met thema's. */
+const themeLabel = (id) =>
+  t(`thema.${id}`) || (THEMES.find((th) => th.id === id) || {}).label || id;
 
 function pill(text, bg = "#000", color = "#fff", border) {
   const b = border ? `border:${border};` : "";
@@ -134,13 +138,14 @@ function companyLogo(org, logoKey, size = 46) {
   return `<span class="logo-badge is-initials" style="${box};font-size:${Math.round(size * 0.28)}px">${esc(initials)}</span>`;
 }
 
+/* Alleen de logo's die ergens gebruikt worden. De regels voor olie, gas,
+   luchtvaart, de grote accountantskantoren en de webwinkels zijn eruit,
+   samen met de plekken zelf; de bestanden staan nog wel in assets/logos/.
+   Zet een logo hier pas terug als er ook echt een plek bij hoort. */
 const LOGOS = {
   tno: "assets/logos/tno.png", arcadis: "assets/logos/arcadis.png", rws: "assets/logos/rws.png",
-  shell: "assets/logos/shell.png", prorail: "assets/logos/prorail.png", haskoning: "assets/logos/haskoning.png",
-  coolblue: "assets/logos/coolblue.png", de: "assets/logos/de.png", heineken: "assets/logos/heineken.png",
-  bol: "assets/logos/bol.png", bp: "assets/logos/bp.png", npo: "assets/logos/npo.png",
-  heijmans: "assets/logos/heijmans.png", pwc: "assets/logos/pwc.png", klm: "assets/logos/klm.png",
-  engie: "assets/logos/engie.png",
+  prorail: "assets/logos/prorail.png", haskoning: "assets/logos/haskoning.png",
+  heijmans: "assets/logos/heijmans.png", npo: "assets/logos/npo.png",
 };
 const UU_LOGO = "assets/logos/uu-logo.png";
 
@@ -148,30 +153,63 @@ const UU_LOGO = "assets/logos/uu-logo.png";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTHNAMES = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
+/* Nederlandse maandnamen. De datums in data.js blijven staan zoals ze zijn
+   (14-09-2026); alleen wat de bezoeker leest verandert mee met de taal. */
+const MAANDEN_KORT = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+const MAANDEN = ["januari", "februari", "maart", "april", "mei", "juni",
+  "juli", "augustus", "september", "oktober", "november", "december"];
+
+const maandKort = (i) => (TAAL === "nl" ? MAANDEN_KORT : MONTHS)[i];
+const maandVol  = (i) => (TAAL === "nl" ? MAANDEN : MONTHNAMES)[i];
 
 function parseEventDate(d) {
   if (!d || /year-round/i.test(d)) {
-    return { sortKey: 8.64e15 - 1, display: "Year-round", monthLabel: "Year-round & ongoing", yearRound: true };
+    return { sortKey: 8.64e15 - 1, display: t("datum.jaarrond.kort"),
+      monthLabel: t("datum.jaarrond"), yearRound: true };
   }
   const dm = d.match(/(\d{2})-(\d{2})-(\d{4})/);
   if (dm) {
     const [, dd, mm, yyyy] = dm;
     const dt = new Date(`${yyyy}-${mm}-${dd}`);
     const re = d.match(/to\s+(\d{2})-(\d{2})-(\d{4})/);
-    let disp = `${parseInt(dd)} ${MONTHS[parseInt(mm) - 1]} ${yyyy}`;
-    if (re) disp = `${parseInt(dd)}–${parseInt(re[1])} ${MONTHS[parseInt(re[2]) - 1]} ${yyyy}`;
-    return { sortKey: dt.getTime(), display: disp, monthLabel: `${MONTHNAMES[parseInt(mm) - 1]} ${yyyy}` };
+    let disp = `${parseInt(dd)} ${maandKort(parseInt(mm) - 1)} ${yyyy}`;
+    if (re) disp = `${parseInt(dd)}–${parseInt(re[1])} ${maandKort(parseInt(re[2]) - 1)} ${yyyy}`;
+    // endKey is de laatste dag: een driedaagse die vandaag nog loopt telt mee
+    const end = re ? new Date(`${re[3]}-${re[2]}-${re[1]}`) : dt;
+    return { sortKey: dt.getTime(), endKey: end.getTime(), display: disp,
+      monthLabel: `${maandVol(parseInt(mm) - 1)} ${yyyy}` };
   }
   const my = d.match(/([A-Za-z]+)\s+(\d{4})/);
   if (my) {
     const mi = MONTHNAMES.findIndex((m) => m.toLowerCase() === my[1].toLowerCase());
     if (mi >= 0) {
       const dt = new Date(parseInt(my[2]), mi, 15);
-      return { sortKey: dt.getTime(), display: `${my[1]} ${my[2]}`, monthLabel: `${MONTHNAMES[mi]} ${my[2]}`, fuzzy: true };
+      // staat er alleen een maand, dan loopt hij tot het eind van die maand
+      const end = new Date(parseInt(my[2]), mi + 1, 0);
+      return { sortKey: dt.getTime(), endKey: end.getTime(),
+        display: `${maandVol(mi)} ${my[2]}`,
+        monthLabel: `${maandVol(mi)} ${my[2]}`, fuzzy: true };
     }
   }
-  return { sortKey: 8.64e15, display: d, monthLabel: "Dates to be confirmed", fuzzy: true, tbc: true };
+  return { sortKey: 8.64e15, display: veld(d), monthLabel: t("datum.tbc"), fuzzy: true, tbc: true };
 }
+
+/* ── alleen wat nog komt ─────────────────────────────────────────────
+   De eventslijst wordt met de hand bijgehouden en groeit aan, maar er
+   wordt zelden iets uit weggehaald. Zonder deze filter stond in augustus
+   nog "6 Feb 2026" bovenaan de homepage. Een event is pas voorbij als de
+   laatste dag geweest is; loopt het vandaag nog, dan hoort het er gewoon
+   bij. "Year-round" en "datum nog onbekend" verlopen nooit.            */
+function isUpcoming(p) {
+  if (p.yearRound || p.tbc) return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return (p.endKey || p.sortKey) >= today.getTime();
+}
+/* Hangt parsed aan elk event en gooit eruit wat geweest is. */
+const upcoming = (list) => list
+  .map((e) => ({ ...e, parsed: parseEventDate(e.date) }))
+  .filter((e) => isUpcoming(e.parsed));
 
 function deadlineInfo(d) {
   if (!d || d === "Year-round") return { label: "Year-round", soon: false };
@@ -186,12 +224,18 @@ function deadlineInfo(d) {
 /* ── afgeleide lijsten ───────────────────────────────────────────── */
 const PARTNER_INTERNSHIPS = [...INTERNSHIPS, ...WORKSTUDENT].filter((i) => i.kind === "partner");
 const OTHER_INTERNSHIPS   = [...INTERNSHIPS, ...WORKSTUDENT].filter((i) => i.kind !== "partner");
-const ALL_ITEMS = [...PARTNER_INTERNSHIPS, ...THESIS, ...OTHER_INTERNSHIPS];
+// Staat INTERNSHIPS_LIVE uit, dan mogen de plekken ook niet in de zoekbalk
+// opduiken. De lijsten hierboven blijven gewoon bestaan.
+const ALL_ITEMS = INTERNSHIPS_LIVE
+  ? [...PARTNER_INTERNSHIPS, ...THESIS, ...OTHER_INTERNSHIPS] : [];
 
+/* De namen en de "hier komt straks"-zin staan niet meer hier maar in
+   vertalingen.js, onder lijst.<sleutel> en lijst.soon.<sleutel>, zodat ze
+   in allebei de talen bestaan. */
 const LISTS = {
-  partner: { data: PARTNER_INTERNSHIPS, mode: "internship", accent: "#C2683A", page: "internships.html" },
-  thesis:  { data: THESIS,              mode: "thesis",     accent: "#2B6B4F", page: "thesis.html" },
-  other:   { data: OTHER_INTERNSHIPS,   mode: "internship", accent: "#7C8C4E", page: "other-internships.html" },
+  partner: { sleutel: "partner", data: PARTNER_INTERNSHIPS, mode: "internship", accent: "#C2683A", page: "internships.html" },
+  thesis:  { sleutel: "thesis",  data: THESIS,              mode: "thesis",     accent: "#2B6B4F", page: "thesis.html" },
+  other:   { sleutel: "other",   data: OTHER_INTERNSHIPS,   mode: "internship", accent: "#7C8C4E", page: "other-internships.html" },
 };
 const listOf = (item) => THESIS.includes(item) ? "thesis"
   : PARTNER_INTERNSHIPS.includes(item) ? "partner" : "other";
@@ -296,8 +340,8 @@ function openPanel(item, mode, accent) {
   const isPartner = item.kind === "partner";
   const isThesis = mode === "thesis";
   const isProg = mode === "programme";
-  const label = isThesis ? "Thesis internship" : isProg ? "Programme"
-    : mode === "workstudent" ? "Work-student job" : "Internship";
+  const label = isThesis ? t("opp.thesis") : isProg ? t("opp.programma")
+    : mode === "workstudent" ? t("opp.werkstudent") : t("opp.stage");
   const conceptEmail = conceptEmailFor(item, mode);
   const mailHref = item.contactEmail
     ? `mailto:${item.contactEmail}?subject=${encodeURIComponent(`Interest via Impact Connect, ${item.org}`)}&body=${encodeURIComponent(conceptEmail)}`
@@ -305,20 +349,20 @@ function openPanel(item, mode, accent) {
 
   const pills = [
     isPartner ? pill("★ Partner", "#13352A") : "",
-    isThesis ? (item.thesisType === "defined" ? pill("Defined topic", "#2B6B4F") : pill("Open application", "#7C8C4E")) : "",
-    dl.soon ? pill("Closing soon", "#C00A35") : "",
+    isThesis ? (item.thesisType === "defined" ? pill(t("opp.uitgewerkt"), "#2B6B4F") : pill(t("opp.open"), "#7C8C4E")) : "",
+    dl.soon ? pill(t("opp.deadline"), "#C00A35") : "",
   ].join("");
 
   let topic = "";
   if (isThesis && item.thesisType === "defined") {
     topic = `<div class="panel-note">
-      <div class="kicker">Proposed thesis topic</div>
+      <div class="kicker">${t("opp.voorstel")}</div>
       <p class="quote">“${esc(item.title)}”</p>
-      <p><strong>Research question:</strong> ${esc(item.question)}</p></div>`;
+      <p><strong>${t("opp.vraag")}</strong> ${esc(item.question)}</p></div>`;
   } else if (isThesis && item.thesisType === "open") {
     topic = `<div class="panel-note">
-      <div class="kicker">Open thesis application</div>
-      <p>Bring your own research question in <strong>${esc(item.field)}</strong>. The organisation provides data and supervision.</p></div>`;
+      <div class="kicker">${t("opp.openthesis")}</div>
+      <p>${t("opp.eigenvraag").replace("{veld}", `<strong>${esc(item.field)}</strong>`)}</p></div>`;
   }
 
   const facts = [
@@ -334,7 +378,7 @@ function openPanel(item, mode, accent) {
       <span><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></span></div>`).join("");
 
   const alumni = (item.alumni && item.alumni.length) ? `<div class="alumni">
-      <h4>${icon("UserCircle2", 15)} ${isProg ? "Students who joined" : "Students who did this role"}</h4>
+      <h4>${icon("UserCircle2", 15)} ${isProg ? t("opp.alumni.prog") : t("opp.alumni.rol")}</h4>
       ${item.alumni.map((a) => `<figure style="border-left-color:${accent}">
         <blockquote>"${esc(a.quote)}"</blockquote>
         <figcaption>${esc(a.name)}</figcaption></figure>`).join("")}
@@ -343,12 +387,12 @@ function openPanel(item, mode, accent) {
   const partnerBlock = isPartner ? `
     <div class="partner-note">
       ${icon("UserCircle2", 22, { color: "#13352A", style: "margin-top:1px" })}
-      <div><strong style="font-size:13.5px">Partner of Impact Connect.</strong>
-      <p>We set up this connection and keep the relationship warm in the background, reaching out is up to you. Use the contact and concept email below to get the ball rolling.</p></div>
+      <div><strong style="font-size:13.5px">${t("opp.partner")}</strong>
+      <p>${t("opp.partner.tekst")}</p></div>
     </div>
     ${item.contactEmail ? `
     <div style="margin-top:18px">
-      <h4 style="font-weight:800;letter-spacing:1px">Your contact at ${esc(item.org.split(" · ")[0])}</h4>
+      <h4 style="font-weight:800;letter-spacing:1px">${t("opp.contact").replace("{org}", esc(item.org.split(" · ")[0]))}</h4>
       <div class="contact-card">
         <span class="avatar" style="background:${accent}">${icon("UserCircle2", 21, { color: "#fff" })}</span>
         <div style="min-width:0">
@@ -356,16 +400,16 @@ function openPanel(item, mode, accent) {
           <a href="mailto:${esc(item.contactEmail)}">${icon("Mail", 13)} ${esc(item.contactEmail)}</a>
         </div>
       </div>
-      <h4 style="font-weight:800;letter-spacing:1px;margin:20px 0 10px">Concept email, make it yours</h4>
+      <h4 style="font-weight:800;letter-spacing:1px;margin:20px 0 10px">${t("opp.conceptmail")}</h4>
       <div class="email-draft" id="email-draft">${esc(conceptEmail)}</div>
       <div style="display:flex;gap:10px;margin-top:12px">
         <button class="btn-copy" id="copy-email">${icon("Copy", 15)} Copy email</button>
-        <span style="font-size:12px;color:#999;align-self:center">Fill in the [brackets] before sending.</span>
+        <span style="font-size:12px;color:#999;align-self:center">${t("opp.haakjes")}</span>
       </div>
     </div>` : ""}` : "";
 
-  const applyLabel = isThesis && item.thesisType === "open" ? "Apply with your topic"
-    : isProg ? "Go to programme" : "Apply on their site";
+  const applyLabel = isThesis && item.thesisType === "open" ? t("opp.knop.eigen")
+    : isProg ? t("opp.knop.prog") : t("opp.knop.site");
   const applyBtn = isPartner
     ? `<a class="btn-apply" style="background:#13352A" href="${esc(mailHref)}">${icon("Mail", 16)} Email ${esc(item.contactPerson ? item.contactPerson.split(" ")[0] : "the partner")}</a>`
     : `<a class="btn-apply" style="background:${accent}" href="${esc(item.apply || "#")}"${item.apply ? ' target="_blank" rel="noreferrer"' : ""}>${esc(applyLabel)} ${icon("ExternalLink", 16)}</a>`;
@@ -385,7 +429,7 @@ function openPanel(item, mode, accent) {
         ${!isProg ? `<div style="margin-bottom:20px">${levelDots(item.level, accent)}</div>` : ""}
         ${topic}
         <div class="panel-facts">${facts}</div>
-        <h4>${isProg ? "About this programme" : "About this opportunity"}</h4>
+        <h4>${isProg ? t("opp.over.prog") : t("opp.over")}</h4>
         <p>${esc(item.desc)}</p>
         <h4>${isProg ? "Who it's for" : "What they're looking for"}</h4>
         <p style="margin-bottom:8px">${esc(item.looking)}</p>
@@ -430,15 +474,15 @@ function oppCard(item, accent, mode) {
   const dl = deadlineInfo(item.deadline);
   const pills = [
     item.kind === "partner" ? pill("★ Partner", "#13352A") : "",
-    mode === "thesis" ? (item.thesisType === "defined" ? pill("Defined topic", "#2B6B4F") : pill("Open application", "#7C8C4E")) : "",
-    dl.soon ? pill("Closing soon", "#C00A35") : "",
+    mode === "thesis" ? (item.thesisType === "defined" ? pill(t("opp.uitgewerkt"), "#2B6B4F") : pill(t("opp.open"), "#7C8C4E")) : "",
+    dl.soon ? pill(t("opp.deadline"), "#C00A35") : "",
   ].join("");
 
   let lead = "";
   if (mode === "thesis" && item.thesisType === "defined" && item.title) {
     lead = `<p class="opp-title">“${esc(item.title)}”</p>`;
   } else if (mode === "thesis" && item.thesisType === "open" && item.field) {
-    lead = `<p class="opp-field"><strong>Bring your own topic in:</strong> ${esc(item.field)}</p>`;
+    lead = `<p class="opp-field"><strong>${t("opp.eigenonderwerp")}</strong> ${esc(item.field)}</p>`;
   }
 
   return `<article class="opp-card reveal" data-org="${esc(item.org)}" style="border-top-color:${accent}">
@@ -457,9 +501,44 @@ function oppCard(item, accent, mode) {
   </article>`;
 }
 
+/* De internships mogen nog niet naar buiten (zie INTERNSHIPS_LIVE in
+   data.js). De pagina blijft verder helemaal staan: de balk bovenaan werkt,
+   je kunt tussen de drie tabbladen heen en weer, alleen komt er in plaats
+   van de lijst een "Coming soon".
+
+   De nadruk ligt daarbij niet op het wachten maar op het gesprek. Dat is
+   ook eerlijker: Impact Connect is geen lijst om doorheen te scrollen, het
+   matchen gebeurt aan tafel. Iemand die hier komt is niet voor niets
+   langsgekomen en hoeft niet met lege handen weg. */
+function paintComingSoon(cfg) {
+  const grid = $("#listing-grid");
+  if (!grid) return;
+
+  // filters en tellers hebben zonder lijst geen betekenis, en "Coming soon"
+  // hoeft niet twee keer op hetzelfde scherm te staan
+  const filters = $(".filters");
+  if (filters) filters.style.display = "none";
+  const stats = $("#hero-stats");
+  if (stats) stats.style.display = "none";
+
+  grid.className = "";
+  grid.innerHTML = `
+    <div class="soon-state" style="border-color:${cfg.accent}">
+      <span class="soon-badge" style="background:${cfg.accent}">${t("soon.badge")}</span>
+      <h2>${t("soon.kop").replace("{lijst}", esc(t(`lijst.${cfg.sleutel}`)))}</h2>
+      <p>${t("soon.reden").replace("{wat}", esc(t(`lijst.soon.${cfg.sleutel}`)))}</p>
+      <p class="soon-talk">${t("soon.gesprek")}</p>
+      <button class="btn-mag primary" data-open-form>
+        ${icon("Sparkles", 17)} ${t("nav.appointment")}</button>
+      <p class="soon-alt">${t("soon.rest")}</p>
+    </div>`;
+  $("[data-open-form]", grid)?.addEventListener("click", openForm);
+}
+
 function initListing(key) {
   const cfg = LISTS[key];
   if (!cfg) return;
+  if (!INTERNSHIPS_LIVE) { paintComingSoon(cfg); return; }
   const { data, mode, accent } = cfg;
   const grid = $("#listing-grid");
   const state = { query: "", paidOnly: false };
@@ -484,7 +563,7 @@ function initListing(key) {
 
     if (!list.length) {
       grid.className = "";
-      grid.innerHTML = `<div class="empty-state"><p>Nothing here yet for these filters.</p></div>`;
+      grid.innerHTML = `<div class="empty-state"><p>${t("lijst.leeg")}</p></div>`;
       return;
     }
     grid.className = "listing-grid";
@@ -528,22 +607,28 @@ function initListing(key) {
 /* ═══════════════════════════════════════════════════════════════════
    EVENTS
    ═══════════════════════════════════════════════════════════════════ */
-function eventCard(ev) {
+/* De Nederlandse omschrijving van een event staat in data.js naast de
+   Engelse, als descNl. Is die er niet, dan blijft het Engels staan; beter
+   een Engelse zin dan een leeg kaartje. */
+const evTekst = (ev) => (TAAL === "nl" && ev.descNl) ? ev.descNl : ev.desc;
+
+function eventCard(ev, isNext) {
   const hasLink = ev.link && ev.link.startsWith("http");
   return `<div class="ev-card" style="border-left-color:${themeColor(ev.cat)}">
     <div class="ev-body">
-      <div style="margin-bottom:8px">${themePill(ev.cat)}</div>
+      <div class="ev-tags">${themePill(ev.cat)}${isNext
+        ? `<span class="ev-next">${icon("Zap", 12)} ${t("ev.nextup")}</span>` : ""}</div>
       <h4>${esc(ev.name)}</h4>
-      ${ev.desc ? `<p>${esc(ev.desc)}</p>` : ""}
+      ${evTekst(ev) ? `<p>${esc(evTekst(ev))}</p>` : ""}
       <div class="ev-meta">
-        <span>${icon("MapPin", 13)} ${esc(ev.loc)}</span>
-        ${ev.time && ev.time !== "tbc" ? `<span>${icon("Clock", 13)} ${esc(ev.time)}</span>` : ""}
-        <span>${icon("Ticket", 13)} ${esc(ev.cost)}</span>
+        <span>${icon("MapPin", 13)} ${esc(veld(ev.loc))}</span>
+        ${ev.time && ev.time !== "tbc" ? `<span>${icon("Clock", 13)} ${esc(veld(ev.time))}</span>` : ""}
+        <span>${icon("Ticket", 13)} ${esc(veld(ev.cost))}</span>
       </div>
     </div>
     ${hasLink
-      ? `<a class="ev-signup" href="${esc(ev.link)}" target="_blank" rel="noreferrer">Sign up ${icon("ExternalLink", 14)}</a>`
-      : `<span class="ev-nolink">Link to confirm</span>`}
+      ? `<a class="ev-signup" href="${esc(ev.link)}" target="_blank" rel="noreferrer">${t("ev.aanmelden")} ${icon("ExternalLink", 14)}</a>`
+      : `<span class="ev-nolink">${t("ev.geenlink")}</span>`}
   </div>`;
 }
 
@@ -619,56 +704,108 @@ async function loadEventSheet() {
 
 async function initEvents() {
   let events = EVENTS;
+
+  // Welke vakgebieden aan staan. Leeg betekent alles; er is dus geen verschil
+  // tussen "niets gekozen" en "alles gekozen", wat scheelt in het uitleggen.
+  const gekozen = new Set();
+
   draw();
 
   const live = await loadEventSheet();
   if (live && live.length) { events = live; draw(); }
 
 function draw() {
-  const enriched = events.map((e) => ({ ...e, parsed: parseEventDate(e.date) }));
+  // Alleen wat nog komt. De lijst groeit aan en er wordt zelden iets uit
+  // weggehaald, dus zonder dit stonden de afgelopen events er ook nog.
+  const enriched = upcoming(events);
 
-  // kopcijfers
-  const stats = $("#hero-stats");
-  if (stats) {
-    const free = events.filter((e) => /free/i.test(e.cost || "")).length;
-    stats.innerHTML = [`${events.length} events`, `${free} free for students`, "Updated by hand"]
-      .map((t) => `<span>${t}</span>`).join("");
+  const perThema = new Map();
+  enriched.forEach((e) => perThema.set(e.cat, (perThema.get(e.cat) || 0) + 1));
+  // Een thema waar niets meer in zit verdwijnt uit de rij; blijft hij dan
+  // aangevinkt, dan kijk je naar een lege pagina zonder knop om het uit te
+  // zetten. Dus meteen loslaten.
+  [...gekozen].forEach((id) => { if (!perThema.has(id)) gekozen.delete(id); });
+
+  paintPicker(perThema, enriched.length);
+
+  const zichtbaar = gekozen.size ? enriched.filter((e) => gekozen.has(e.cat)) : enriched;
+  paintCount(zichtbaar, enriched.length);
+  paintTimeline(zichtbaar);
+}   // einde draw()
+
+/* De rij vakgebieden. Het aantal achter elke naam is het hele punt: je ziet
+   in één blik dat er voor jouw richting iets is, nog voordat je scrolt. */
+function paintPicker(perThema, totaal) {
+  const host = $("#ev-picker");
+  if (!host) return;
+
+  const knop = (id, label, aantal, kleur) => {
+    const aan = id === "all" ? !gekozen.size : gekozen.has(id);
+    return `<button class="ev-pick${aan ? " on" : ""}" data-theme="${esc(id)}"
+      style="--pick:${kleur}" aria-pressed="${aan}">${esc(label)} <b>${aantal}</b></button>`;
+  };
+
+  // Vaste volgorde uit THEMES, zodat de rij niet verspringt als er een event
+  // bijkomt. Een thema zonder events laten we weg: een knop met een 0 erop
+  // is een belofte die je niet waarmaakt.
+  // Let op: de lusvariabele heet bewust niet t — dat is de vertaalfunctie,
+  // en die hebben we hier een regel hoger nog nodig.
+  host.innerHTML = knop("all", t("ev.alle"), totaal, "#13352A")
+    + THEMES.filter((th) => th.id !== "all" && perThema.has(th.id))
+      .map((th) => knop(th.id, themeLabel(th.id), perThema.get(th.id), th.color)).join("");
+
+  $$(".ev-pick", host).forEach((b) => b.addEventListener("click", () => {
+    const id = b.dataset.theme;
+    if (id === "all") gekozen.clear();
+    else if (gekozen.has(id)) gekozen.delete(id);
+    else gekozen.add(id);
+    draw();
+  }));
+}
+
+function paintCount(zichtbaar, totaal) {
+  const el = $("#ev-count");
+  if (!el) return;
+  const gratis = zichtbaar.filter((e) => /free/i.test(e.cost || "")).length;
+  el.textContent = gekozen.size
+    ? t("ev.telling.filter")
+        .replace("{n}", zichtbaar.length).replace("{totaal}", totaal)
+        .replace("{themas}", [...gekozen].map(themeLabel).join(", "))
+        .replace("{gratis}", gratis)
+    : t("ev.telling.alles").replace("{totaal}", totaal).replace("{gratis}", gratis);
+}
+
+function paintTimeline(lijst) {
+  const host = $("#ev-timeline");
+  if (!host) return;
+  if (!lijst.length) {
+    host.innerHTML = `<p class="ev-empty">${t("ev.leeg")}</p>`;
+    return;
   }
 
-  // eerstvolgende event
-  const dated = enriched.filter((e) => !e.parsed.tbc && !e.parsed.yearRound)
-    .sort((a, b) => a.parsed.sortKey - b.parsed.sortKey);
-  const nxt = dated[0];
-  const nextHost = $("#next-up");
-  if (nxt && nextHost) {
-    const href = nxt.link && nxt.link.startsWith("http") ? nxt.link : "#";
-    nextHost.innerHTML = `<a class="next-up" href="${esc(href)}" target="_blank" rel="noreferrer">
-      <div class="ghost">${icon("Zap", 170, { strokeWidth: 1.1 })}</div>
-      <div class="when"><div class="label">Next up</div><div class="date">${esc(nxt.parsed.display)}</div></div>
-      <div class="body"><div class="name">${esc(nxt.name)}</div>
-        <div class="meta"><span>${icon("MapPin", 14)} ${esc(nxt.loc)}</span>
-        <span>${icon("Ticket", 14)} ${esc(nxt.cost)}</span></div></div>
-      <span class="go">Sign up ${icon("ArrowUpRight", 16)}</span></a>`;
-  }
+  const sorted = [...lijst].sort((a, b) => a.parsed.sortKey - b.parsed.sortKey);
+  // Het eerste event met een echte datum krijgt een labeltje. Dat beweegt dus
+  // mee met het filter: kies je Energy, dan is dat het eerstvolgende energie-
+  // event. Een "dates tbc" of een jaarrond-item slaan we over, daar kun je
+  // niets mee plannen.
+  const eerste = sorted.find((e) => !e.parsed.tbc && !e.parsed.yearRound);
 
-  // tijdlijn per maand
-  const sorted = [...enriched].sort((a, b) => a.parsed.sortKey - b.parsed.sortKey);
   const groups = new Map();
   sorted.forEach((e) => {
     if (!groups.has(e.parsed.monthLabel)) groups.set(e.parsed.monthLabel, []);
     groups.get(e.parsed.monthLabel).push(e);
   });
 
-  $("#ev-timeline").innerHTML = [...groups.entries()].map(([month, evs]) => {
+  host.innerHTML = [...groups.entries()].map(([month, evs]) => {
     const kind = evs[0].parsed.tbc ? "tbc" : evs[0].parsed.yearRound ? "year" : "";
     return `<div class="ev-month ${kind}">
       <div class="spine"></div><div class="knob"></div>
       <h3>${esc(month)}</h3>
       <div class="ev-list">${evs.map((ev) =>
-        `<div><div class="ev-date">${esc(ev.parsed.display)}</div>${eventCard(ev)}</div>`).join("")}</div>
+        `<div><div class="ev-date">${esc(ev.parsed.display)}</div>${eventCard(ev, ev === eerste)}</div>`).join("")}</div>
     </div>`;
   }).join("");
-}   // einde draw()
+}
 }   // einde initEvents()
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -820,7 +957,9 @@ function knownCats(list) {
 }
 
 async function initProgrammes() {
-  let cat = "volunteer";
+  // ?cat=… uit het uitklapmenu bovenaan, anders de eerste categorie
+  const gevraagd = new URLSearchParams(location.search).get("cat");
+  let cat = PROGRAMME_CATS.some((c) => c.id === gevraagd) ? gevraagd : PROGRAMME_CATS[0].id;
   let programmes = knownCats(PROGRAMMES_DATA);      // wordt vervangen zodra de sheet binnen is
   const catHost = $("#prog-cats");
   const grid = $("#tease-grid");
@@ -831,22 +970,22 @@ async function initProgrammes() {
     const total = $("#prog-total");
     if (total) total.textContent = programmes.length;
     catHost.innerHTML = PROGRAMME_CATS.map((c) =>
-      `<button class="prog-cat${c.id === cat ? " on" : ""}" data-cat="${c.id}">${esc(c.label)} <b>${counts[c.id]}</b></button>`).join("");
+      `<button class="prog-cat${c.id === cat ? " on" : ""}" data-cat="${c.id}">${esc(t(`progcat.${c.id}`) || c.label)} <b>${counts[c.id]}</b></button>`).join("");
   }
 
   function render() {
     const list = programmes.filter((p) => p.cat === cat);
     grid.innerHTML = list.map((p, i) => {
-      const hint = p.paid === true ? "Paid" : p.paid === false ? "Unpaid" : (p.lang || null);
+      const hint = p.paid === true ? t("prog.betaald") : p.paid === false ? t("prog.onbetaald") : (p.lang || null);
       const mono = (p.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase();
       return `<div class="tease-card reveal" data-delay="${Math.min(i, 8) * 50}" data-name="${esc(p.name)}">
-        ${p.paid === true ? `<span class="paid-tag">Paid</span>` : ""}
+        ${p.paid === true ? `<span class="paid-tag">${t("prog.betaald")}</span>` : ""}
         <div class="mono-wrap">${programmeLogo(p)
           ? `<div class="prog-logo${logoOnDark(p) ? " on-dark" : ""}"><img src="${esc(programmeLogo(p))}" alt="" loading="lazy"></div>`
           : `<div class="mono">${esc(mono)}</div>`}</div>
         <div class="tc-body"><div class="tc-name">${esc(p.name)}</div>
         ${hint ? `<div class="tc-hint">${esc(hint)}</div>` : ""}</div>
-        <div class="tc-foot">Excited? Let's talk ${icon("ArrowUpRight", 14)}</div>
+        <div class="tc-foot">${t("prog.kaart.voet")} ${icon("ArrowUpRight", 14)}</div>
       </div>`;
     }).join("");
     initReveal(grid);
@@ -881,10 +1020,10 @@ async function initProgrammes() {
 }
 
 function openProgrammePopup(p) {
-  const subject = encodeURIComponent(`Question about: ${p.name}`);
-  const body = encodeURIComponent(`Hi Impact Connect,\n\nI'd love to know more about "${p.name}" and whether it could be a fit for me. Could we plan a short appointment?\n\nThanks!`);
-  const apptSubject = encodeURIComponent(`Appointment request, ${p.name}`);
-  const apptBody = encodeURIComponent(`Hi Impact Connect,\n\nI'd like to plan an appointment to talk about "${p.name}" (and other programmes that might fit me).\n\nMy name:\nMy study programme:\nWhen I'm free:\n\nThanks!`);
+  const subject = encodeURIComponent(`${t("prog.mail.vraag")}: ${p.name}`);
+  const body = encodeURIComponent(t("prog.mail.vraag.tekst").replace("{naam}", p.name));
+  const apptSubject = encodeURIComponent(`${t("prog.mail.afspraak")}, ${p.name}`);
+  const apptBody = encodeURIComponent(t("prog.mail.afspraak.tekst").replace("{naam}", p.name));
 
   const wrap = document.createElement("div");
   wrap.id = "prog-pop-root";
@@ -893,15 +1032,15 @@ function openProgrammePopup(p) {
     <div class="prog-pop" role="dialog" aria-label="${esc(p.name)}">
       <div class="head">
         <div class="ghost">${icon("Rocket", 120, { strokeWidth: 1.1 })}</div>
-        <button class="icon-btn" data-close aria-label="Close">${icon("X", 16, { color: "#fff" })}</button>
-        <div class="kicker">Interested in this programme?</div>
+        <button class="icon-btn" data-close aria-label="${t("sluiten")}">${icon("X", 16, { color: "#fff" })}</button>
+        <div class="kicker">${t("prog.pop.kicker")}</div>
         <div class="name">${esc(p.name)}</div>
       </div>
       <div class="body">
-        <p>We keep the details for a conversation, that's how we find the right fit for <em>you</em>. Reach out and we'll take it from there.</p>
+        <p>${t("prog.pop.tekst")}</p>
         <div class="actions">
-          <a class="primary" href="mailto:LinkingGSS@gmail.com?subject=${apptSubject}&body=${apptBody}">${icon("Sparkles", 17)} Plan an appointment</a>
-          <a class="ghost-btn" href="mailto:LinkingGSS@gmail.com?subject=${subject}&body=${body}">${icon("Mail", 16)} Email us directly</a>
+          <a class="primary" href="mailto:${CONTACT_MAIL}?subject=${apptSubject}&body=${apptBody}">${icon("Sparkles", 17)} ${t("nav.appointment")}</a>
+          <a class="ghost-btn" href="mailto:${CONTACT_MAIL}?subject=${subject}&body=${body}">${icon("Mail", 16)} ${t("prog.pop.mail")}</a>
         </div>
       </div>
     </div>`;
@@ -946,48 +1085,116 @@ function initWall() {
 /* ═══════════════════════════════════════════════════════════════════
    HOME: logoband, categorieën, eerstvolgende events
    ═══════════════════════════════════════════════════════════════════ */
-function initHome() {
-  // logoband
+async function initHome() {
   const band = $("#logo-band-track");
-  if (band) {
-    const keys = ["klm", "pwc", "arcadis", "heineken", "rws", "shell", "tno", "haskoning", "prorail", "coolblue", "bol", "heijmans"];
-    const row = keys.map((k) => `<span class="logo-item"><img src="${LOGOS[k]}" alt="${k}"></span>`).join("");
-    band.innerHTML = row + row;
+
+  // De logoband toont de programma's die er echt zijn, niet een rij
+  // voorbeeldbedrijven. Alles met een logo gaat erin. De band loopt door,
+  // altijd even snel ongeacht de lengte; alleen de kleur licht op als je
+  // er met de muis overheen gaat.
+  function paintBand(list) {
+    if (!band) return;
+    const met = list.filter((p) => programmeLogo(p));
+    if (!met.length) return;
+    // Geen loading="lazy" hier. De browser bepaalt dat aan de hand van waar
+    // een plaatje in de layout staat, en de band schuift met transform: een
+    // logo dat rechts buiten beeld "staat" komt straks gewoon voorbij en zou
+    // dan nog leeg zijn. Alles meteen laden dus.
+    const row = met.map((p) =>
+      `<span class="logo-item${logoOnDark(p) ? " on-dark" : ""}" title="${esc(p.name)}">
+        <img src="${esc(programmeLogo(p))}" alt="${esc(p.name)}"></span>`).join("");
+    band.innerHTML = row + row;                       // twee keer, voor de naadloze lus
+
+    // De snelheid staat vast, niet de rondetijd: zo loopt de band even snel of
+    // er nu tien of vijftig logo's in staan. Was 55 px/s, dat was te gehaast
+    // om een logo rustig te kunnen bekijken.
+    const PIXELS_PER_SECONDE = 27.5;
+    const zetSnelheid = () => {
+      const halve = band.scrollWidth / 2;
+      if (halve > 0) band.style.animationDuration = `${Math.round(halve / PIXELS_PER_SECONDE)}s`;
+    };
+
+    // Meten kan pas als de plaatjes er zijn: een logo dat nog niet geladen is
+    // heeft geen breedte, en dan komt de band te smal uit en loopt hij sneller
+    // dan bedoeld. Dus meteen een eerste schatting, en daarna nog een keer als
+    // de laatste binnen is. Dat gebeurt in de eerste seconden, en zo vroeg in
+    // een ronde van een paar minuten is de correctie niet te zien.
+    requestAnimationFrame(zetSnelheid);
+    let opnieuw;
+    const start = Date.now();
+    band.querySelectorAll("img").forEach((img) => {
+      if (img.complete) return;
+      const klaar = () => {
+        // Na tien seconden niet meer bijstellen. Zo laat in de ronde zou het
+        // verspringen wel opvallen, en dan is een paar procent te snel lopen
+        // het minste kwaad.
+        if (Date.now() - start > 10000) return;
+        clearTimeout(opnieuw);
+        opnieuw = setTimeout(zetSnelheid, 150);
+      };
+      img.addEventListener("load", klaar, { once: true });
+      img.addEventListener("error", klaar, { once: true });
+    });
   }
 
-  // tellers op de vier categoriepanelen
-  const counts = {
-    partner: `${PARTNER_INTERNSHIPS.length} open`,
-    thesis: `${THESIS.length} open`,
-    other: `${OTHER_INTERNSHIPS.length} open`,
-    programmes: `${PROGRAMMES_DATA.length} programmes`,
-  };
-  $$("[data-cat-count]").forEach((el) => { el.textContent = counts[el.dataset.catCount] || ""; });
+  // Begin met de lijsten uit data.js, en werk bij zodra de sheets binnen
+  // zijn. Zo staat er meteen iets en klopt het even later precies.
+  let programmes = knownCats(PROGRAMMES_DATA);
+  let events = EVENTS;
 
-  // scene-illustraties in de categoriepanelen
-  $$("[data-scene]").forEach((el) => { el.innerHTML = SCENES[el.dataset.scene] ? SCENES[el.dataset.scene]() : ""; });
-  $$("[data-portrait]").forEach((el) => { el.innerHTML = SCENES.portrait(parseInt(el.dataset.portrait, 10) || 0); });
+  function paint() {
+    // Wat geweest is telt niet mee, niet in de teller en niet in de kaartjes.
+    const open = upcoming(events);
 
-  // eerstvolgende drie events
-  const teaser = $("#events-teaser");
-  if (teaser) {
-    const next = EVENTS.map((e) => ({ ...e, parsed: parseEventDate(e.date) }))
-      .filter((e) => !e.parsed.tbc && !e.parsed.yearRound)
-      .sort((a, b) => a.parsed.sortKey - b.parsed.sortKey).slice(0, 3);
+    // tellers op de drie ingangen (zelfde volgorde als de balk bovenaan)
+    const counts = {
+      programmes:  `${programmes.length} ${t("teller.programmas")}`,
+      events:      `${open.length} events`,
+      alumni:      t("teller.alumni"),
+      // zolang de internships nog niet naar buiten mogen geen aantal beloven
+      internships: INTERNSHIPS_LIVE
+        ? `${PARTNER_INTERNSHIPS.length + THESIS.length + OTHER_INTERNSHIPS.length} ${t("teller.open")}`
+        : t("soon.badge"),
+    };
+    $$("[data-cat-count]").forEach((el) => { el.textContent = counts[el.dataset.catCount] || ""; });
+    $$("[data-events-count]").forEach((el) => { el.textContent = open.length; });
+
+    // De eerstvolgende drie met een echte datum. Zijn die er niet meer, dan
+    // vullen we aan met year-round en nog-te-bevestigen, zodat er altijd
+    // iets staat in plaats van een leeg gat.
+    const teaser = $("#events-teaser");
+    if (!teaser) return;
+    const dated = open.filter((e) => !e.parsed.tbc && !e.parsed.yearRound)
+      .sort((a, b) => a.parsed.sortKey - b.parsed.sortKey);
+    const rest = open.filter((e) => e.parsed.tbc || e.parsed.yearRound);
+    const next = [...dated, ...rest].slice(0, 3);
     teaser.innerHTML = next.map((ev, i) => {
       const href = ev.link && ev.link.startsWith("http") ? ev.link : "events.html";
       return `<a class="teaser-card reveal" data-delay="${i * 120}" href="${esc(href)}" target="_blank" rel="noreferrer">
         <div class="date">${esc(ev.parsed.display)}</div>
         <div class="name">${esc(ev.name)}</div>
-        <p>${esc((ev.desc || "").slice(0, 90))}…</p>
-        <div class="teaser-meta"><span>${icon("MapPin", 13)} ${esc(ev.loc)}</span>
-        <span>${icon("Ticket", 13)} ${esc(ev.cost)}</span></div></a>`;
+        <p>${esc((evTekst(ev) || "").slice(0, 90))}…</p>
+        <div class="teaser-meta"><span>${icon("MapPin", 13)} ${esc(veld(ev.loc))}</span>
+        <span>${icon("Ticket", 13)} ${esc(veld(ev.cost))}</span></div></a>`;
     }).join("");
     initReveal(teaser);
   }
-  $$("[data-events-count]").forEach((el) => { el.textContent = EVENTS.length; });
 
+  // scene-illustraties in de categoriepanelen
+  $$("[data-scene]").forEach((el) => { el.innerHTML = SCENES[el.dataset.scene] ? SCENES[el.dataset.scene]() : ""; });
+  $$("[data-portrait]").forEach((el) => { el.innerHTML = SCENES.portrait(parseInt(el.dataset.portrait, 10) || 0); });
+
+  paint();
+  paintBand(programmes);
   initWall();
+
+  const [liveProg, liveEv] = await Promise.all([loadProgrammeSheets(), loadEventSheet()]);
+  if ((liveProg && liveProg.length) || (liveEv && liveEv.length)) {
+    if (liveProg && liveProg.length) programmes = liveProg;
+    if (liveEv && liveEv.length) events = liveEv;
+    paint();
+    if (liveProg && liveProg.length) paintBand(programmes);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1011,12 +1218,12 @@ function openCmdK() {
     <div class="cmdk" role="dialog" aria-label="Search">
       <div class="cmdk-input">
         ${icon("Search", 20, { color: "#999" })}
-        <input id="cmdk-q" placeholder="Search opportunities or jump to a page…" autocomplete="off">
+        <input id="cmdk-q" placeholder="${esc(t("cmdk.hint"))}" autocomplete="off">
         <kbd>esc</kbd>
       </div>
       <div class="cmdk-results" id="cmdk-results"></div>
       <div class="cmdk-foot"><span><kbd>↑↓</kbd> navigate</span><span><kbd>↵</kbd> open</span>
-        <span class="right">Impact Connect quick search</span></div>
+        <span class="right">${t("cmdk.titel")}</span></div>
     </div>`;
   document.body.appendChild(cmdk);
 
@@ -1034,12 +1241,12 @@ function openCmdK() {
   }
 
   function paint() {
-    if (!rows.length) { results.innerHTML = `<div class="cmdk-empty">No matches. Try another search.</div>`; return; }
+    if (!rows.length) { results.innerHTML = `<div class="cmdk-empty">${t("cmdk.leeg")}</div>`; return; }
     results.innerHTML = rows.map((r, i) => {
       if (r.type === "nav") {
         return `<div class="cmdk-row${i === sel ? " sel" : ""}" data-i="${i}">
           <span class="sq">${icon(r.icon, 16)}</span>
-          <span class="lbl">Go to ${esc(r.label)}</span><span class="tag">Page</span></div>`;
+          <span class="lbl">${t("cmdk.ganaar")} ${esc(t(`cmdknav.${r.href}`) || r.label)}</span><span class="tag">${t("cmdk.pagina")}</span></div>`;
       }
       const o = r.item;
       return `<div class="cmdk-row${i === sel ? " sel" : ""}" data-i="${i}">
@@ -1089,13 +1296,58 @@ function closeCmdK() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   FORMULIEREN VERSTUREN
+
+   Beide formulieren sturen hun antwoorden naar hetzelfde adres: een
+   Google Apps Script dat ons mailt, de student een bevestiging stuurt en
+   alles wegschrijft in een Google Sheet. Het adres staat in data.js
+   (FORM_ENDPOINT), de code van dat script in de map `formulier-backend`.
+
+   Staat er geen adres, of gaat het versturen mis, dan valt de site terug
+   op het mailprogramma van de bezoeker. Er gaat dus nooit iets verloren
+   doordat de techniek hapert; er staat dan alleen niets in de sheet.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Bouwt de terugval-mail: onderwerp en tekst in het mailprogramma. */
+function mailtoFallback(subject, body) {
+  return `mailto:${CONTACT_MAIL}?subject=${encodeURIComponent(subject)}`
+    + `&body=${encodeURIComponent(body)}`;
+}
+
+/* Verstuurt een formulier. Belooft true bij succes, false als het misging.
+
+   Twee dingen zijn hier bewust zo:
+   - text/plain als content-type. Bij application/json stuurt de browser
+     eerst een OPTIONS-verzoek, en dat beantwoordt Apps Script niet.
+   - een tijdslimiet van 8 seconden. Apps Script doet er soms lang over of
+     antwoordt door een omleiding heen niet leesbaar, terwijl de mail en de
+     regel in de sheet er allang zijn. Blijft het antwoord uit, dan gaan we
+     ervan uit dat het gelukt is; anders zou de bezoeker een foutmelding
+     krijgen voor iets dat wél is aangekomen. */
+function sendForm(payload) {
+  if (!FORM_ENDPOINT) return Promise.resolve(false);
+
+  const verstuurd = fetch(FORM_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  })
+    .then((res) => res.json())
+    .then((d) => !!(d && d.ok))
+    .catch(() => false);
+
+  const tijdslimiet = new Promise((res) => setTimeout(() => res(true), 8000));
+  return Promise.race([verstuurd, tijdslimiet]);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    AFSPRAAKFORMULIER
    ═══════════════════════════════════════════════════════════════════ */
 function openForm() {
   if ($("#form-root")) return;
-  const steps = ["What brings you here?", "Your interests", "Practical fit", "Your details"];
+  const steps = ["afspr.stap1", "afspr.stap2", "afspr.stap3", "afspr.stap4"].map(t);
   const data = { types: [], fields: [], level: "", commit: "", paid: "", lang: "", name: "", email: "", notes: "" };
-  let step = 0, done = false;
+  let step = 0, done = false, sending = false, viaMail = false;
 
   const wrap = document.createElement("div");
   wrap.id = "form-root";
@@ -1105,36 +1357,79 @@ function openForm() {
     : step === 1 ? data.fields.length > 0
     : step === 3 ? !!(data.name && data.email) : true;
 
+  // de keuzes uit stap 1 staan als id in data; in de mail en de sheet
+  // hoort het label te staan waar de student op geklikt heeft
+  const labelVan = (id) => (TYPE_OPTIONS.find((t) => t.id === id) || {}).label || id;
+
+  const payload = () => ({
+    formulier: "afspraak",
+    naam: data.name.trim(),
+    email: data.email.trim(),
+    zoekt: data.types.map(labelVan),
+    themas: data.fields,
+    niveau: data.level,
+    tijd: data.commit,
+    betaald: data.paid,
+    taal: data.lang,
+    notities: data.notes.trim(),
+  });
+
+  const mailOnderwerp = () => `Appointment request via Impact Connect, ${data.name}`;
+  const mailTekst = () => {
+    const p = payload();
+    return [
+      "APPOINTMENT REQUEST",
+      `Looking for: ${p.zoekt.join(", ")}`,
+      `Themes: ${p.themas.join(", ")}`,
+      p.niveau ? `Experience level: ${p.niveau}` : null,
+      p.tijd ? `Time they can commit: ${p.tijd}` : null,
+      p.betaald ? `Paid or unpaid: ${p.betaald}` : null,
+      p.taal ? `Language: ${p.taal}` : null,
+      "",
+      "STUDENT",
+      `Name: ${p.naam}`,
+      `Email: ${p.email}`,
+      p.notities ? `\nAnything else:\n${p.notities}` : null,
+      "",
+      "— Sent from the Impact Connect site.",
+    ].filter((r) => r !== null).join("\n");
+  };
+
   function bodyFor() {
     if (step === 0) {
-      return `<div class="type-grid">${TYPE_OPTIONS.map((t) => `
-        <button type="button" class="type-card${data.types.includes(t.id) ? " on" : ""}" data-type="${t.id}">
-          <span class="badge">${icon(t.icon, 18, { color: data.types.includes(t.id) ? "#fff" : "#888" })}</span>
-          <div class="lbl">${esc(t.label)}</div><div class="sub">${esc(t.desc)}</div>
+      return `<div class="type-grid">${TYPE_OPTIONS.map((o) => `
+        <button type="button" class="type-card${data.types.includes(o.id) ? " on" : ""}" data-type="${o.id}">
+          <span class="badge">${icon(o.icon, 18, { color: data.types.includes(o.id) ? "#fff" : "#888" })}</span>
+          <div class="lbl">${esc(t(`soort.${o.id}`) || o.label)}</div>
+          <div class="sub">${esc(t(`soort.${o.id}.sub`) || o.desc)}</div>
         </button>`).join("")}</div>`;
     }
     if (step === 1) {
-      return `<p style="font-size:13.5px;color:#555;margin:0 0 14px">Pick the themes that excite you, choose as many as you like.</p>
+      return `<p style="font-size:13.5px;color:#555;margin:0 0 14px">${t("afspr.themas.hint")}</p>
         <div class="chip-row">${FIELD_OPTIONS.map((f) =>
-          `<button type="button" class="chip${data.fields.includes(f) ? " on" : ""}" data-field="${esc(f)}">${esc(f)}</button>`).join("")}</div>`;
+          `<button type="button" class="chip${data.fields.includes(f) ? " on" : ""}" data-field="${esc(f)}">${esc(keuzeLabel(f))}</button>`).join("")}</div>`;
     }
     if (step === 2) {
-      const group = (key, label, opts) => `<div><label>${label}</label><div class="chip-row">${
-        opts.map((o) => `<button type="button" class="chip${data[key] === o ? " on" : ""}" data-set="${key}" data-val="${esc(o)}">${esc(o)}</button>`).join("")
+      const group = (key, label, opts) => `<div><label>${esc(label)}</label><div class="chip-row">${
+        opts.map((o) => `<button type="button" class="chip${data[key] === o ? " on" : ""}" data-set="${key}" data-val="${esc(o)}">${esc(keuzeLabel(o))}</button>`).join("")
       }</div></div>`;
       return `<div class="field-stack">
-        ${group("level", "Your experience level", ["Beginner", "Some experience", "Advanced"])}
-        ${group("commit", "Time you can commit", ["A few hrs/week", "1 day/week", "2–3 days/week", "Full-time"])}
-        ${group("paid", "Paid or unpaid?", ["Paid only", "Either is fine", "Doesn't matter"])}
-        ${group("lang", "Language", ["English", "Dutch", "Either"])}
+        ${group("level", t("afspr.niveau"), ["Beginner", "Some experience", "Advanced"])}
+        ${group("commit", t("afspr.tijd"), ["A few hrs/week", "1 day/week", "2–3 days/week", "Full-time"])}
+        ${/* Hier stond eerst "Paid only / Either is fine / Doesn't matter".
+              "Doesn't matter" betekende hetzelfde als "Either is fine" en is
+              eruit; "Unpaid only" is erbij gekomen, want er zijn studenten
+              die vrijwilligerswerk juist bewust boven betaald werk kiezen. */""}
+        ${group("paid", t("afspr.betaald"), ["Paid only", "Unpaid only", "Either is fine"])}
+        ${group("lang", t("afspr.taal"), ["English", "Dutch", "Either"])}
       </div>`;
     }
     return `<div class="form-stack">
-      <div><label>Your name</label><input id="f-name" placeholder="First and last name" value="${esc(data.name)}"></div>
-      <div><label>University email</label><input id="f-email" placeholder="you@students.uu.nl" value="${esc(data.email)}"></div>
-      <div><label>Anything else? <span style="font-weight:400;color:#999">(optional)</span></label>
-        <textarea id="f-notes" rows="3" placeholder="Dream role, specific companies, constraints…">${esc(data.notes)}</textarea></div>
-      <p class="form-note">We'll use this only to plan your appointment and suggest relevant programmes. You can ask us to delete your details anytime.</p>
+      <div><label>${t("form.naam")}</label><input id="f-name" placeholder="${esc(t("form.naam.hint"))}" value="${esc(data.name)}"></div>
+      <div><label>${t("form.email")}</label><input id="f-email" placeholder="you@students.uu.nl" value="${esc(data.email)}"></div>
+      <div><label>${t("afspr.rest")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
+        <textarea id="f-notes" rows="3" placeholder="${esc(t("afspr.rest.hint"))}">${esc(data.notes)}</textarea></div>
+      <p class="form-note">${t("afspr.privacy")}</p>
     </div>`;
   }
 
@@ -1142,30 +1437,34 @@ function openForm() {
     const inner = done ? `
       <div class="modal-done">
         <div class="tick">${icon("Check", 32, { color: "#2B6B4F" })}</div>
-        <h3>Thanks, ${esc(data.name.split(" ")[0] || "there")}!</h3>
-        <p>We've got your request. The Impact Connect team will reach out (usually within a few days) to plan a short appointment and inspire you with programmes from our database that fit where you want to go.</p>
-        <button class="btn-next" data-close>Back to browsing</button>
+        <h3>${t("form.dank").replace("{naam}", esc(data.name.split(" ")[0] || t("form.jij")))}</h3>
+        ${viaMail ? `
+          <p>${t("form.viamail")}</p>
+          <p style="font-size:13px;color:#777">${t("form.viamail.niets")
+            .replace("{adres}", `<a href="mailto:${CONTACT_MAIL}">${CONTACT_MAIL}</a>`)}</p>`
+        : `<p>${t("afspr.gelukt")}</p>`}
+        <button class="btn-next" data-close>${t("form.terug")}</button>
       </div>` : `
       <div class="progress">${steps.map((_, i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</div>
       <div class="modal-body">
         <h3>${esc(steps[step])}</h3>
-        <p class="step-of">Step ${step + 1} of ${steps.length}</p>
+        <p class="step-of">${t("form.stapvan").replace("{n}", step + 1).replace("{totaal}", steps.length)}</p>
         ${bodyFor()}
       </div>
       <div class="modal-foot">
-        <button class="btn-text" id="f-back">${step === 0 ? "Cancel" : "← Back"}</button>
+        <button class="btn-text" id="f-back">${step === 0 ? t("form.annuleer") : "← " + t("form.vorige")}</button>
         ${step < steps.length - 1
-          ? `<button class="btn-next" id="f-next"${canNext() ? "" : " disabled"}>Continue ${icon("ChevronRight", 16)}</button>`
-          : `<button class="btn-next finish" id="f-submit"${canNext() ? "" : " disabled"}>${icon("Check", 17)} Request appointment</button>`}
+          ? `<button class="btn-next" id="f-next"${canNext() ? "" : " disabled"}>${t("form.verder")} ${icon("ChevronRight", 16)}</button>`
+          : `<button class="btn-next finish" id="f-submit"${canNext() ? "" : " disabled"}>${icon("Check", 17)} ${t("afspr.verstuur")}</button>`}
       </div>`;
 
     wrap.innerHTML = `
       <div class="modal-overlay" data-close></div>
       <div class="modal-wrap">
-        <div class="modal" role="dialog" aria-label="Plan an appointment">
+        <div class="modal" role="dialog" aria-label="${esc(t("nav.appointment"))}">
           <div class="modal-head">
-            <div class="t">${bridgeMark(26, "#13352A")}<strong>Plan an appointment</strong></div>
-            <button class="icon-btn" data-close aria-label="Close">${icon("X", 17)}</button>
+            <div class="t">${bridgeMark(26, "#13352A")}<strong>${t("nav.appointment")}</strong></div>
+            <button class="icon-btn" data-close aria-label="${esc(t("sluiten"))}">${icon("X", 17)}</button>
           </div>
           ${inner}
         </div>
@@ -1206,7 +1505,230 @@ function openForm() {
     const next = $("#f-next", wrap);
     if (next) next.addEventListener("click", () => { if (canNext()) { step++; render(); } });
     const submit = $("#f-submit", wrap);
-    if (submit) submit.addEventListener("click", () => { if (canNext()) { done = true; render(); } });
+    if (submit) submit.addEventListener("click", () => {
+      if (!canNext() || sending) return;
+      sending = true;
+      submit.disabled = true;
+      submit.innerHTML = `${icon("Check", 17)} ${t("form.versturen")}`;
+      sendForm(payload()).then((ok) => {
+        sending = false;
+        viaMail = !ok;
+        // gelukt het niet, dan opent alsnog het mailprogramma met alles erin
+        if (!ok) window.location.href = mailtoFallback(mailOnderwerp(), mailTekst());
+        done = true;
+        render();
+      });
+    });
+  }
+
+  render();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ALUMNIVERZOEK
+   Dit is een matchingverzoek, geen vraag die wij doorsturen. De student
+   beschrijft wat voor alumnus hij zoekt; het team kijkt de lijst door en
+   stuurt een LinkedIn-profiel (en een telefoonnummer als de alumnus dat
+   heeft gegeven) terug. De student stuurt dan zelf eerst een bericht, en
+   bellen kan daarna als ze dat allebei willen.
+
+   Aan het eind staat een echte mailto: het mailprogramma van de student
+   opent met het hele verzoek erin, klaar om te versturen naar het team.
+   ═══════════════════════════════════════════════════════════════════ */
+const ALUMNI_FIELDS = [
+  "Climate and energy", "Water", "Nature and biodiversity", "Circular economy and waste",
+  "Food and agriculture", "Policy and government", "Consultancy", "Research and academia",
+  "NGO and non-profit", "Startups and own venture", "Corporate sustainability",
+  "International development", "Something else",
+];
+const ALUMNI_ORGS = [
+  "NGO", "Government", "Consultancy", "Research or university",
+  "Company", "Own venture", "Doesn't matter",
+];
+/* Wie hierop klikt krijgt een tekstveld en vult het zelf in. */
+const ALUMNI_OTHER = "Something else";
+
+function openAlumniForm() {
+  if ($("#form-root")) return;
+  const steps = ["al.stap1", "al.stap2", "afspr.stap4"].map(t);
+  const data = {
+    fields: [], fieldOther: "", orgs: [], where: "", goal: "",
+    name: "", email: "", study: "",
+  };
+  let step = 0, done = false, sending = false, viaMail = false;
+
+  const wrap = document.createElement("div");
+  wrap.id = "form-root";
+  document.body.appendChild(wrap);
+
+  // "Something else" telt pas mee als er ook echt iets ingevuld is.
+  const otherOk = (list, other) => !list.includes(ALUMNI_OTHER) || !!other.trim();
+  const canNext = () => step === 0 ? data.fields.length > 0 && otherOk(data.fields, data.fieldOther)
+    : step === 1 ? !!data.goal.trim()
+    : !!(data.name && data.email);
+
+  // In de mail komt het getypte antwoord in plaats van "Something else" te staan.
+  const withOther = (list, other) =>
+    list.map((v) => (v === ALUMNI_OTHER && other.trim() ? other.trim() : v));
+
+  const payload = () => ({
+    formulier: "alumnus",
+    naam: data.name.trim(),
+    email: data.email.trim(),
+    studie: data.study.trim(),
+    vakgebied: withOther(data.fields, data.fieldOther),
+    organisatie: data.orgs,
+    specifiek: data.where.trim(),
+    doel: data.goal.trim(),
+  });
+
+  function mailtoLink() {
+    const p = payload();
+    const subject = `Alumni request via Impact Connect, ${p.naam}`;
+    const body = [
+      "ALUMNUS WANTED",
+      `Field: ${p.vakgebied.join(", ")}`,
+      p.organisatie.length ? `Kind of organisation: ${p.organisatie.join(", ")}` : null,
+      p.specifiek ? `Specific role, company or organisation: ${p.specifiek}` : null,
+      "",
+      "WHAT THEY WANT OUT OF IT",
+      p.doel,
+      "",
+      "STUDENT",
+      `Name: ${p.naam}`,
+      `Email: ${p.email}`,
+      p.studie ? `Study and year: ${p.studie}` : null,
+      "",
+      "— Sent from the Alumni page on the Impact Connect site. Please reply with a",
+      "LinkedIn profile (and a phone number if they've given one).",
+    ].filter((r) => r !== null).join("\n");
+    return mailtoFallback(subject, body);
+  }
+
+  const chipGroup = (attr, label, opts, chosen, o = {}) => `
+    <label class="chip-label">${label}${o.extra ? ` <span style="font-weight:400;color:#999">${o.extra}</span>` : ""}</label>
+    <div class="chip-row">${opts.map((c) =>
+      `<button type="button" class="chip${chosen.includes(c) ? " on" : ""}" data-${attr}="${esc(c)}">${esc(keuzeLabel(c))}</button>`).join("")}</div>
+    ${o.otherKey && chosen.includes(ALUMNI_OTHER) ? `
+      <div class="chip-other">
+        <label for="a-${o.otherKey}">${esc(o.ask)}</label>
+        <input id="a-${o.otherKey}" placeholder="${esc(o.hint || "")}" value="${esc(data[o.otherKey])}">
+      </div>` : ""}`;
+
+  function bodyFor() {
+    if (step === 0) {
+      return `<p style="font-size:13.5px;color:#555;margin:0 0 18px">${t("al.stap1.hint")}</p>
+        ${chipGroup("field", t("al.vakgebied"), ALUMNI_FIELDS, data.fields, {
+          otherKey: "fieldOther", ask: t("al.welkvak"),
+          hint: t("al.welkvak.hint"),
+        })}
+        <div style="height:20px"></div>
+        ${chipGroup("org", t("al.soortorg"), ALUMNI_ORGS, data.orgs, { extra: t("form.optioneel") })}
+        <div class="form-stack" style="margin-top:22px">
+          <div><label>${t("al.specifiek")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
+            <input id="a-where" placeholder="${esc(t("al.specifiek.hint"))}" value="${esc(data.where)}"></div>
+        </div>`;
+    }
+    if (step === 1) {
+      return `<p style="font-size:13.5px;color:#555;margin:0 0 18px">${t("al.stap2.hint")}</p>
+        <div class="form-stack">
+          <div><label>${t("al.doel")}</label>
+            <textarea id="a-goal" rows="6" placeholder="${esc(t("al.doel.hint"))}">${esc(data.goal)}</textarea></div>
+        </div>`;
+    }
+    return `<div class="form-stack">
+      <div><label>${t("form.naam")}</label><input id="a-name" placeholder="${esc(t("form.naam.hint"))}" value="${esc(data.name)}"></div>
+      <div><label>${t("form.email")}</label><input id="a-email" placeholder="you@students.uu.nl" value="${esc(data.email)}"></div>
+      <div><label>${t("al.studie")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
+        <input id="a-study" placeholder="${esc(t("al.studie.hint"))}" value="${esc(data.study)}"></div>
+      <p class="form-note">${t("al.privacy")}</p>
+    </div>`;
+  }
+
+  function render() {
+    const inner = done ? `
+      <div class="modal-done">
+        <div class="tick">${icon("Check", 32, { color: "#C2683A" })}</div>
+        <h3>${viaMail ? t("al.klaar.mail") : t("al.klaar")}, ${esc(data.name.split(" ")[0] || t("form.jij"))}</h3>
+        ${viaMail ? `
+          <p>${t("form.viamail")}</p>
+          <p style="font-size:13px;color:#777">${t("al.viamail.niets")
+            .replace("{opnieuw}", `<a href="${mailtoLink()}" id="a-again">${t("al.mailopnieuw")}</a>`)
+            .replace("{adres}", `<a href="mailto:${CONTACT_MAIL}">${CONTACT_MAIL}</a>`)}</p>`
+        : `<p>${t("al.gelukt")}</p>`}
+        <button class="btn-next" data-close>${t("form.terug")}</button>
+      </div>` : `
+      <div class="progress">${steps.map((_, i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</div>
+      <div class="modal-body">
+        <h3>${esc(steps[step])}</h3>
+        <p class="step-of">${t("form.stapvan").replace("{n}", step + 1).replace("{totaal}", steps.length)}</p>
+        ${bodyFor()}
+      </div>
+      <div class="modal-foot">
+        <button class="btn-text" id="a-back">${step === 0 ? t("form.annuleer") : "← " + t("form.vorige")}</button>
+        ${step < steps.length - 1
+          ? `<button class="btn-next" id="a-next"${canNext() ? "" : " disabled"}>${t("form.verder")} ${icon("ChevronRight", 16)}</button>`
+          : `<button class="btn-next finish" id="a-submit"${canNext() ? "" : " disabled"}>${icon("Mail", 17)} ${t("al.verstuur")}</button>`}
+      </div>`;
+
+    wrap.innerHTML = `
+      <div class="modal-overlay" data-close></div>
+      <div class="modal-wrap">
+        <div class="modal" role="dialog" aria-label="${esc(t("al.r1.knop"))}">
+          <div class="modal-head">
+            <div class="t">${bridgeMark(26, "#13352A")}<strong>${t("al.r1.knop")}</strong></div>
+            <button class="icon-btn" data-close aria-label="${esc(t("sluiten"))}">${icon("X", 17)}</button>
+          </div>
+          ${inner}
+        </div>
+      </div>`;
+    bind();
+  }
+
+  function bind() {
+    $$("[data-close]", wrap).forEach((el) => el.addEventListener("click", () => wrap.remove()));
+
+    // de twee meerkeuzegroepen: vakgebied en soort organisatie
+    [["field", "fields", "fieldOther"], ["org", "orgs"]].forEach(([attr, key, otherKey]) => {
+      $$(`[data-${attr}]`, wrap).forEach((b) => b.addEventListener("click", () => {
+        const v = b.dataset[attr];
+        const aan = !data[key].includes(v);
+        data[key] = aan ? [...data[key], v] : data[key].filter((x) => x !== v);
+        render();
+        // klikt iemand "Something else" aan, dan springt de cursor meteen
+        // in het vakje eronder, anders ziet hij het misschien niet staan
+        if (aan && v === ALUMNI_OTHER && otherKey) $("#a-" + otherKey, wrap)?.focus();
+      }));
+    });
+
+    ["fieldOther", "where", "goal", "name", "email", "study"].forEach((k) => {
+      const el = $("#a-" + k, wrap);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        data[k] = el.value;
+        const btn = $("#a-submit", wrap) || $("#a-next", wrap);
+        if (btn) btn.disabled = !canNext();
+      });
+    });
+
+    const back = $("#a-back", wrap);
+    if (back) back.addEventListener("click", () => { if (step === 0) wrap.remove(); else { step--; render(); } });
+    const next = $("#a-next", wrap);
+    if (next) next.addEventListener("click", () => { if (canNext()) { step++; render(); } });
+    const submit = $("#a-submit", wrap);
+    if (submit) submit.addEventListener("click", () => {
+      if (!canNext() || sending) return;
+      sending = true;
+      submit.disabled = true;
+      submit.innerHTML = `${icon("Mail", 17)} ${t("form.versturen")}`;
+      sendForm(payload()).then((ok) => {
+        sending = false;
+        viaMail = !ok;
+        if (!ok) window.location.href = mailtoLink();
+        done = true;
+        render();
+      });
+    });
   }
 
   render();
@@ -1216,6 +1738,20 @@ function openForm() {
    OPSTARTEN
    ═══════════════════════════════════════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", () => {
+  // De taal als eerste, nog voor er iets getekend wordt: alles wat hierna
+  // komt leest TAAL uit en zou anders in het Engels opgebouwd worden.
+  pasTaalToe();
+  initTaalknop();
+
+  // uitklapmenu onder Programmes, gevuld vanuit PROGRAMME_CATS zodat het
+  // meeloopt met de categorieën die uit de sheet komen
+  $$("[data-prog-menu]").forEach((el) => {
+    const nu = new URLSearchParams(location.search).get("cat");
+    el.innerHTML = PROGRAMME_CATS.map((c) =>
+      `<a class="${c.id === nu ? "on" : ""}" href="programmes.html?cat=${encodeURIComponent(c.id)}">${esc(t(`progcat.${c.id}`) || c.label)}</a>`
+    ).join("");
+  });
+
   // merkteken + UU-logo in header en footer
   $$("[data-mark]").forEach((el) => el.innerHTML = bridgeMark(+el.dataset.size || 42, el.dataset.mark));
   $$("[data-uu-logo]").forEach((el) => {
@@ -1228,12 +1764,21 @@ document.addEventListener("DOMContentLoaded", () => {
     fill: el.dataset.fill || undefined,
   }));
 
+  // Het bewaarvlaggetje in de balk telt items die je op dit moment nergens
+  // kunt bewaren: de bookmarkknop zit alleen op de internshipkaartjes, en die
+  // staan achter INTERNSHIPS_LIVE. Wat je er nog in ziet staan komt uit een
+  // eerdere sessie in je eigen browser. Zolang de internships niet live zijn
+  // verbergen we hem dus, net als de teller op de homepage en de items in ⌘K.
+  if (!INTERNSHIPS_LIVE) $$(".saved-count").forEach((el) => { el.style.display = "none"; });
+
   paintSaved();
   initScrollProgress();
   initReveal();
 
   // afspraak-knoppen overal
   $$("[data-open-form]").forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); openForm(); }));
+  // alumniverzoek
+  $$("[data-open-alumni]").forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); openAlumniForm(); }));
   // zoekknop + sneltoets
   $$("[data-open-cmdk]").forEach((b) => b.addEventListener("click", openCmdK));
   window.addEventListener("keydown", (e) => {
@@ -1256,4 +1801,8 @@ document.addEventListener("DOMContentLoaded", () => {
   else if (page === "listing") initListing(document.body.dataset.list);
   else if (page === "events") initEvents();
   else if (page === "programmes") initProgrammes();
+
+  // ?check=taal in de adresbalk somt in de console op wat nog geen
+  // Nederlands heeft. Voor onszelf, een bezoeker merkt er niets van.
+  if (new URLSearchParams(location.search).get("check") === "taal") controleerVertalingen();
 });

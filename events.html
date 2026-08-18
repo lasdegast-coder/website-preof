@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Events · Impact Connect</title>
   <meta name="description" content="Conferences, fairs and festivals across the Netherlands for students who want to make an impact." />
+  <!-- De site staat online zodat we hem kunnen delen, maar hij hoort nog
+       niet in Google. Deze regel is wat zoekmachines daadwerkelijk
+       tegenhoudt. Weghalen zodra hij echt open mag. Zie ook robots.txt. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-page="events">
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" data-t="nav.skip" href="#main">Skip to content</a>
 <div id="scroll-progress"></div>
 
 <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
@@ -22,61 +27,76 @@
     <span class="brand-word"><span>Connect</span></span>
   </a>
   <nav class="site-nav">
-    <a class="nav-link" href="index.html">Home</a>
-    <a class="nav-link" href="programmes.html">Programmes</a>
-    <a class="nav-link on" href="events.html">Events</a>
+    <a class="nav-link" href="index.html" data-t="nav.home">Home</a>
     <div class="nav-drop">
-      <a class="nav-link" href="internships.html">Internships<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
-      <div class="nav-drop-menu">
-        <a class="" href="internships.html"><span data-icon="Briefcase" data-size="15"></span> Partner internships</a>
-        <a class="" href="thesis.html"><span data-icon="FileText" data-size="15"></span> Thesis internships</a>
-        <a class="" href="other-internships.html"><span data-icon="Globe" data-size="15"></span> Other internships</a>
-      </div>
+      <a class="nav-link" href="programmes.html" data-t="nav.programmes">Programmes<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
+      <div class="nav-drop-menu" data-prog-menu></div>
     </div>
-    <a class="nav-link" href="about.html">About</a>
-    <button class="cmdk-btn" data-open-cmdk><span data-icon="Search" data-size="14"></span> Search <kbd>⌘K</kbd></button>
-    <button class="nav-cta" data-open-form><span data-icon="Sparkles" data-size="14"></span> Plan an appointment</button>
+    <a class="nav-link on" href="events.html" data-t="nav.events">Events</a>
+    <a class="nav-link" href="alumni.html" data-t="nav.alumni">Ask an alumni</a>
+    <a class="nav-link" href="internships.html" data-t="nav.internships">Internships</a>
+    <a class="nav-link" href="about.html" data-t="nav.about">About</a>
+    <button class="nav-cta" data-open-form><span data-icon="Sparkles" data-size="14"></span> <span data-t="nav.appointment">Plan an appointment</span></button>
+    <button class="taal-knop" data-taalknop type="button">NL</button>
     <span class="saved-count"><span data-icon="Bookmark" data-size="14" data-color="#C2683A" data-fill="#C2683A"></span> <span data-saved-count>0</span></span>
-    <span class="uu-cobrand"><span data-uu-logo="38"></span><span>Utrecht<br />University</span></span>
+    <span class="uu-cobrand"><span data-uu-logo="38"></span><span data-t="nav.uu">Utrecht<br />University</span></span>
   </nav>
 </header>
 
 <main id="main" class="page">
   <div class="page-body">
-    <div class="page-hero" style="background:#3F7C6A;margin-bottom:16px">
-      <div class="ghost" data-icon="Calendar" data-size="210" data-stroke="1.1"></div>
-      <h1>Events<i>.</i></h1>
-      <p>Conferences, fairs and festivals across the Netherlands, every one of them a room full of people who care about the same things you do.</p>
-      <div class="stats" id="hero-stats"></div>
-    </div>
+    <!-- De kop van de pagina en de uitnodiging voor de community zijn één
+         blok geworden. Hier stonden er twee onder elkaar: een groene
+         "Events."-hero en daaronder een even grote WhatsApp-banner. Twee
+         blokken van gelijk gewicht vlak boven elkaar vechten om dezelfde
+         aandacht, en dan wint de bovenste vanzelf — terwijl die community
+         nou juist is waar deze pagina voor bestaat. Nu is het eerste wat je
+         ziet de knop, en staat de QR-code er groot naast in plaats van als
+         postzegel in een hoek.
 
-    <!-- WhatsApp-community -->
-    <div class="wa-banner">
-      <div class="ghost" data-icon="MessageCircle" data-size="200" data-stroke="1.2"></div>
-      <span class="icon" data-icon="MessageCircle" data-size="28" data-color="#fff" data-fill="#fff"></span>
-      <div class="body">
-        <div class="ttl">Events, Impact Connect</div>
-        <p>Every event on this page is announced first in our WhatsApp community. Join to never miss a deadline.</p>
+         De drie statregels die in de hero stonden ("34 events", "28 free for
+         students", "Updated by hand") zijn weg: die aantallen staan nu in de
+         themaknoppen hieronder, waar ze meteen ergens toe dienen. -->
+    <div class="wa-hero">
+      <div class="ghost" data-icon="MessageCircle" data-size="270" data-stroke="1.1"></div>
+      <div class="wa-hero-text">
+        <span class="wa-tag"><span data-icon="MessageCircle" data-size="14" data-color="#25D366" data-fill="#25D366"></span> <span data-t="ev.tag">Events, Impact Connect</span></span>
+        <h1 data-t="ev.kop">Events<i>.</i></h1>
+        <p data-t="ev.lead">Conferences, fairs and festivals across the Netherlands, most of them free for students.
+          Every one of them is announced first in our WhatsApp community.</p>
+        <a class="wa-join" href="#"><span data-t="ev.join">Join the community</span> <span data-icon="ArrowUpRight" data-size="18"></span></a>
+        <span class="wa-sub" data-t="ev.gratis">Free, and you can leave whenever you want.</span>
       </div>
-      <div class="wa-right">
-        <a class="wa-join" href="#">Join the community <span data-icon="ArrowUpRight" data-size="16"></span></a>
+      <div class="wa-hero-qr">
         <div class="wa-qr">
-          <span data-icon="QrCode" data-size="26" data-color="rgba(255,255,255,0.85)"></span>
-          <span>QR SOON</span>
+          <span data-icon="QrCode" data-size="62" data-color="#13352A"></span>
+          <span data-t="ev.qrsoon">QR SOON</span>
         </div>
+        <span class="wa-qr-cap" data-t="ev.scan">Scan to join</span>
       </div>
     </div>
 
-    <div id="next-up"></div>
+    <!-- De themakiezer. Dit is het hart van de pagina: in één blik zie je dat
+         er voor elk vakgebied iets is, en het is meteen het filter. Meerdere
+         tegelijk aanzetten mag. Wordt gevuld door initEvents() in script.js.
+
+         Hier stond ook "Next up": één event in een groot oranje paneel. Weg,
+         want dat is alleen interessant als het toevallig jouw vakgebied is,
+         en het bovenste kaartje in de tijdlijn is het toch al. Wat ervoor in
+         de plaats komt is een klein labeltje op dat kaartje, dat meebeweegt
+         met je filter. -->
+    <div class="ev-picker" id="ev-picker"></div>
+    <p class="ev-count" id="ev-count"></p>
+
     <div id="ev-timeline"></div>
 
     <div class="banner">
       <div class="ghost" data-icon="Calendar" data-size="170" data-stroke="1.1"></div>
       <div class="body">
-        <div class="ttl">Know an event we're missing?</div>
-        <p>We keep this calendar curated by hand, tips from students make it better for everyone.</p>
+        <div class="ttl" data-t="ev.tip.kop">Know an event we're missing?</div>
+        <p data-t="ev.tip.tekst">We keep this calendar curated by hand, tips from students make it better for everyone.</p>
       </div>
-      <a class="cta" href="mailto:LinkingGSS@gmail.com?subject=Event%20tip">Tip us an event <span data-icon="ArrowUpRight" data-size="16"></span></a>
+      <a class="cta" href="mailto:contact@impactconnectutrecht.com?subject=Event%20tip"><span data-t="ev.tip.knop">Tip us an event</span> <span data-icon="ArrowUpRight" data-size="16"></span></a>
     </div>
   </div>
 </main>
@@ -91,32 +111,34 @@
           <span class="brand-mark" data-mark="#C2683A" data-size="36"></span>
           <span class="brand-word"><span>Connect</span></span>
         </div>
-        <p>Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
+        <p data-t="footer.blurb">Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
       </div>
       <div class="footer-cols">
         <div>
-          <div class="head">Internships</div>
-          <a href="internships.html">Partner internships</a>
-          <a href="thesis.html">Thesis internships</a>
-          <a href="other-internships.html">Other internships</a>
-          <a href="programmes.html">Programmes</a>
+          <div class="head" data-t="footer.internships">Internships</div>
+          <a href="internships.html" data-t="footer.partner">Partner internships</a>
+          <a href="thesis.html" data-t="footer.thesis">Thesis internships</a>
+          <a href="other-internships.html" data-t="footer.other">Other internships</a>
+          <a href="programmes.html" data-t="footer.programmes">Programmes</a>
         </div>
         <div>
-          <div class="head">Explore</div>
-          <a href="index.html">Home</a>
-          <a href="events.html">Events</a>
-          <a href="about.html">About us</a>
+          <div class="head" data-t="footer.explore">Explore</div>
+          <a href="index.html" data-t="nav.home">Home</a>
+          <a href="events.html" data-t="nav.events">Events</a>
+          <a href="alumni.html" data-t="nav.alumni">Ask an alumni</a>
+          <a href="about.html" data-t="footer.about">About us</a>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="uu"><span data-uu-logo="28"></span> Supported by Utrecht University · Faculty of Geosciences</span>
-      <span class="note">Prototype, placeholder opportunities · real events</span>
+      <span class="uu"><span data-uu-logo="28"></span> <span data-t="footer.uu">Supported by Utrecht University · Faculty of Geosciences</span></span>
+      <a class="note" href="mailto:contact@impactconnectutrecht.com">contact@impactconnectutrecht.com</a>
     </div>
   </div>
 </footer>
 
 <script src="icons.js"></script>
+<script src="vertalingen.js"></script>
 <script src="data.js"></script>
 <script src="script.js"></script>
 </body>

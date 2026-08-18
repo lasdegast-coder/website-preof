@@ -1,0 +1,11 @@
+# Zoekmachines mogen hier wel rondkijken, maar elke pagina zegt zelf
+# <meta name="robots" content="noindex"> en daar houden ze zich aan.
+#
+# Waarom hier geen "Disallow: /": dan mag Google de pagina's niet ophalen,
+# leest hij die noindex-regel nooit, en kan de link toch in de resultaten
+# komen als iemand er ergens naar linkt. Laten crawlen werkt dus beter.
+#
+# Gaat de site echt open? Haal de noindex-regel uit de acht .html-bestanden
+# en zet hieronder een verwijzing naar een sitemap.
+User-agent: *
+Allow: /

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask an alumni · Impact Connect</title>
+  <meta name="description" content="Tell us which alumni you'd like to speak to. Impact Connect goes through its list and sends you the details of someone who walked your path." />
+  <!-- De site staat online zodat we hem kunnen delen, maar hij hoort nog
+       niet in Google. Deze regel is wat zoekmachines daadwerkelijk
+       tegenhoudt. Weghalen zodra hij echt open mag. Zie ook robots.txt. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="alumni">
+<a class="skip-link" data-t="nav.skip" href="#main">Skip to content</a>
+<div id="scroll-progress"></div>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <span class="brand-word"><b>Impact</b></span>
+    <span class="brand-mark" data-mark="#13352A" data-size="30"></span>
+    <span class="brand-word"><span>Connect</span></span>
+  </a>
+  <nav class="site-nav">
+    <a class="nav-link" href="index.html" data-t="nav.home">Home</a>
+    <div class="nav-drop">
+      <a class="nav-link" href="programmes.html" data-t="nav.programmes">Programmes<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
+      <div class="nav-drop-menu" data-prog-menu></div>
+    </div>
+    <a class="nav-link" href="events.html" data-t="nav.events">Events</a>
+    <a class="nav-link on" href="alumni.html" data-t="nav.alumni">Ask an alumni</a>
+    <a class="nav-link" href="internships.html" data-t="nav.internships">Internships</a>
+    <a class="nav-link" href="about.html" data-t="nav.about">About</a>
+    <button class="nav-cta" data-open-form><span data-icon="Sparkles" data-size="14"></span> <span data-t="nav.appointment">Plan an appointment</span></button>
+    <button class="taal-knop" data-taalknop type="button">NL</button>
+    <span class="saved-count"><span data-icon="Bookmark" data-size="14" data-color="#C2683A" data-fill="#C2683A"></span> <span data-saved-count>0</span></span>
+    <span class="uu-cobrand"><span data-uu-logo="38"></span><span data-t="nav.uu">Utrecht<br />University</span></span>
+  </nav>
+</header>
+
+<main id="main" class="page">
+  <div class="page-body narrow about">
+    <h1 data-t="al.kop">Ask an alumni<span class="dot-clay">.</span></h1>
+    <p class="team-lead" style="max-width:640px" data-t="al.lead">
+      The quickest way to find out whether a field suits you is to talk to someone already in it.
+      Students who came through Impact Connect are now working in climate policy, consultancy,
+      research, water management and their own ventures, and they've agreed to be approached by the
+      students behind them. Tell us who you'd like to speak to, we go through our list, and we send
+      you their details so you can reach out yourself.
+    </p>
+
+    <h2 data-t="al.routes.kop">Two ways to reach them<span class="dot-green">.</span></h2>
+    <div class="route-grid">
+      <div class="route-card">
+        <div class="badge clay" data-icon="UserCircle2" data-size="22"></div>
+        <div class="ttl" data-t="al.r1.kop">You know who you're after</div>
+        <p data-t="al.r1.tekst">Describe who you're looking for: the field and the kind of organisation. We look through
+          our alumni list by hand and mail you back a LinkedIn profile, plus a phone number if
+          they've given us one.</p>
+        <div class="route-meta" data-t="al.r1.meta">Takes two minutes · usually answered within a week</div>
+        <button class="btn-mag primary" data-open-alumni><span data-icon="UserCircle2" data-size="17"></span> <span data-t="al.r1.knop">Find an alumni</span></button>
+      </div>
+      <div class="route-card">
+        <!-- Vraagteken, geen sterretje. Het sterretje staat op deze site voor
+             "plan een afspraak" (het zit ook in de knop hieronder), en het
+             kaartje ernaast heeft een poppetje: dat leest als "een persoon die
+             je al kent" tegenover "iets magisch". De tegenstelling is juist
+             weten wie je zoekt of dat nog niet weten. -->
+        <div class="badge clay" data-icon="HelpCircle" data-size="22"></div>
+        <div class="ttl" data-t="al.r2.kop">Not sure who you need yet</div>
+        <p data-t="al.r2.tekst">If the real question is "what should I even be doing?", start with us instead. Plan a short
+          appointment, we'll walk through what drives you, and we'll work out together who's worth
+          speaking to.</p>
+        <div class="route-meta" data-t="al.r2.meta">A 30-minute conversation with the team</div>
+        <button class="btn-mag primary" data-open-form><span data-icon="Sparkles" data-size="17"></span> <span data-t="nav.appointment">Plan an appointment</span></button>
+      </div>
+    </div>
+
+    <h2 style="margin-top:64px" data-t="al.vragen.kop">What people ask about<span class="dot-clay">.</span></h2>
+    <p class="team-lead" data-t="al.vragen.lead">Anything, really. These come up most often.</p>
+    <div class="ask-list">
+      <span data-t="al.v1">How did you get into this field?</span>
+      <span data-t="al.v2">Was the master's worth it?</span>
+      <span data-t="al.v3">What does a normal week look like?</span>
+      <span data-t="al.v4">How did you write your thesis at a company?</span>
+      <span data-t="al.v5">Would you do the same again?</span>
+      <span data-t="al.v6">What did you wish you'd known in year one?</span>
+      <span data-t="al.v7">Is there room to make actual impact there?</span>
+      <span data-t="al.v8">How did you end up abroad?</span>
+    </div>
+
+    <h2 style="margin-top:64px" data-t="al.hoe.kop">How it works<span class="dot-green">.</span></h2>
+    <!-- vier stappen staan als 2x2 rustiger dan als 3+1 -->
+    <div class="about-grid two">
+      <div class="about-card">
+        <div class="num">01</div>
+        <div class="ttl" data-t="al.s1.kop">You describe who</div>
+        <p data-t="al.s1.tekst">The field and the kind of organisation you're after. Two minutes.</p>
+      </div>
+      <div class="about-card">
+        <div class="num">02</div>
+        <div class="ttl" data-t="al.s2.kop">We check the list</div>
+        <p data-t="al.s2.tekst">We go through our alumni ourselves and pick someone whose path actually lines up with yours.</p>
+      </div>
+      <div class="about-card">
+        <div class="num">03</div>
+        <div class="ttl" data-t="al.s3.kop">You get their details</div>
+        <p data-t="al.s3.tekst">We mail you their LinkedIn profile, and a phone number if they've given us one, with a line on who they are.</p>
+      </div>
+      <div class="about-card">
+        <div class="num">04</div>
+        <div class="ttl" data-t="al.s4.kop">You reach out</div>
+        <p data-t="al.s4.tekst">Send them a message first. If you both want to, a call comes after.</p>
+      </div>
+    </div>
+
+    <div class="banner">
+      <div class="ghost" data-icon="UserCircle2" data-size="160" data-stroke="1.1"></div>
+      <div class="body">
+        <div class="ttl" style="font-size:20px" data-t="al.zelf.kop">Are you an alumni yourself?</div>
+        <p data-t="al.zelf.tekst">If you studied here and you're happy to hear from a student now and then, we'd love to add
+          you. Send us your LinkedIn, and a phone number only if you want us to pass it on. We share
+          nothing else, and you decide which topics you're up for.</p>
+      </div>
+      <a class="cta" href="mailto:contact@impactconnectutrecht.com?subject=I%27d%20like%20to%20join%20the%20Impact%20Connect%20alumni%20list&body=Hi%20Impact%20Connect%2C%0A%0AI%27d%20like%20to%20be%20available%20for%20students%20who%20want%20to%20talk%20about%20my%20field.%0A%0AName%3A%0AWhat%20I%20studied%3A%0AWhat%20I%20do%20now%20%28role%20and%20organisation%29%3A%0AField%28s%29%20I%20can%20speak%20about%3A%0ALinkedIn%20profile%3A%0APhone%20number%20%28only%20if%20you%20may%20pass%20it%20on%29%3A%0ATopics%20I%27m%20happy%20to%20help%20with%3A%0A%0AThanks%2C">
+        <span data-icon="Mail" data-size="16"></span> <span data-t="al.zelf.knop">Sign up as an alumni</span></a>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">
+          <span class="brand-word"><b>Impact</b></span>
+          <span class="brand-mark" data-mark="#C2683A" data-size="36"></span>
+          <span class="brand-word"><span>Connect</span></span>
+        </div>
+        <p data-t="footer.blurb">Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
+      </div>
+      <div class="footer-cols">
+        <div>
+          <div class="head" data-t="footer.internships">Internships</div>
+          <a href="internships.html" data-t="footer.partner">Partner internships</a>
+          <a href="thesis.html" data-t="footer.thesis">Thesis internships</a>
+          <a href="other-internships.html" data-t="footer.other">Other internships</a>
+          <a href="programmes.html" data-t="footer.programmes">Programmes</a>
+        </div>
+        <div>
+          <div class="head" data-t="footer.explore">Explore</div>
+          <a href="index.html" data-t="nav.home">Home</a>
+          <a href="events.html" data-t="nav.events">Events</a>
+          <a href="alumni.html" data-t="nav.alumni">Ask an alumni</a>
+          <a href="about.html" data-t="footer.about">About us</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="uu"><span data-uu-logo="28"></span> <span data-t="footer.uu">Supported by Utrecht University · Faculty of Geosciences</span></span>
+      <a class="note" href="mailto:contact@impactconnectutrecht.com">contact@impactconnectutrecht.com</a>
+    </div>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="vertalingen.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

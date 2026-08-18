@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Partner internships · Impact Connect</title>
   <meta name="description" content="Roles at organisations we work with directly, express interest and we'll personally introduce you" />
+  <!-- De site staat online zodat we hem kunnen delen, maar hij hoort nog
+       niet in Google. Deze regel is wat zoekmachines daadwerkelijk
+       tegenhoudt. Weghalen zodra hij echt open mag. Zie ook robots.txt. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-page="listing" data-list="partner">
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" data-t="nav.skip" href="#main">Skip to content</a>
 <div id="scroll-progress"></div>
 
 <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
@@ -22,51 +27,48 @@
     <span class="brand-word"><span>Connect</span></span>
   </a>
   <nav class="site-nav">
-    <a class="nav-link" href="index.html">Home</a>
-    <a class="nav-link" href="programmes.html">Programmes</a>
-    <a class="nav-link" href="events.html">Events</a>
+    <a class="nav-link" href="index.html" data-t="nav.home">Home</a>
     <div class="nav-drop">
-      <a class="nav-link on" href="internships.html">Internships<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
-      <div class="nav-drop-menu">
-        <a class="on" href="internships.html"><span data-icon="Briefcase" data-size="15"></span> Partner internships</a>
-        <a class="" href="thesis.html"><span data-icon="FileText" data-size="15"></span> Thesis internships</a>
-        <a class="" href="other-internships.html"><span data-icon="Globe" data-size="15"></span> Other internships</a>
-      </div>
+      <a class="nav-link" href="programmes.html" data-t="nav.programmes">Programmes<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
+      <div class="nav-drop-menu" data-prog-menu></div>
     </div>
-    <a class="nav-link" href="about.html">About</a>
-    <button class="cmdk-btn" data-open-cmdk><span data-icon="Search" data-size="14"></span> Search <kbd>⌘K</kbd></button>
-    <button class="nav-cta" data-open-form><span data-icon="Sparkles" data-size="14"></span> Plan an appointment</button>
+    <a class="nav-link" href="events.html" data-t="nav.events">Events</a>
+    <a class="nav-link" href="alumni.html" data-t="nav.alumni">Ask an alumni</a>
+    <a class="nav-link on" href="internships.html" data-t="nav.internships">Internships</a>
+    <a class="nav-link" href="about.html" data-t="nav.about">About</a>
+    <button class="nav-cta" data-open-form><span data-icon="Sparkles" data-size="14"></span> <span data-t="nav.appointment">Plan an appointment</span></button>
+    <button class="taal-knop" data-taalknop type="button">NL</button>
     <span class="saved-count"><span data-icon="Bookmark" data-size="14" data-color="#C2683A" data-fill="#C2683A"></span> <span data-saved-count>0</span></span>
-    <span class="uu-cobrand"><span data-uu-logo="38"></span><span>Utrecht<br />University</span></span>
+    <span class="uu-cobrand"><span data-uu-logo="38"></span><span data-t="nav.uu">Utrecht<br />University</span></span>
   </nav>
 </header>
 
 <main id="main" class="page">
   <div class="subnav">
-    <a class="on" href="internships.html" style="background:#C2683A;border-color:#C2683A"><span data-icon="Briefcase" data-size="15"></span> Partner internships</a>
-    <a href="thesis.html"><span data-icon="FileText" data-size="15"></span> Thesis internships</a>
-    <a href="other-internships.html"><span data-icon="Globe" data-size="15"></span> Other internships</a>
+    <a class="on" href="internships.html" style="background:#C2683A;border-color:#C2683A"><span data-icon="Briefcase" data-size="15"></span> <span data-t="sub.partner">Partner internships</span></a>
+    <a href="thesis.html"><span data-icon="FileText" data-size="15"></span> <span data-t="sub.thesis">Thesis internships</span></a>
+    <a href="other-internships.html"><span data-icon="Globe" data-size="15"></span> <span data-t="sub.other">Other internships</span></a>
   </div>
   <div class="page-body">
     <div class="page-hero light" style="background:#C2683A">
       <div class="ghost" data-icon="Briefcase" data-size="210" data-stroke="1.1"></div>
-      <h1>Partner internships<i>.</i></h1>
-      <p>Roles at organisations we work with directly, express interest and we'll personally introduce you</p>
+      <h1 data-t="stage.partner.kop">Partner internships<i>.</i></h1>
+      <p data-t="stage.partner.lead">Roles at organisations we work with directly, express interest and we'll personally introduce you</p>
       <div class="stats" id="hero-stats"></div>
     </div>
     <div class="filters">
-      <button class="filter-toggle" id="filter-paid"><span data-icon="Banknote" data-size="14"></span> Paid only</button>
+      <button class="filter-toggle" id="filter-paid"><span data-icon="Banknote" data-size="14"></span> <span data-t="filter.betaald">Paid only</span></button>
       <div class="search-box"><span data-icon="Search" data-size="16" data-color="#999"></span>
-        <input id="listing-search" placeholder="Search…" aria-label="Search" autocomplete="off" /></div>
+        <input id="listing-search" placeholder="Search…" data-t-placeholder="filter.zoek" aria-label="Search" data-t-aria="filter.zoek" autocomplete="off" /></div>
     </div>
     <div class="listing-grid" id="listing-grid"></div>
     <div class="banner">
       <div class="ghost" data-icon="Sparkles" data-size="160" data-stroke="1.1"></div>
       <div class="body">
-        <div class="ttl">Not sure where to start?</div>
-        <p>Plan an appointment and we'll inspire you with programmes from our database that fit your ambitions.</p>
+        <div class="ttl" data-t="banner.kop">Not sure where to start?</div>
+        <p data-t="banner.tekst">Plan an appointment and we'll inspire you with programmes from our database that fit your ambitions.</p>
       </div>
-      <button class="cta" data-open-form><span data-icon="Sparkles" data-size="16"></span> Plan an appointment</button>
+      <button class="cta" data-open-form><span data-icon="Sparkles" data-size="16"></span> <span data-t="nav.appointment">Plan an appointment</span></button>
     </div>
   </div>
 </main>
@@ -81,32 +83,34 @@
           <span class="brand-mark" data-mark="#C2683A" data-size="36"></span>
           <span class="brand-word"><span>Connect</span></span>
         </div>
-        <p>Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
+        <p data-t="footer.blurb">Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
       </div>
       <div class="footer-cols">
         <div>
-          <div class="head">Internships</div>
-          <a href="internships.html">Partner internships</a>
-          <a href="thesis.html">Thesis internships</a>
-          <a href="other-internships.html">Other internships</a>
-          <a href="programmes.html">Programmes</a>
+          <div class="head" data-t="footer.internships">Internships</div>
+          <a href="internships.html" data-t="footer.partner">Partner internships</a>
+          <a href="thesis.html" data-t="footer.thesis">Thesis internships</a>
+          <a href="other-internships.html" data-t="footer.other">Other internships</a>
+          <a href="programmes.html" data-t="footer.programmes">Programmes</a>
         </div>
         <div>
-          <div class="head">Explore</div>
-          <a href="index.html">Home</a>
-          <a href="events.html">Events</a>
-          <a href="about.html">About us</a>
+          <div class="head" data-t="footer.explore">Explore</div>
+          <a href="index.html" data-t="nav.home">Home</a>
+          <a href="events.html" data-t="nav.events">Events</a>
+          <a href="alumni.html" data-t="nav.alumni">Ask an alumni</a>
+          <a href="about.html" data-t="footer.about">About us</a>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="uu"><span data-uu-logo="28"></span> Supported by Utrecht University · Faculty of Geosciences</span>
-      <span class="note">Prototype, placeholder opportunities · real events</span>
+      <span class="uu"><span data-uu-logo="28"></span> <span data-t="footer.uu">Supported by Utrecht University · Faculty of Geosciences</span></span>
+      <a class="note" href="mailto:contact@impactconnectutrecht.com">contact@impactconnectutrecht.com</a>
     </div>
   </div>
 </footer>
 
 <script src="icons.js"></script>
+<script src="vertalingen.js"></script>
 <script src="data.js"></script>
 <script src="script.js"></script>
 </body>
