@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impact Connect</title>
+  <meta name="description" content="Impact Connect inspires ambitious students to make an impact beside their studies." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="home">
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="scroll-progress"></div>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <span class="brand-word"><b>Impact</b></span>
+    <span class="brand-mark" data-mark="#13352A" data-size="30"></span>
+    <span class="brand-word"><span>Connect</span></span>
+  </a>
+  <nav class="site-nav">
+    <a class="nav-link on" href="index.html">Home</a>
+    <a class="nav-link" href="programmes.html">Programmes</a>
+    <a class="nav-link" href="events.html">Events</a>
+    <div class="nav-drop">
+      <a class="nav-link" href="internships.html">Internships<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
+      <div class="nav-drop-menu">
+        <a href="internships.html"><span data-icon="Briefcase" data-size="15"></span> Partner internships</a>
+        <a href="thesis.html"><span data-icon="FileText" data-size="15"></span> Thesis internships</a>
+        <a href="other-internships.html"><span data-icon="Globe" data-size="15"></span> Other internships</a>
+      </div>
+    </div>
+    <a class="nav-link" href="about.html">About</a>
+    <button class="cmdk-btn" data-open-cmdk><span data-icon="Search" data-size="14"></span> Search <kbd>⌘K</kbd></button>
+    <button class="nav-cta" data-open-form><span data-icon="Sparkles" data-size="14"></span> Plan an appointment</button>
+    <span class="saved-count"><span data-icon="Bookmark" data-size="14" data-color="#C2683A" data-fill="#C2683A"></span> <span data-saved-count>0</span></span>
+    <span class="uu-cobrand"><span data-uu-logo="38"></span><span>Utrecht<br />University</span></span>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <svg class="hero-sun" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <radialGradient id="sunfill" cx="50%" cy="100%" r="75%">
+          <stop offset="0%"   stop-color="#D9A441" stop-opacity="0.30" />
+          <stop offset="45%"  stop-color="#C2683A" stop-opacity="0.12" />
+          <stop offset="100%" stop-color="#F4EFE3" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="600" cy="640" r="430" fill="url(#sunfill)" />
+    </svg>
+
+    <div class="hero-inner">
+      <h1>
+        <span class="line reveal" data-delay="60">Find your</span>
+        <span class="line reveal" data-delay="170"><span class="ital">impact</span> beside</span>
+        <span class="line reveal" data-delay="260">your studies.</span>
+      </h1>
+
+      <div class="hero-bottom">
+        <div class="reveal" data-delay="380">
+          <p class="hero-lead">
+            Impact Connect <b>inspires ambitious students to make an impact beside their studies.</b>
+            Browse, get curious, and let us point you somewhere that fits.
+          </p>
+        </div>
+        <div class="reveal" data-delay="480">
+          <div class="hero-actions">
+            <button class="btn-mag primary" data-open-form><span data-icon="Sparkles" data-size="18"></span> Plan an appointment</button>
+            <a class="btn-mag" href="internships.html">Explore everything <span data-icon="ArrowRight" data-size="17"></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- met de hand gescheurde rand naar de donkere band -->
+    <svg class="hero-tear" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 40 V18 Q 150 6 300 16 T 600 14 T 900 16 T 1200 12 V40 Z" fill="#13352A" />
+    </svg>
+
+    <div class="ticker">
+      <div class="marquee"><div class="marquee-track fast">
+        <span class="word">INTERNSHIPS <i>✦</i></span><span class="word">THESIS PLACEMENTS <i>✦</i></span>
+        <span class="word">WORK-STUDENT JOBS <i>✦</i></span><span class="word">PROGRAMMES <i>✦</i></span>
+        <span class="word">EVENTS <i>✦</i></span><span class="word">ALUMNI <i>✦</i></span>
+        <span class="word">INTERNSHIPS <i>✦</i></span><span class="word">THESIS PLACEMENTS <i>✦</i></span>
+        <span class="word">WORK-STUDENT JOBS <i>✦</i></span><span class="word">PROGRAMMES <i>✦</i></span>
+        <span class="word">EVENTS <i>✦</i></span><span class="word">ALUMNI <i>✦</i></span>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ═══ LOGOBAND (gevuld vanuit data.js) ═══════════════════════════ -->
+  <section class="logo-band">
+    <div class="marquee"><div class="marquee-track slow" id="logo-band-track"></div></div>
+  </section>
+
+  <!-- ═══ HET PROBLEEM ═══════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="reveal">
+        <div class="rule"></div>
+        <h2 style="line-height:1.05;max-width:760px">The problem isn't motivation.<br />It's <span style="color:var(--green)">the map.</span></h2>
+      </div>
+      <div class="reveal" data-delay="120">
+        <p class="section-lead" style="color:var(--muted);max-width:540px;margin:0 0 56px">
+          The ambition is everywhere, we see it in every lecture hall. What's missing is the map.
+          Three things stand between students and the opportunities made for them:
+        </p>
+      </div>
+      <div class="card-grid">
+        <div class="reveal"><div class="problem-card">
+          <div class="num">01</div><div class="ttl">Scattered</div>
+          <p>Internships, theses, jobs and programmes live across dozens of websites, newsletters and word-of-mouth. There's no single place to look.</p>
+        </div></div>
+        <div class="reveal" data-delay="130"><div class="problem-card">
+          <div class="num">02</div><div class="ttl">Too late</div>
+          <p>Many of the best opportunities have deadlines students only hear about after they've passed, if they hear about them at all.</p>
+        </div></div>
+        <div class="reveal" data-delay="260"><div class="problem-card">
+          <div class="num">03</div><div class="ttl">Hard to match</div>
+          <p>And even when you find something, it's hard to tell what actually fits your interests, your level and your ambitions.</p>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HOE HET WERKT ══════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="reveal"><h2>We're not a job board<span class="dot-clay">.</span></h2></div>
+      <div class="reveal" data-delay="110">
+        <p class="section-lead" style="margin:0 0 52px">We're a matching programme. Everything on this site is here to show you what's possible, the real magic happens when you come talk to us.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="reveal"><div class="step-card" style="border-top-color:#2B6B4F">
+          <div class="ghost" style="color:#2B6B4F" data-icon="Globe" data-size="150" data-stroke="1.1"></div>
+          <div class="badge" style="background:#2B6B4F" data-icon="Globe" data-size="22" data-color="#fff"></div>
+          <div class="num" style="color:#2B6B4F">01</div>
+          <div class="ttl">Explore</div>
+          <p>Browse internships, programmes and events. This site is here to get you excited about what's possible.</p>
+          <div class="step-arrow" data-icon="ArrowRight" data-size="20" data-color="#0A0A0A"></div>
+        </div></div>
+        <div class="reveal" data-delay="140"><div class="step-card" style="border-top-color:#C2683A">
+          <div class="ghost" style="color:#C2683A" data-icon="UserCircle2" data-size="150" data-stroke="1.1"></div>
+          <div class="badge" style="background:#C2683A" data-icon="UserCircle2" data-size="22" data-color="#fff"></div>
+          <div class="num" style="color:#C2683A">02</div>
+          <div class="ttl">Reach out</div>
+          <p>For partner roles, contact them directly with the concept email we provide. Not sure what suits you? Plan an appointment instead.</p>
+          <div class="step-arrow" data-icon="ArrowRight" data-size="20" data-color="#0A0A0A"></div>
+        </div></div>
+        <div class="reveal" data-delay="280"><div class="step-card" style="border-top-color:#D9A441">
+          <div class="ghost" style="color:#D9A441" data-icon="Sparkles" data-size="150" data-stroke="1.1"></div>
+          <div class="badge" style="background:#D9A441" data-icon="Sparkles" data-size="22" data-color="#fff"></div>
+          <div class="num" style="color:#D9A441">03</div>
+          <div class="ttl">Get inspired</div>
+          <p>Not sure what fits? Plan an appointment and we'll point you to programmes and paths from our database built around your ambitions.</p>
+        </div></div>
+      </div>
+      <div class="reveal" data-delay="420">
+        <div class="center-row">
+          <button class="btn-mag primary" data-open-form><span data-icon="Sparkles" data-size="18"></span> Plan an appointment</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CITAAT ═════════════════════════════════════════════════════ -->
+  <section class="quote-section">
+    <div class="quote-mark">"</div>
+    <div style="max-width:980px;margin:0 auto;position:relative">
+      <div class="reveal">
+        <blockquote>"I got data access I could never have reached alone, <em>and a job offer at the end</em>."</blockquote>
+      </div>
+      <div class="reveal" data-delay="150">
+        <div class="quote-by">
+          <div class="quote-avatar" data-portrait="2"></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div>
+              <div class="name">Pieter, MSc Energy Science</div>
+              <div class="role">Thesis internship · Sustainable Aviation Fuel, KLM</div>
+            </div>
+            <span style="background:#fff;border-radius:12px;padding:6px;margin-left:4px">
+              <span class="logo-badge" style="width:42px;height:29px;padding:4px"><img src="assets/logos/klm.png" alt="KLM" /></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ VIER INGANGEN ══════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="reveal"><h2 style="margin:0 0 56px">Four ways in<span class="dot-clay">.</span></h2></div>
+      <div class="cat-row">
+        <a class="cat-panel" href="internships.html" style="background:#2B6B4F">
+          <div class="scene" data-scene="talk"></div>
+          <div class="ghost" data-icon="Briefcase" data-size="170" data-stroke="1.2"></div>
+          <div class="top">
+            <div class="badge" data-icon="Briefcase" data-size="24"></div>
+            <h3>Partner internships</h3>
+            <p>Roles at our partners, we make the introduction personally</p>
+          </div>
+          <div class="cat-foot">
+            <span class="count" data-cat-count="partner"></span>
+            <span class="go" style="color:#2B6B4F" data-icon="ArrowRight" data-size="19"></span>
+          </div>
+        </a>
+        <a class="cat-panel" href="thesis.html" style="background:#C2683A">
+          <div class="scene" data-scene="field"></div>
+          <div class="ghost" data-icon="FileText" data-size="170" data-stroke="1.2"></div>
+          <div class="top">
+            <div class="badge" data-icon="FileText" data-size="24"></div>
+            <h3>Thesis internships</h3>
+            <p>Write your thesis at a partner, defined topic or your own</p>
+          </div>
+          <div class="cat-foot">
+            <span class="count" data-cat-count="thesis"></span>
+            <span class="go" style="color:#C2683A" data-icon="ArrowRight" data-size="19"></span>
+          </div>
+        </a>
+        <a class="cat-panel" href="other-internships.html" style="background:#7C8C4E">
+          <div class="scene" data-scene="event"></div>
+          <div class="ghost" data-icon="Globe" data-size="170" data-stroke="1.2"></div>
+          <div class="top">
+            <div class="badge" data-icon="Globe" data-size="24"></div>
+            <h3>Other internships</h3>
+            <p>Great finds beyond our network, apply directly</p>
+          </div>
+          <div class="cat-foot">
+            <span class="count" data-cat-count="other"></span>
+            <span class="go" style="color:#7C8C4E" data-icon="ArrowRight" data-size="19"></span>
+          </div>
+        </a>
+        <a class="cat-panel" href="programmes.html" style="background:#13352A">
+          <div class="scene" data-scene="event"></div>
+          <div class="ghost" data-icon="Rocket" data-size="170" data-stroke="1.2"></div>
+          <div class="top">
+            <div class="badge" data-icon="Rocket" data-size="24"></div>
+            <h3>Programmes</h3>
+            <p>Selective programmes that build your skills and CV, come talk to us</p>
+          </div>
+          <div class="cat-foot">
+            <span class="count" data-cat-count="programmes"></span>
+            <span class="go" style="color:#13352A" data-icon="ArrowRight" data-size="19"></span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PARTNERMUUR ════════════════════════════════════════════════ -->
+  <section class="wall-section">
+    <div class="wall-watermark" data-mark="#ffffff" data-size="460"></div>
+    <div class="section-inner" style="position:relative">
+      <div class="reveal"><h2>What's possible<span class="dot-clay">.</span></h2></div>
+      <div class="reveal" data-delay="110">
+        <p class="section-lead"><span id="wall-count"></span>+ companies, institutes and programmes where students before you found their internship, thesis or job. Pick a world, see who's in it.</p>
+      </div>
+      <div class="reveal" data-delay="200"><div class="wall-cats" id="wall-cats"></div></div>
+      <div class="reveal" data-delay="280"><div class="wall-grid" id="wall-grid"></div></div>
+      <div class="reveal" data-delay="360">
+        <p class="wall-note">Illustrative network, placeholder logos shown while partnerships are confirmed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ EERSTVOLGENDE EVENTS ═══════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="teaser-head">
+        <div class="reveal"><h2 style="margin:0">Coming up<span class="dot-clay">.</span></h2></div>
+        <div class="reveal" data-delay="100">
+          <a class="btn-ghost" href="events.html">All <span data-events-count></span> events <span data-icon="ArrowRight" data-size="15"></span></a>
+        </div>
+      </div>
+      <div class="teaser-grid" id="events-teaser"></div>
+    </div>
+  </section>
+
+  <!-- ═══ SLOT-CTA ═══════════════════════════════════════════════════ -->
+  <section class="final-cta">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="reveal"><h2>Your lucky<br />conversation is <em>here</em>.</h2></div>
+      <div class="reveal" data-delay="140">
+        <p>Browse everything freely. And if you're not sure where to start, plan an appointment, we'll inspire you with programmes and paths that fit what you care about.</p>
+      </div>
+      <div class="reveal" data-delay="260">
+        <div style="display:flex;justify-content:center">
+          <button class="btn-mag primary" data-open-form><span data-icon="Sparkles" data-size="18"></span> Plan an appointment</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">
+          <span class="brand-word"><b>Impact</b></span>
+          <span class="brand-mark" data-mark="#C2683A" data-size="36"></span>
+          <span class="brand-word"><span>Connect</span></span>
+        </div>
+        <p>Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
+      </div>
+      <div class="footer-cols">
+        <div>
+          <div class="head">Internships</div>
+          <a href="internships.html">Partner internships</a>
+          <a href="thesis.html">Thesis internships</a>
+          <a href="other-internships.html">Other internships</a>
+          <a href="programmes.html">Programmes</a>
+        </div>
+        <div>
+          <div class="head">Explore</div>
+          <a href="index.html">Home</a>
+          <a href="events.html">Events</a>
+          <a href="about.html">About us</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="uu"><span data-uu-logo="28"></span> Supported by Utrecht University · Faculty of Geosciences</span>
+      <span class="note">Prototype, placeholder opportunities · real events</span>
+    </div>
+  </div>
+</footer>
+
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
