@@ -131,17 +131,28 @@ const PROGRAMMES = [
    LIVE KOPPELING VOOR DE EVENTS
    ═══════════════════════════════════════════════════════════════════
    Plak hier het adres van het gepubliceerde tabblad uit de sheet
-   "Events database" (Bestand → Delen → Publiceren op internet →
-   tabblad → CSV). Leeg laten kan: dan komt de lijst hieronder uit
-   dit bestand. Gaat het ophalen mis, dan valt de site daar ook op
-   terug zodat de pagina nooit leeg is.
+   "Linked to bot events Database" (Bestand → Delen → Publiceren op
+   internet → tabblad → CSV). Dat is dezelfde sheet die de WhatsApp-bot
+   voedt, dus één lijst voor allebei: zet je er een event in, dan staat
+   het binnen een paar minuten op de site én in de community.
 
-   Verwachte kolommen (kopregel bovenaan):
+   Leeg laten kan: dan komt de lijst hieronder uit dit bestand. Gaat het
+   ophalen mis, dan valt de site daar ook op terug, zodat de pagina nooit
+   leeg is.
+
+   Verwachte kolommen (kopregel bovenaan) — deze staan al goed in de sheet:
      Event | Short description | Date | Time | Location | Cost |
      Registration link | Category
 
    De Category-kolom mag "General", "Energy", "Ecology and food",
-   "Cities", "Governance" of "Business and innovation" zijn.
+   "Cities", "Governance" of "Business and innovation" zijn. Staan er
+   twee thema's in één cel ("Energy, Governance"), dan pakt de site het
+   eerste; zie rowsToEvents in script.js.
+
+   Let op: events uit de sheet hebben geen Nederlandse beschrijving.
+   Op de Nederlandse site staat er dan de Engelse tekst. Wil je dat
+   vertaald, zet dan een kolom "Short description NL" in de sheet en
+   zeg het even, dan lees ik die ook uit.
    ═══════════════════════════════════════════════════════════════════ */
 const EVENT_SHEET = "";
 

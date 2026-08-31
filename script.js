@@ -672,7 +672,12 @@ function rowsToEvents(rows) {
     const name = cellOrNull(r[col.name]);
     if (!name || /^event$/i.test(name)) continue;          // leeg of herhaalde kopregel
     const get = (k) => (col[k] >= 0 ? cellOrNull(r[col[k]]) : null);
-    const cat = (get("cat") || "").trim().toLowerCase();
+        // De sheet schrijft soms twee thema's in één cel ("Energy, Governance",
+      // "Ecology / zero waste"). Zonder dit belandden die allemaal onder
+      // "General". We nemen het eerste thema; dat is in de sheet steeds het
+      // hoofdthema, en het werkt ook voor combinaties die er later bij komen.
+      const ruw = (get("cat") || "").trim().toLowerCase();
+      const cat = EVENT_CAT_MAP[ruw] ? ruw : ruw.split(/[\/,]/)[0].trim();
     out.push({
       name,
       desc: get("desc") || "",

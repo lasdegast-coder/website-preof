@@ -726,7 +726,12 @@ body::before {
   font-size: 10.5px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
 }
 .ev-body h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.3; }
-.ev-body p  { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #555; }
+/* Drie regels, meer niet. De beschrijvingen in data.js zijn eenregelig
+   (rond de 100 tekens), maar die in de events-sheet lopen op tot 538 en
+   dat rekt één kaartje uit tot vier keer de hoogte van zijn buren. Het
+   kaartje is een aankondiging; de rest lees je via "Aanmelden". */
+.ev-body p  { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #555;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 .ev-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
 .ev-meta span { display: inline-flex; align-items: center; gap: 5px; }
 .ev-signup {
