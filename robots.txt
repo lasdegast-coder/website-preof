@@ -1,11 +1,6 @@
-# Zoekmachines mogen hier wel rondkijken, maar elke pagina zegt zelf
-# <meta name="robots" content="noindex"> en daar houden ze zich aan.
-#
-# Waarom hier geen "Disallow: /": dan mag Google de pagina's niet ophalen,
-# leest hij die noindex-regel nooit, en kan de link toch in de resultaten
-# komen als iemand er ergens naar linkt. Laten crawlen werkt dus beter.
-#
-# Gaat de site echt open? Haal de noindex-regel uit de acht .html-bestanden
-# en zet hieronder een verwijzing naar een sitemap.
+# De site mag gevonden worden. Stond hier eerder een noindex-regel in elke
+# pagina, dan is die weg; zie de git-geschiedenis als je hem terug wilt.
 User-agent: *
 Allow: /
+
+Sitemap: https://impactconnectutrecht.com/sitemap.xml
