@@ -154,7 +154,7 @@ const PROGRAMMES = [
    vertaald, zet dan een kolom "Short description NL" in de sheet en
    zeg het even, dan lees ik die ook uit.
    ═══════════════════════════════════════════════════════════════════ */
-const EVENT_SHEET = "";
+const EVENT_SHEET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTrUbw_rA5cng3cegScM_f8J13UT389W8TUdGio_zThzOscCeyeeWQ7x1yx70_2N2NR4TEJPET_yVm4/pub?output=csv";
 
 const EVENTS = [
   {"name": "Sustainability Career Event", "date": "06-02-2026", "time": "10:00 to 17:00", "loc": "Jaarbeurs, Utrecht", "cost": "Free for students", "link": "https://sustainabilitycareerevent.nl", "cat": "general", "desc": "A career fair connecting students directly with employers hiring for sustainability roles across the Netherlands.", "descNl": "Een banenbeurs die studenten rechtstreeks in contact brengt met werkgevers die mensen zoeken voor duurzaamheidsfuncties door heel Nederland."},
