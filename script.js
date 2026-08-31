@@ -1759,7 +1759,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // merkteken + UU-logo in header en footer
   $$("[data-mark]").forEach((el) => el.innerHTML = bridgeMark(+el.dataset.size || 42, el.dataset.mark));
+  // Mag het UU-logo nog niet gevoerd worden (zie UU_BRANDING in data.js),
+  // dan blijft het plaatje weg maar de tekst staan: "Utrecht University"
+  // in de balk en de regel in de voettekst mogen wel. Het lege blokje
+  // krijgt display:none zodat er geen gat naast de tekst valt.
   $$("[data-uu-logo]").forEach((el) => {
+    if (!UU_BRANDING) { el.style.display = "none"; return; }
     const s = +el.dataset.uuLogo || 38;
     el.innerHTML = `<img src="${UU_LOGO}" alt="Utrecht University" width="${s}" height="${s}">`;
   });

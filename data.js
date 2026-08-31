@@ -14,6 +14,20 @@
    Verder hoeft er niets veranderd te worden.                          */
 const INTERNSHIPS_LIVE = false;
 
+/* ── Het UU-logo en de vermelding ────────────────────────────────────
+   De Universiteit Utrecht heeft nog geen toestemming gegeven om haar
+   beeldmerk te voeren, dus staat dit uit. Dan verdwijnt op alle acht de
+   pagina's het logo rechts in de menubalk en dat in de voettekst.
+
+   Alleen het plaatje. De tekst blijft wel staan: "Utrecht University"
+   in de balk en "Ondersteund door de Universiteit Utrecht · Faculteit
+   Geowetenschappen" onderaan. De samenwerking noemen mag; het logo
+   voeren nog niet.
+
+   Zodra het mag: zet hier true neer. Aan de HTML hoeft niets te
+   veranderen, die staat op alle acht de pagina's al klaar.            */
+const UU_BRANDING = false;
+
 /* ── waar de formulieren naartoe gaan ────────────────────────────────
    Het afspraakformulier en het alumniverzoek sturen hun antwoorden naar
    een Google Apps Script. Dat script mailt ons, mailt de student een
