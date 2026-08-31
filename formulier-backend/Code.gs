@@ -48,6 +48,15 @@ const FORMULIEREN = {
       'back to you, usually within a few days, to plan a short appointment.',
     ],
   },
+  contact: {
+    tabblad: 'Berichten',
+    onzeTitel: 'MESSAGE VIA THE WEBSITE',
+    onderwerp: 'Message via the website',
+    bevestiging: [
+      'Thanks for writing. We\'ve got your message and one of us will get back',
+      'to you, usually within a few days.',
+    ],
+  },
   alumnus: {
     tabblad: 'Alumniverzoeken',
     onzeTitel: 'ALUMNUS WANTED',
@@ -74,6 +83,10 @@ const VRAGEN = {
     { sleutel: 'betaald',   label: 'Paid or unpaid' },
     { sleutel: 'taal',      label: 'Language' },
     { sleutel: 'notities',  label: 'Anything else' },
+  ],
+  contact: [
+    { sleutel: 'studie',  label: 'Study and year' },
+    { sleutel: 'bericht', label: 'Message' },
   ],
   alumnus: [
     { sleutel: 'vakgebied',   label: 'Field' },

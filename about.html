@@ -140,6 +140,65 @@
       <button class="cta" data-open-form><span data-icon="Sparkles" data-size="16"></span> <span data-t="nav.appointment">Plan an appointment</span></button>
     </div>
   </div>
+
+  <!-- ═══ CONTACT ═════════════════════════════════════════════════════
+       Voor alles wat geen afspraak is: een vraag, een tip voor een event,
+       of iemand die liever niet door vier stappen klikt. Gaat naar
+       hetzelfde Apps Script als de andere twee formulieren (FORM_ENDPOINT
+       in data.js), met formulier: "contact". Lukt versturen niet, dan
+       opent het mailprogramma met dezelfde tekst erin.
+  ═════════════════════════════════════════════════════════════════════ -->
+  <section class="contact-section" id="contact">
+    <div class="contact-layout">
+      <div class="contact-intro reveal">
+        <p class="eyebrow" data-t="ct.eyebrow">Contact</p>
+        <h2 data-t="ct.kop">Send us a message<span class="dot-clay">.</span></h2>
+        <p data-t="ct.lead">A question, an idea, an event we should know about, or you would simply rather write than fill in the appointment form. Tell us what is on your mind and one of us gets back to you.</p>
+        <ul class="contact-details">
+          <li><span data-icon="Mail" data-size="18" data-color="#C2683A"></span>
+            <a href="mailto:contact@impactconnectutrecht.com">contact@impactconnectutrecht.com</a></li>
+          <li><span data-icon="Clock" data-size="18" data-color="#C2683A"></span>
+            <span data-t="ct.termijn">We usually reply within a few days</span></li>
+        </ul>
+      </div>
+
+      <form class="contact-form reveal" data-delay="140" data-contact-form novalidate>
+        <div class="ct-row">
+          <div class="ct-field">
+            <label for="ct-naam" data-t="ct.naam">Your name</label>
+            <input type="text" id="ct-naam" name="naam" autocomplete="name" required />
+          </div>
+          <div class="ct-field">
+            <label for="ct-email" data-t="ct.email">Your email</label>
+            <input type="email" id="ct-email" name="email" autocomplete="email" inputmode="email" required />
+          </div>
+        </div>
+        <div class="ct-field">
+          <label for="ct-studie"><span data-t="ct.studie">Study and year</span> <span class="ct-opt" data-t="form.optioneel">(optional)</span></label>
+          <input type="text" id="ct-studie" name="studie" data-t-placeholder="ct.studie.hint" placeholder="MSc Sustainable Development, year 1" />
+        </div>
+        <div class="ct-field">
+          <label for="ct-bericht" data-t="ct.bericht">Your message</label>
+          <textarea id="ct-bericht" name="bericht" rows="4" required data-t-placeholder="ct.bericht.hint" placeholder="Ask us anything..."></textarea>
+        </div>
+
+        <!-- Spamval: staat uit beeld, mensen zien hem niet, bots vullen hem
+             wel in. Zit er iets in, dan versturen we niets. -->
+        <div class="ct-val" aria-hidden="true">
+          <label for="ct-website">Website</label>
+          <input type="text" id="ct-website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <button type="submit" class="btn-mag primary ct-verstuur">
+          <span data-icon="Mail" data-size="17"></span> <span data-t="ct.knop">Send message</span>
+        </button>
+        <p class="form-note" data-t="ct.privacy">We use this only to answer you. You can ask us to delete your details at any time.</p>
+        <div class="ct-fout" role="alert" hidden></div>
+        <div class="ct-gelukt" role="status" aria-live="polite" hidden></div>
+      </form>
+    </div>
+  </section>
+
 </main>
 
 <!-- ═══ FOOTER ═══════════════════════════════════════════════════════ -->

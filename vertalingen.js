@@ -34,6 +34,18 @@ const TALEN = ["en", "nl"];
 const TAAL_OPSLAG = "impact-connect:taal";
 const STANDAARDTAAL = "en";
 
+/* ── Staat het Nederlands aan? ───────────────────────────────────────
+   De vertaling is af, maar mag nog niet naar buiten. Staat dit uit, dan
+   verdwijnt het NL-knopje uit de balk en blijft de site Engels, ook als
+   iemand ?lang=nl in het adres zet of eerder Nederlands had gekozen.
+
+   Dit hoort hier en niet in data.js, want dit bestand wordt eerder
+   ingeladen en bepaalt de taal al bij het opstarten.
+
+   Zodra het mag: zet hier true neer. Verder hoeft er niets te gebeuren,
+   alle vertalingen staan gewoon hieronder klaar.                       */
+const NEDERLANDS_LIVE = false;
+
 /* De vertalingen. Per sleutel altijd `nl`, en `en` alleen als de tekst
    niet uit de HTML te halen is (dus voor alles wat script.js maakt). */
 const VERTALINGEN = {
@@ -428,6 +440,27 @@ const VERTALINGEN = {
   "teller.alumni":     { en: "Get matched", nl: "Wij koppelen je" },
   "teller.open":       { en: "open", nl: "open" },
 
+  /* ── contactformulier (homepage en onderaan Over ons) ──────────── */
+  "ct.eyebrow":        { nl: "Contact" },
+  "ct.kop":            { nl: "Stuur ons een bericht<span class=\"dot-clay\">.</span>" },
+  "ct.lead":           { nl: "Een vraag, een idee, een event dat we moeten kennen, of je schrijft gewoon liever dan dat je het afspraakformulier invult. Vertel wat er speelt, dan komt een van ons erop terug." },
+  "ct.termijn":        { nl: "Meestal antwoord binnen een paar dagen" },
+  "ct.naam":           { nl: "Je naam" },
+  "ct.email":          { nl: "Je mailadres" },
+  "ct.studie":         { nl: "Studie en jaar" },
+  "ct.studie.hint":    { nl: "MSc Sustainable Development, jaar 1" },
+  "ct.bericht":        { nl: "Je bericht" },
+  "ct.bericht.hint":   { nl: "Vraag ons wat je wilt..." },
+  "ct.knop":           { nl: "Verstuur bericht" },
+  "ct.privacy":        { nl: "We gebruiken dit alleen om je te antwoorden. Je kunt ons altijd vragen je gegevens te verwijderen." },
+  // Deze drie maakt script.js, dus die hebben ook het Engels nodig.
+  "ct.mis":            { en: "Please fill in your name, a valid email and a message.",
+                         nl: "Vul je naam, een geldig mailadres en een bericht in." },
+  "ct.gelukt":         { en: "Thanks {naam}, we've got your message. One of us will get back to you, usually within a few days.",
+                         nl: "Bedankt {naam}, we hebben je bericht binnen. Een van ons komt erop terug, meestal binnen een paar dagen." },
+  "ct.viamail":        { en: "Sending from the site didn't work, so your mail programme should open with the same message in it. Press send there and it reaches us.",
+                         nl: "Versturen vanaf de site lukte niet, dus je mailprogramma zou nu open moeten gaan met hetzelfde bericht erin. Druk daar op versturen en het komt bij ons aan." },
+
   "taal.wissel":       { nl: "Switch to English", en: "Bekijk in het Nederlands" },
 };
 
@@ -562,6 +595,7 @@ function veld(tekst) {
    bepaalde taal kunt sturen.
 ------------------------------------------------------------------- */
 function huidigeTaal() {
+  if (!NEDERLANDS_LIVE) return "en";
   try {
     const uitAdres = new URLSearchParams(location.search).get("lang");
     if (TALEN.includes(uitAdres)) return uitAdres;
@@ -645,6 +679,7 @@ function kiesTaal(nieuw) {
 
 function initTaalknop() {
   document.querySelectorAll("[data-taalknop]").forEach((knop) => {
+    if (!NEDERLANDS_LIVE) { knop.style.display = "none"; return; }
     const ander = TAAL === "en" ? "nl" : "en";
     knop.textContent = ander.toUpperCase();
     knop.setAttribute("aria-label", TAAL === "en"

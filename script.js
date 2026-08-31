@@ -1747,6 +1747,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // komt leest TAAL uit en zou anders in het Engels opgebouwd worden.
   pasTaalToe();
   initTaalknop();
+  initContactForm();
 
   // uitklapmenu onder Programmes, gevuld vanuit PROGRAMME_CATS zodat het
   // meeloopt met de categorieën die uit de sheet komen
@@ -1816,3 +1817,71 @@ document.addEventListener("DOMContentLoaded", () => {
   // Nederlands heeft. Voor onszelf, een bezoeker merkt er niets van.
   if (new URLSearchParams(location.search).get("check") === "taal") controleerVertalingen();
 });
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONTACTFORMULIER
+
+   Het korte formulier onderaan de homepage en "Over ons". Anders dan de
+   twee andere formulieren staat dit gewoon op de pagina in plaats van in
+   een venster, en heeft het maar één stap.
+
+   Verstuurt naar hetzelfde Apps Script (formulier: "contact"). Lukt dat
+   niet, dan opent het mailprogramma met dezelfde tekst, zodat het bericht
+   nooit verdwijnt omdat de techniek hapert.
+   ═══════════════════════════════════════════════════════════════════ */
+function initContactForm() {
+  $$("[data-contact-form]").forEach((form) => {
+    const knop   = form.querySelector(".ct-verstuur");
+    const fout   = form.querySelector(".ct-fout");
+    const gelukt = form.querySelector(".ct-gelukt");
+    const veldje = (n) => form.querySelector(`[name="${n}"]`);
+
+    const toon = (el, tekst) => { el.textContent = tekst; el.hidden = false; };
+    const verberg = (el) => { el.hidden = true; };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      verberg(fout);
+
+      // Bot? Dan doen we alsof er niets gebeurt: geen melding, geen verzending.
+      if ((veldje("website").value || "").trim()) return;
+
+      const naam    = (veldje("naam").value || "").trim();
+      const email   = (veldje("email").value || "").trim();
+      const studie  = (veldje("studie").value || "").trim();
+      const bericht = (veldje("bericht").value || "").trim();
+
+      // Alleen de drie die we echt nodig hebben om te kunnen antwoorden.
+      const ontbreekt = [];
+      $$(".mis", form).forEach((el) => el.classList.remove("mis"));
+      if (!naam)    ontbreekt.push("naam");
+      if (!/^\S+@\S+\.\S+$/.test(email)) ontbreekt.push("email");
+      if (!bericht) ontbreekt.push("bericht");
+      if (ontbreekt.length) {
+        ontbreekt.forEach((n) => veldje(n).classList.add("mis"));
+        veldje(ontbreekt[0]).focus();
+        toon(fout, t("ct.mis"));
+        return;
+      }
+
+      const onderwerp = `Message via the website, ${naam}`;
+      const tekst = [`Name: ${naam}`, `Email: ${email}`,
+        studie ? `Study: ${studie}` : null, "", bericht]
+        .filter((r) => r !== null).join("\n");
+
+      knop.disabled = true;
+      const ok = await sendForm({ formulier: "contact", naam, email, studie, bericht });
+      knop.disabled = false;
+
+      if (ok) {
+        form.reset();
+        toon(gelukt, t("ct.gelukt").replace("{naam}", naam));
+        gelukt.scrollIntoView({ block: "center", behavior: "smooth" });
+      } else {
+        // Niets kwijt: het mailprogramma opent met hetzelfde bericht erin.
+        toon(fout, t("ct.viamail"));
+        window.location.href = mailtoFallback(onderwerp, tekst);
+      }
+    });
+  });
+}

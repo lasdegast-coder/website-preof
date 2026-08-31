@@ -1230,3 +1230,61 @@ body::before {
   .reveal { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
 }
+
+/* ═══ CONTACTFORMULIER ══════════════════════════════════════════════
+   Staat op de homepage en onderaan "Over ons". Twee kolommen op een
+   breed scherm, onder elkaar zodra dat niet meer past. De velden lenen
+   de vorm van .form-stack in het afspraakvenster, zodat de site één
+   soort invoervakjes houdt.
+   ═════════════════════════════════════════════════════════════════ */
+.contact-section {
+  background: var(--paper2); border-top: 1px solid var(--line);
+  padding: 72px 30px;
+}
+.contact-layout {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 54px; align-items: start;
+}
+.contact-intro .eyebrow {
+  font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--clay); margin: 0 0 12px;
+}
+.contact-intro h2 { margin: 0 0 14px; }
+.contact-intro > p { font-size: 15.5px; line-height: 1.65; color: var(--muted); margin: 0 0 26px; max-width: 460px; }
+.contact-details { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.contact-details li { display: flex; align-items: center; gap: 11px; font-size: 14.5px; color: var(--ink); }
+.contact-details a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--sand); }
+.contact-details a:hover { border-bottom-color: var(--clay); }
+
+.contact-form {
+  background: #fff; border: 1px solid var(--line); border-radius: 18px;
+  padding: 28px; display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
+.ct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ct-field label { font-size: 13.5px; font-weight: 700; display: block; margin-bottom: 7px; }
+.ct-opt { font-weight: 500; color: var(--muted-soft); }
+.ct-field input, .ct-field textarea {
+  width: 100%; border: 1.5px solid #DDD; border-radius: 10px; padding: 11px 14px;
+  font-size: 14px; font-family: inherit; outline: none; background: #fff;
+}
+.ct-field textarea { resize: vertical; }
+.ct-field input:focus, .ct-field textarea:focus { border-color: var(--green); }
+.ct-field input.mis, .ct-field textarea.mis { border-color: var(--clay); background: #FFFBF8; }
+/* De spamval. Niet display:none: sommige bots slaan verborgen velden over,
+   maar lopen wel in een veld dat gewoon buiten beeld staat. */
+.ct-val { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.ct-verstuur { align-self: flex-start; }
+.ct-verstuur:disabled { opacity: .6; cursor: progress; }
+.ct-fout, .ct-gelukt { font-size: 14px; line-height: 1.55; border-radius: 11px; padding: 13px 15px; }
+.ct-fout   { background: #FDF1EC; border: 1px solid #EBC7B4; color: #8A3F1C; }
+.ct-gelukt { background: #EDF5F0; border: 1px solid #BFD9CB; color: #1D5138; }
+
+@media (max-width: 940px) {
+  .contact-layout { grid-template-columns: 1fr; gap: 34px; }
+}
+@media (max-width: 560px) {
+  .contact-section { padding: 52px 20px; }
+  .ct-row { grid-template-columns: 1fr; }
+  .contact-form { padding: 22px; }
+}
