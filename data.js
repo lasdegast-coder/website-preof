@@ -190,7 +190,7 @@ const PROGRAMMES = [
 const WHATSAPP_GROEPEN = {
   all:        "",
   energy:     "",
-  governance: "",
+  governance: "https://chat.whatsapp.com/DOQcZV4wPqb3k2YfRELoZ4",
   business:   "https://chat.whatsapp.com/I37kQkrT0w40Kn1fUYyuF5",
   ecology:    "",
   cities:     "https://chat.whatsapp.com/KX9nOo1xooJ55CGfleKfEt",
