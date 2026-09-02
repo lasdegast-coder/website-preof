@@ -1,4 +1,5 @@
-<!-- Het merkteken van Impact Connect: de Vollers Bridge, een dekbalk met
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Impact Connect">
+  <!-- Het merkteken van Impact Connect: de Vollers Bridge, een dekbalk met
      daaronder een boog op twee pijlers. Dit is niet dezelfde tekening als
      bridgeMark() in script.js, maar een zwaardere versie ervan.
 
@@ -7,7 +8,6 @@
      balk zou dan een pixel breed worden en de boog nog dunner. Vandaar hier
      dikkere lijnen en geen middenstukje: bij dit formaat overleeft alleen de
      silhouet. Verander je het logo, verander dan allebei. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Impact Connect">
   <rect width="64" height="64" rx="14" fill="#13352A"/>
   <g fill="#F4EFE3">
     <rect x="12" y="16" width="40" height="6"/>
