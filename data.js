@@ -189,7 +189,7 @@ const PROGRAMMES = [
    ═══════════════════════════════════════════════════════════════════ */
 const WHATSAPP_GROEPEN = {
   all:        "",
-  energy:     "",
+  energy:     "https://chat.whatsapp.com/J0NAq2MFgGzDoeLlraA5Ma",
   governance: "https://chat.whatsapp.com/DOQcZV4wPqb3k2YfRELoZ4",
   business:   "https://chat.whatsapp.com/I37kQkrT0w40Kn1fUYyuF5",
   ecology:    "https://chat.whatsapp.com/GvMiJ2HlnR13GLEje27WTm",
