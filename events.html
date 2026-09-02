@@ -64,9 +64,12 @@
         <span class="wa-sub" data-t="ev.gratis">Free, and you can leave whenever you want.</span>
       </div>
       <div class="wa-hero-qr">
+        <!-- De QR volgt hetzelfde filter als de knop hiernaast: kies je een
+             thema, dan scan je de groep van dat thema. De afbeeldingen staan
+             in assets/qr/ en worden gemaakt uit WHATSAPP_GROEPEN in data.js.
+             Zie paintJoin() in script.js. -->
         <div class="wa-qr">
-          <span data-icon="QrCode" data-size="62" data-color="#13352A"></span>
-          <span data-t="ev.qrsoon">QR SOON</span>
+          <img class="wa-qr-img" src="assets/qr/all.svg" alt="" width="150" height="150" />
         </div>
         <span class="wa-qr-cap" data-t="ev.scan">Scan to join</span>
       </div>

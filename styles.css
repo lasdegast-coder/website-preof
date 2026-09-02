@@ -1296,3 +1296,6 @@ body::before {
   color: #F4EFE3; box-shadow: none;
 }
 .wa-join-uit:hover { transform: none; }
+
+/* Het QR-plaatje vult het witte vlak dat eerst het "QR VOLGT"-icoon had. */
+.wa-qr-img { display: block; width: 100%; height: auto; }

@@ -794,6 +794,15 @@ function paintJoin() {
   const link = (enkel && groepen[enkel]) || groepen.all || "";
   const pijl = `<span data-icon="ArrowUpRight" data-size="18"></span>`;
 
+  // De QR ernaast wijst dezelfde kant op als de knop.
+  const qr = $(".wa-qr-img");
+  if (qr) {
+    const sleutel = (enkel && groepen[enkel]) ? enkel : "all";
+    qr.src = `assets/qr/${sleutel}.svg`;
+    qr.alt = link ? t("ev.scan") : "";
+    qr.closest(".wa-hero-qr").style.display = link ? "" : "none";
+  }
+
   if (!link) {
     el.removeAttribute("href");
     el.classList.add("wa-join-uit");
