@@ -191,7 +191,7 @@ const WHATSAPP_GROEPEN = {
   all:        "",
   energy:     "",
   governance: "",
-  business:   "",
+  business:   "https://chat.whatsapp.com/I37kQkrT0w40Kn1fUYyuF5",
   ecology:    "",
   cities:     "https://chat.whatsapp.com/KX9nOo1xooJ55CGfleKfEt",
   general:    "",
