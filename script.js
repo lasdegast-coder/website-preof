@@ -732,6 +732,7 @@ function draw() {
   [...gekozen].forEach((id) => { if (!perThema.has(id)) gekozen.delete(id); });
 
   paintPicker(perThema, enriched.length);
+  paintJoin();
 
   const zichtbaar = gekozen.size ? enriched.filter((e) => gekozen.has(e.cat)) : enriched;
   paintCount(zichtbaar, enriched.length);
@@ -778,6 +779,38 @@ function paintCount(zichtbaar, totaal) {
         .replace("{themas}", [...gekozen].map(themeLabel).join(", "))
         .replace("{gratis}", gratis)
     : t("ev.telling.alles").replace("{totaal}", totaal).replace("{gratis}", gratis);
+}
+
+/* De knop bovenaan volgt het filter. Eén thema gekozen en die groep
+   bestaat? Dan wijst de knop daarheen, met de naam van het thema erin.
+   Anders de algemene groep. Is er helemaal geen link, dan wordt het geen
+   knop maar een regel tekst: beter dan iets dat niets doet als je erop
+   drukt. Zie WHATSAPP_GROEPEN in data.js. */
+function paintJoin() {
+  const el = $(".wa-join");
+  if (!el) return;
+  const groepen = (typeof WHATSAPP_GROEPEN === "object" && WHATSAPP_GROEPEN) || {};
+  const enkel = gekozen.size === 1 ? [...gekozen][0] : null;
+  const link = (enkel && groepen[enkel]) || groepen.all || "";
+  const pijl = `<span data-icon="ArrowUpRight" data-size="18"></span>`;
+
+  if (!link) {
+    el.removeAttribute("href");
+    el.classList.add("wa-join-uit");
+    el.innerHTML = `<span>${t("ev.linkvolgt")}</span>`;
+  } else {
+    el.href = link;
+    el.target = "_blank";
+    el.rel = "noreferrer";
+    el.classList.remove("wa-join-uit");
+    const label = (enkel && groepen[enkel])
+      ? t("ev.join.thema").replace("{thema}", themeLabel(enkel))
+      : t("ev.join");
+    el.innerHTML = `<span>${label}</span> ${pijl}`;
+  }
+  $$("[data-icon]", el).forEach((i) => {
+    i.innerHTML = icon(i.dataset.icon, +i.dataset.size || 16);
+  });
 }
 
 function paintTimeline(lijst) {

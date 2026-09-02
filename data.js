@@ -168,6 +168,35 @@ const PROGRAMMES = [
    vertaald, zet dan een kolom "Short description NL" in de sheet en
    zeg het even, dan lees ik die ook uit.
    ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   DE WHATSAPP-GROEPEN
+   ═══════════════════════════════════════════════════════════════════
+   Dezelfde zes thema's als de themakiezer op de eventspagina, en ook
+   dezelfde als de groepen waar de bot zijn events naartoe stuurt. De
+   knop bovenaan die pagina volgt het filter: kiest iemand "Cities",
+   dan wijst de knop naar de Cities-groep.
+
+   "all" is de algemene groep, en tegelijk de terugval: heeft een thema
+   nog geen eigen link, dan gaat de knop daarheen. Is die ook leeg, dan
+   blijft er "Link volgt" staan in plaats van een knop die niets doet.
+
+   Een link ophalen: WhatsApp → groep openen → op de groepsnaam tikken
+   → Uitnodigen via link → Link kopiëren. Het stukje "?mode=..." dat
+   WhatsApp erachter plakt mag eraf.
+
+   Let op: met zo'n link kan iedereen erin. Zet in de groepsinstellingen
+   "Nieuwe leden goedkeuren" aan voor je hem publiek maakt.
+   ═══════════════════════════════════════════════════════════════════ */
+const WHATSAPP_GROEPEN = {
+  all:        "",
+  energy:     "",
+  governance: "",
+  business:   "",
+  ecology:    "",
+  cities:     "https://chat.whatsapp.com/KX9nOo1xooJ55CGfleKfEt",
+  general:    "",
+};
+
 const EVENT_SHEET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTrUbw_rA5cng3cegScM_f8J13UT389W8TUdGio_zThzOscCeyeeWQ7x1yx70_2N2NR4TEJPET_yVm4/pub?output=csv";
 
 const EVENTS = [

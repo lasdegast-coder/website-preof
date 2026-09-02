@@ -1288,3 +1288,11 @@ body::before {
   .ct-row { grid-template-columns: 1fr; }
   .contact-form { padding: 22px; }
 }
+
+/* Geen link beschikbaar: dan is het geen knop maar een mededeling. Zonder
+   dit ziet "Community-link volgt" eruit als iets waar je op kunt drukken. */
+.wa-join-uit {
+  cursor: default; opacity: .72; background: rgba(255,255,255,.14);
+  color: #F4EFE3; box-shadow: none;
+}
+.wa-join-uit:hover { transform: none; }

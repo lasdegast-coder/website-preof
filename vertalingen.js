@@ -136,6 +136,8 @@ const VERTALINGEN = {
   "ev.kop":            { nl: "Events<i>.</i>" },
   "ev.lead":           { nl: "Congressen, banenbeurzen en festivals door heel Nederland, de meeste gratis voor studenten. Ze worden allemaal als eerste aangekondigd in onze WhatsApp-community." },
   "ev.join":           { nl: "Word lid van de community" },
+  "ev.join.thema":     { en: "Join the {thema} group", nl: "Word lid van de groep {thema}" },
+  "ev.linkvolgt":      { en: "Community link coming soon", nl: "Community-link volgt binnenkort" },
   "ev.gratis":         { nl: "Gratis, en je kunt er altijd weer uit." },
   "ev.qrsoon":         { nl: "QR VOLGT" },
   "ev.scan":           { nl: "Scan om lid te worden" },
