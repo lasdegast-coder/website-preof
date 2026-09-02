@@ -135,7 +135,9 @@ const VERTALINGEN = {
   "ev.tag":            { nl: "Events, Impact Connect" },
   "ev.kop":            { nl: "Events<i>.</i>" },
   "ev.lead":           { nl: "Congressen, banenbeurzen en festivals door heel Nederland, de meeste gratis voor studenten. Ze worden allemaal als eerste aangekondigd in onze WhatsApp-community." },
-  "ev.join":           { nl: "Word lid van de community" },
+  // script.js bouwt deze knop nu zelf op (paintJoin), dus moet het
+  // Engels er ook in staan; uit de HTML halen kan niet meer.
+  "ev.join":           { en: "Join the community", nl: "Word lid van de community" },
   "ev.join.thema":     { en: "Join the {thema} group", nl: "Word lid van de groep {thema}" },
   "ev.linkvolgt":      { en: "Community link coming soon", nl: "Community-link volgt binnenkort" },
   "ev.gratis":         { nl: "Gratis, en je kunt er altijd weer uit." },
@@ -216,7 +218,9 @@ const VERTALINGEN = {
   "al.r1.kop":         { nl: "Je weet wie je zoekt" },
   "al.r1.tekst":       { nl: "Beschrijf wie je zoekt: het vakgebied en het soort organisatie. Wij gaan onze alumnilijst met de hand langs en mailen je een LinkedIn-profiel terug, plus een telefoonnummer als ze dat hebben gegeven." },
   "al.r1.meta":        { nl: "Kost twee minuten · meestal binnen een week antwoord" },
-  "al.r1.knop":        { nl: "Zoek een alumni" },
+  // Ook de kop van het alumnivenster, dat script.js opbouwt. Zonder
+  // Engels stond daar letterlijk "null" op de Engelse site.
+  "al.r1.knop":        { en: "Find an alumni", nl: "Zoek een alumni" },
   "al.r2.kop":         { nl: "Je weet nog niet wie je nodig hebt" },
   "al.r2.tekst":       { nl: "Als de echte vraag is \"wat moet ik eigenlijk gaan doen?\", begin dan bij ons. Plan een korte afspraak, we nemen door wat jou drijft, en zoeken samen uit wie het waard is om te spreken." },
   "al.r2.meta":        { nl: "Een gesprek van een half uur met het team" },

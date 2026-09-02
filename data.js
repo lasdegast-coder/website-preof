@@ -176,9 +176,11 @@ const PROGRAMMES = [
    knop bovenaan die pagina volgt het filter: kiest iemand "Cities",
    dan wijst de knop naar de Cities-groep.
 
-   "all" is de algemene groep, en tegelijk de terugval: heeft een thema
-   nog geen eigen link, dan gaat de knop daarheen. Is die ook leeg, dan
-   blijft er "Link volgt" staan in plaats van een knop die niets doet.
+   "all" is de knop als er geen thema gekozen is, en tegelijk de terugval
+   voor een thema zonder eigen link. Er bestaat geen aparte community-
+   groep, dus staat daar dezelfde link als bij "general": wie nog geen
+   vakgebied heeft gekozen, heeft nog geen vakgebied. Wil je daar liever
+   de aankondigingengroep, vervang dan alleen die ene regel.
 
    Een link ophalen: WhatsApp → groep openen → op de groepsnaam tikken
    → Uitnodigen via link → Link kopiëren. Het stukje "?mode=..." dat
@@ -188,13 +190,13 @@ const PROGRAMMES = [
    "Nieuwe leden goedkeuren" aan voor je hem publiek maakt.
    ═══════════════════════════════════════════════════════════════════ */
 const WHATSAPP_GROEPEN = {
-  all:        "",
+  all:        "https://chat.whatsapp.com/FwZa8qR1HdK70ZBJfkpfxe",   // zelfde als general, zie hieronder
   energy:     "https://chat.whatsapp.com/J0NAq2MFgGzDoeLlraA5Ma",
   governance: "https://chat.whatsapp.com/DOQcZV4wPqb3k2YfRELoZ4",
   business:   "https://chat.whatsapp.com/I37kQkrT0w40Kn1fUYyuF5",
   ecology:    "https://chat.whatsapp.com/GvMiJ2HlnR13GLEje27WTm",
   cities:     "https://chat.whatsapp.com/KX9nOo1xooJ55CGfleKfEt",
-  general:    "",
+  general:    "https://chat.whatsapp.com/FwZa8qR1HdK70ZBJfkpfxe",
 };
 
 const EVENT_SHEET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTrUbw_rA5cng3cegScM_f8J13UT389W8TUdGio_zThzOscCeyeeWQ7x1yx70_2N2NR4TEJPET_yVm4/pub?output=csv";
