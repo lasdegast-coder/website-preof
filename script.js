@@ -1854,6 +1854,7 @@ document.addEventListener("DOMContentLoaded", () => {
   else if (page === "listing") initListing(document.body.dataset.list);
   else if (page === "events") initEvents();
   else if (page === "programmes") initProgrammes();
+  else if (page === "alumni") initAlumniloket();
 
   // ?check=taal in de adresbalk somt in de console op wat nog geen
   // Nederlands heeft. Voor onszelf, een bezoeker merkt er niets van.
@@ -1926,4 +1927,328 @@ function initContactForm() {
       }
     });
   });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HET ALUMNILOKET
+
+   De lijst met alumni op alumni.html, en het formulier waarmee een
+   student er een vraag aan stelt.
+
+   De lijst komt uit hetzelfde Apps Script als de formulieren, met
+   ?lijst=alumni erachter. Daar zitten alleen mensen in die toestemming
+   hebben gegeven, en alleen de velden die een student mag zien: geen
+   mailadres, geen telefoonnummer, geen achternaam. Wat hier niet
+   binnenkomt, kan ook niet in de broncode van de pagina belanden.
+
+   Lukt het ophalen niet, dan blijft de lijst leeg en staat er één regel
+   uitleg. De uitweg eronder ("beschrijf wie je zoekt") werkt dan nog
+   gewoon, dus een student staat nooit met lege handen.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* De thema's waar een student zijn vraag onder kan hangen. Kort gehouden:
+   dit is een hulpje om de vraag te plaatsen, niet nog een vragenlijst. */
+const LOKET_ONDERWERPEN = [
+  "Choosing a master’s", "Applying for jobs", "Exploring a field",
+  "Internships", "Starting something", "Working abroad",
+];
+
+/* Even lang als de ondergrens in Loket.gs. Staat die daar hoger, dan zou
+   een student hier op verzenden kunnen drukken en alsnog een foutmelding
+   krijgen; dat is precies het moment waarop mensen afhaken. */
+const LOKET_MIN_TEKENS = 80;
+
+let alumniLijst = null;
+let alumniFilter = "";
+let alumniVraagbegin = "";
+
+function initAlumniloket() {
+  bindVoorbeeldvragen();
+
+  const bak = $("[data-alum-lijst]");
+  if (!bak) return;
+  if (!FORM_ENDPOINT) return alumniStatus("lok.uit");
+
+  fetch(FORM_ENDPOINT + "?lijst=alumni", { cache: "no-store" })
+    .then((res) => res.json())
+    .then((d) => {
+      alumniLijst = (d && d.alumni) || [];
+      if (!alumniLijst.length) return alumniStatus("lok.leeg");
+      tekenAlumniFilters();
+      tekenAlumniLijst();
+    })
+    .catch(() => alumniStatus("lok.fout"));
+}
+
+function alumniStatus(sleutel) {
+  const bak = $("[data-alum-lijst]");
+  if (bak) bak.innerHTML = `<p class="alum-status">${t(sleutel)}</p>`;
+}
+
+/* De acht voorbeeldvragen worden klikbaar. Klik je er een aan, dan begint
+   het formulier met die zin; de student vult zelf de context aan. */
+function bindVoorbeeldvragen() {
+  $$(".ask-list span").forEach((el) => {
+    el.dataset.vraag = el.textContent.trim();
+    el.setAttribute("role", "button");
+    el.setAttribute("tabindex", "0");
+    const kies = () => {
+      const zelfde = alumniVraagbegin === el.dataset.vraag;
+      alumniVraagbegin = zelfde ? "" : el.dataset.vraag;
+      $$(".ask-list span").forEach((s) => s.classList.toggle("on", !zelfde && s === el));
+    };
+    el.addEventListener("click", kies);
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); kies(); }
+    });
+  });
+}
+
+/* ── de filterbalk ───────────────────────────────────────────────── */
+function tekenAlumniFilters() {
+  const bak = $("[data-alum-filters]");
+  if (!bak) return;
+  const themas = [...new Set(alumniLijst.flatMap((a) => a.themas || []))].sort();
+  bak.hidden = false;
+  bak.innerHTML =
+    [["", t("lok.alle")]].concat(themas.map((x) => [x, x]))
+      .map(([waarde, label]) =>
+        `<button type="button" class="chip${alumniFilter === waarde ? " on" : ""}" data-thema="${esc(waarde)}">${esc(label)}</button>`)
+      .join("") + `<span class="telling" data-alum-telling></span>`;
+
+  $$("[data-thema]", bak).forEach((b) => b.addEventListener("click", () => {
+    alumniFilter = b.dataset.thema;
+    tekenAlumniFilters();
+    tekenAlumniLijst();
+  }));
+}
+
+/* ── de kaarten ──────────────────────────────────────────────────── */
+function initialen(naam) {
+  return naam.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function ruimteTekst(a) {
+  if (a.vol) return { klasse: "vol", tekst: t("lok.vol") };
+  if (a.over === 1) return { klasse: "bijna", tekst: t("lok.plek1").replace("{periode}", t("lok.periode." + a.periode)) };
+  return { klasse: "open", tekst: t("lok.beschikbaar") };
+}
+
+function tekenAlumniLijst() {
+  const bak = $("[data-alum-lijst]");
+  const lijst = alumniFilter
+    ? alumniLijst.filter((a) => (a.themas || []).includes(alumniFilter))
+    : alumniLijst;
+
+  bak.innerHTML = lijst.map((a) => {
+    const r = ruimteTekst(a);
+    const opleiding = [a.bsc, a.msc].filter((x) => x && x !== "—").join("<br>");
+    return `<article class="alum-card${a.vol ? " vol" : ""}">
+      <div class="alum-top">
+        <div class="alum-mono" aria-hidden="true">${esc(initialen(a.naam))}</div>
+        <div>
+          <div class="naam">${esc(a.naam)}</div>
+          ${a.werk ? `<div class="werk">${esc(a.werk)}</div>` : ""}
+          ${opleiding ? `<div class="studie">${opleiding}</div>` : ""}
+        </div>
+      </div>
+      ${(a.themas || []).length ? `<div class="alum-themas">${a.themas.map((x) => `<span>${esc(x)}</span>`).join("")}</div>` : ""}
+      <div class="alum-foot">
+        <span class="alum-ruimte ${r.klasse}"><i></i>${esc(r.tekst)}</span>
+        ${a.vol
+          ? `<button class="alum-vraag" disabled>${t("lok.volknop")}</button>`
+          : `<button class="alum-vraag" data-vraag-aan="${esc(a.id)}">${t("lok.vraagknop").replace("{naam}", esc(a.naam.split(" ")[0]))}</button>`}
+      </div>
+    </article>`;
+  }).join("");
+
+  const telling = $("[data-alum-telling]");
+  if (telling) {
+    telling.textContent = t("lok.telling")
+      .replace("{n}", lijst.length).replace("{totaal}", alumniLijst.length);
+  }
+
+  $$("[data-vraag-aan]", bak).forEach((b) => b.addEventListener("click", () => {
+    const a = alumniLijst.find((x) => x.id === b.dataset.vraagAan);
+    if (a) openLoketForm(a);
+  }));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HET VRAAGFORMULIER
+
+   Twee stappen: eerst de vraag, dan wie je bent. De alumnus is al
+   gekozen op de kaart, dus die vraag hoeft niet nog een keer.
+   ═══════════════════════════════════════════════════════════════════ */
+function openLoketForm(alumnus) {
+  if ($("#form-root")) return;
+  const steps = [t("lok.stap1"), t("lok.stap2")];
+  const data = {
+    themas: [], vraag: alumniVraagbegin ? alumniVraagbegin + " " : "",
+    name: "", email: "", study: "",
+  };
+  let step = 0, done = false, sending = false, viaMail = false;
+
+  const wrap = document.createElement("div");
+  wrap.id = "form-root";
+  document.body.appendChild(wrap);
+
+  const genoeg = () => data.vraag.trim().length >= LOKET_MIN_TEKENS;
+  const canNext = () => step === 0 ? genoeg() : !!(data.name.trim() && data.email.trim());
+
+  const payload = () => ({
+    formulier: "loketverzoek",
+    alumnus: alumnus.id,
+    naam: data.name.trim(),
+    email: data.email.trim(),
+    studie: data.study.trim(),
+    themas: data.themas.join(", "),
+    vraag: data.vraag.trim(),
+  });
+
+  function mailtoLink() {
+    const p = payload();
+    const body = [
+      "ALUMNI DESK REQUEST",
+      `Alumni: ${alumnus.naam} — ${alumnus.werk}`,
+      "",
+      "THE QUESTION",
+      p.vraag,
+      "",
+      "STUDENT",
+      `Name: ${p.naam}`,
+      `Email: ${p.email}`,
+      p.studie ? `Study: ${p.studie}` : null,
+      p.themas ? `Themes: ${p.themas}` : null,
+    ].filter((r) => r !== null).join("\n");
+    return mailtoFallback(`Alumni request via Impact Connect, ${p.naam}`, body);
+  }
+
+  function bodyFor() {
+    if (step === 0) {
+      const over = LOKET_MIN_TEKENS - data.vraag.trim().length;
+      return `
+        <div class="lok-wie">
+          <div class="alum-mono" aria-hidden="true">${esc(initialen(alumnus.naam))}</div>
+          <div>
+            <div class="naam">${esc(alumnus.naam)}</div>
+            <div class="werk">${esc(alumnus.werk || "")}</div>
+          </div>
+        </div>
+        <label class="chip-label">${t("lok.themas")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
+        <div class="chip-row">${LOKET_ONDERWERPEN.map((o) =>
+          `<button type="button" class="chip${data.themas.includes(o) ? " on" : ""}" data-lokthema="${esc(o)}">${esc(t("lok.ond." + o) || o)}</button>`).join("")}</div>
+        <div class="form-stack" style="margin-top:22px">
+          <div><label>${t("lok.vraag")}</label>
+            <textarea id="a-vraag" rows="6" placeholder="${esc(t("lok.vraag.hint"))}">${esc(data.vraag)}</textarea></div>
+          <p class="form-note" id="a-teller">${over > 0
+            ? t("lok.kort").replace("{n}", over)
+            : t("lok.langgenoeg")}</p>
+        </div>`;
+    }
+    return `<div class="form-stack">
+      <div><label>${t("form.naam")}</label><input id="a-name" placeholder="${esc(t("form.naam.hint"))}" value="${esc(data.name)}"></div>
+      <div><label>${t("form.email")}</label><input id="a-email" placeholder="you@students.uu.nl" value="${esc(data.email)}"></div>
+      <div><label>${t("al.studie")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
+        <input id="a-study" placeholder="${esc(t("al.studie.hint"))}" value="${esc(data.study)}"></div>
+      <p class="form-note">${t("lok.akkoord").replace("{naam}", esc(alumnus.naam))}</p>
+    </div>`;
+  }
+
+  function render() {
+    const inner = done ? `
+      <div class="modal-done">
+        <div class="tick">${icon("Check", 32, { color: "#C2683A" })}</div>
+        <h3>${viaMail ? t("al.klaar.mail") : t("al.klaar")}, ${esc(data.name.split(" ")[0] || t("form.jij"))}</h3>
+        ${viaMail ? `
+          <p>${t("form.viamail")}</p>
+          <p style="font-size:13px;color:#777">${t("al.viamail.niets")
+            .replace("{opnieuw}", `<a href="${mailtoLink()}">${t("al.mailopnieuw")}</a>`)
+            .replace("{adres}", `<a href="mailto:${CONTACT_MAIL}">${CONTACT_MAIL}</a>`)}</p>`
+        : `<p>${t("lok.gelukt").replace("{naam}", esc(alumnus.naam))}</p>`}
+        <button class="btn-next" data-close>${t("form.terug")}</button>
+      </div>` : `
+      <div class="progress">${steps.map((_, i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</div>
+      <div class="modal-body">
+        <h3>${esc(steps[step])}</h3>
+        <p class="step-of">${t("form.stapvan").replace("{n}", step + 1).replace("{totaal}", steps.length)}</p>
+        ${bodyFor()}
+      </div>
+      <div class="modal-foot">
+        <button class="btn-text" id="a-back">${step === 0 ? t("form.annuleer") : "← " + t("form.vorige")}</button>
+        ${step < steps.length - 1
+          ? `<button class="btn-next" id="a-next"${canNext() ? "" : " disabled"}>${t("form.verder")} ${icon("ChevronRight", 16)}</button>`
+          : `<button class="btn-next finish" id="a-submit"${canNext() ? "" : " disabled"}>${icon("Mail", 17)} ${t("lok.verstuur")}</button>`}
+      </div>`;
+
+    wrap.innerHTML = `
+      <div class="modal-overlay" data-close></div>
+      <div class="modal-wrap">
+        <div class="modal" role="dialog" aria-label="${esc(t("lok.titel"))}">
+          <div class="modal-head">
+            <div class="t">${bridgeMark(26, "#13352A")}<strong>${t("lok.titel")}</strong></div>
+            <button class="icon-btn" data-close aria-label="${esc(t("sluiten"))}">${icon("X", 17)}</button>
+          </div>
+          ${inner}
+        </div>
+      </div>`;
+    bind();
+  }
+
+  function bind() {
+    $$("[data-close]", wrap).forEach((el) => el.addEventListener("click", () => wrap.remove()));
+
+    $$("[data-lokthema]", wrap).forEach((b) => b.addEventListener("click", () => {
+      const v = b.dataset.lokthema;
+      data.themas = data.themas.includes(v)
+        ? data.themas.filter((x) => x !== v) : [...data.themas, v];
+      render();
+    }));
+
+    // De teller onder het tekstvak werkt zonder opnieuw te tekenen: anders
+    // springt de cursor bij elke aanslag naar het einde van de tekst.
+    const vraagveld = $("#a-vraag", wrap);
+    if (vraagveld) vraagveld.addEventListener("input", () => {
+      data.vraag = vraagveld.value;
+      const over = LOKET_MIN_TEKENS - data.vraag.trim().length;
+      const teller = $("#a-teller", wrap);
+      if (teller) teller.textContent = over > 0 ? t("lok.kort").replace("{n}", over) : t("lok.langgenoeg");
+      const knop = $("#a-next", wrap);
+      if (knop) knop.disabled = !canNext();
+    });
+
+    [["name", "a-name"], ["email", "a-email"], ["study", "a-study"]].forEach(([sleutel, id]) => {
+      const el = $("#" + id, wrap);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        data[sleutel] = el.value;
+        const knop = $("#a-submit", wrap);
+        if (knop) knop.disabled = !canNext();
+      });
+    });
+
+    const terug = $("#a-back", wrap);
+    if (terug) terug.addEventListener("click", () => {
+      if (step === 0) return wrap.remove();
+      step--; render();
+    });
+
+    const verder = $("#a-next", wrap);
+    if (verder) verder.addEventListener("click", () => { if (canNext()) { step++; render(); } });
+
+    const versturen = $("#a-submit", wrap);
+    if (versturen) versturen.addEventListener("click", async () => {
+      if (sending || !canNext()) return;
+      sending = true;
+      versturen.disabled = true;
+      versturen.textContent = t("form.versturen");
+
+      const ok = await sendForm(payload());
+      if (!ok) { viaMail = true; window.location.href = mailtoLink(); }
+      done = true; sending = false;
+      render();
+    });
+  }
+
+  render();
 }

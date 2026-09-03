@@ -1,0 +1,940 @@
+/* ===================================================================
+   HET ALUMNILOKET
+   Draait in hetzelfde Apps Script als Code.gs, naast de formulieren.
+
+   Wat er gebeurt, van klik tot introductie:
+
+     1. De website haalt de alumnilijst hier op (doGet ?lijst=alumni).
+        Daar zitten alleen de mensen in die toestemming hebben gegeven,
+        en alleen de velden die een student mag zien. Mailadressen,
+        telefoonnummers en LinkedIn gaan niet mee over de lijn; die
+        blijven in de sheet.
+     2. De student kiest iemand en stuurt zijn vraag in (formulier
+        "loketverzoek"). Die gaat in het tabblad Introducties.
+     3. Wij krijgen één mail met de vraag en drie kandidaten: degene die
+        de student koos, plus twee die dit script erbij zoekt. Onder elke
+        naam een knop.
+     4. Op een knop klikken opent een bevestigingspagina met één knop.
+        Dat is met opzet: mailprogramma's laden links soms vooraf in om
+        ze te scannen, en dan zou een aanvraag zichzelf goedkeuren.
+     5. Na die bevestiging gaat de introductie de deur uit: één mail aan
+        de alumnus met de vraag en de gegevens van de student, met de
+        student in de cc. Daarnaast een bericht aan de student zelf.
+
+   De alumnigegevens staan in een tabblad dat uit jullie aanmeldformulier
+   komt. Dit script leest de koprij en zoekt de kolommen zelf op, dus de
+   volgorde mag veranderen en er mogen kolommen bij komen.
+   =================================================================== */
+
+/* ---- instellingen -------------------------------------------------
+   Staat de alumnilijst in een ander bestand dan de aanvragen (dat is zo
+   als het formulier zijn eigen sheet heeft aangemaakt), zet dan hieronder
+   het id uit die adresbalk: docs.google.com/spreadsheets/d/HET-ID/edit
+   Laat je het leeg, dan wordt de sheet gebruikt waar dit script aan hangt.
+   ------------------------------------------------------------------- */
+const ALUMNI_BESTAND_ID = '';
+const ALUMNI_BLAD       = 'Alumni';
+const LOKET_BLAD        = 'Introducties';
+
+/* Zoveel aanvragen mag één student tegelijk open hebben staan. Zonder rem
+   stuurt iemand op één avond de hele lijst af en is het netwerk voor de
+   rest van het jaar op. */
+const MAX_OPEN_PER_STUDENT = 2;
+
+/* Hoe lang de knoppen in onze mail blijven werken. Daarna is de link dood
+   en moet je de aanvraag met de hand oppakken; dat is beter dan een knop
+   die over een half jaar nog een introductie kan versturen. */
+const TOKEN_DAGEN = 7;
+
+/* ---- de kolommen uit jullie aanmeldformulier ----------------------
+   Per veld een paar stukjes tekst die in de kop mogen staan. De
+   vergelijking is hoofdletterongevoelig en kijkt of het stukje ergens in
+   de kop voorkomt, dus "Email " en "E-mail address" vinden allebei hun weg.
+   Hernoem je een vraag in het formulier, zet het nieuwe woord er dan bij.
+   ------------------------------------------------------------------- */
+const KOLOM = {
+  naam:        ['full name', 'naam', 'name'],
+  bsc:         ['bsc'],
+  msc:         ['msc'],
+  werk:        ['current occupation', 'occupation'],
+  interesses:  ['fields of interest', 'interest'],
+  toestemming: ['permission'],
+  kanaal:      ['prefer to be contact', 'contacted by'],
+  telefoon:    ['phone'],
+  mail:        ['email', 'e-mail'],
+  linkedin:    ['linkedin'],
+  frequentie:  ['frequency'],
+};
+
+/* Wat "ja" mag betekenen in de toestemmingskolom. Alles wat hier niet in
+   staat telt als nee: bij twijfel komt iemand niet op de site. */
+const JA = ['ja', 'yes', 'y', 'true', 'x', '1', 'akkoord', 'agree'];
+
+/* Hoeveel introducties iemand per periode krijgt. De sleutel is wat er in
+   de kolom "Preferred frequency" kan staan; er wordt gekeken of een van
+   deze woorden erin voorkomt. Herkent hij niets, dan geldt GEEN_LIMIET. */
+const FREQUENTIES = [
+  { woorden: ['once a month', '1 per month', 'maandelijks', 'per maand'], aantal: 1, periode: 'maand' },
+  { woorden: ['twice a month', '2 per month'],                            aantal: 2, periode: 'maand' },
+  { woorden: ['once a quarter', 'per quarter', 'per kwartaal'],           aantal: 1, periode: 'kwartaal' },
+  { woorden: ['once a year', 'per year', 'per jaar'],                     aantal: 1, periode: 'jaar' },
+];
+const GEEN_LIMIET = { aantal: 99, periode: 'maand' };
+
+/* ═══ 1. DE ALUMNILIJST LEZEN ═══════════════════════════════════════ */
+
+/* Het bestand waar de alumnilijst in staat. */
+function alumniBestand() {
+  return ALUMNI_BESTAND_ID
+    ? SpreadsheetApp.openById(ALUMNI_BESTAND_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+}
+
+/* Zoekt per veld uit KOLOM welke kolom het is. Geeft { veld: index } terug;
+   een veld dat niet gevonden wordt ontbreekt, en dat vangen we later op. */
+function vindKolommen(kop) {
+  const gevonden = {};
+  const laag = kop.map(function (k) { return String(k).toLowerCase().trim(); });
+  Object.keys(KOLOM).forEach(function (veld) {
+    for (let i = 0; i < laag.length; i++) {
+      const raak = KOLOM[veld].some(function (stuk) { return laag[i].indexOf(stuk) !== -1; });
+      if (raak) { gevonden[veld] = i; return; }
+    }
+  });
+  return gevonden;
+}
+
+/* "Sanne Vermeulen" wordt "Sanne V." — genoeg om iemand te herkennen,
+   te weinig om hem op te zoeken en buiten ons om te benaderen. */
+function toonNaam(volledig) {
+  const delen = String(volledig).trim().split(/\s+/);
+  if (delen.length < 2) return delen[0] || '';
+  return delen[0] + ' ' + delen[delen.length - 1].charAt(0).toUpperCase() + '.';
+}
+
+/* Een vast kenmerk per alumnus, afgeleid van het mailadres. Het mailadres
+   zelf mag de site niet in, maar we hebben wel iets nodig om een aanvraag
+   aan de juiste persoon te koppelen. Verhuist iemand naar een ander adres,
+   dan krijgt die een nieuw kenmerk; openstaande aanvragen van dat moment
+   moet je dan met de hand afhandelen. */
+function alumniId(mail) {
+  const ruw = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256, String(mail).toLowerCase().trim());
+  return ruw.slice(0, 6).map(function (b) {
+    return ('0' + (b & 0xff).toString(16)).slice(-2);
+  }).join('');
+}
+
+function isJa(waarde) {
+  const s = String(waarde).toLowerCase().trim();
+  return JA.some(function (j) { return s === j || s.indexOf(j) === 0; });
+}
+
+function frequentieVan(tekst) {
+  const s = String(tekst).toLowerCase();
+  for (let i = 0; i < FREQUENTIES.length; i++) {
+    if (FREQUENTIES[i].woorden.some(function (w) { return s.indexOf(w) !== -1; })) {
+      return FREQUENTIES[i];
+    }
+  }
+  return GEEN_LIMIET;
+}
+
+/* Leest het alumnitabblad uit. Geeft alles terug, inclusief de gegevens
+   die niet naar de site mogen; wat er wél naartoe gaat wordt verderop
+   in openbareLijst() bepaald. */
+function leesAlumni() {
+  const blad = alumniBestand().getSheetByName(ALUMNI_BLAD);
+  if (!blad || blad.getLastRow() < 2) return [];
+
+  const alles = blad.getDataRange().getValues();
+  const kolom = vindKolommen(alles[0]);
+  if (kolom.naam === undefined || kolom.mail === undefined) {
+    // Zonder naam of mailadres valt er niets te doen. Beter meteen leeg
+    // dan een halve lijst waarvan niemand doorheeft dat hij fout is.
+    console.error('Alumnitabblad "' + ALUMNI_BLAD + '": kolom Naam of Email niet gevonden.');
+    return [];
+  }
+
+  const cel = function (rij, veld) {
+    return kolom[veld] === undefined ? '' : String(rij[kolom[veld]] || '').trim();
+  };
+
+  const gebruikt = introductiesPerAlumnus();
+  const lijst = [];
+
+  alles.slice(1).forEach(function (rij) {
+    const mail = cel(rij, 'mail');
+    if (!mail) return;
+    if (!isJa(cel(rij, 'toestemming'))) return;   // de poort: geen ja, geen profiel
+
+    const id = alumniId(mail);
+    const freq = frequentieVan(cel(rij, 'frequentie'));
+    lijst.push({
+      id: id,
+      naam: toonNaam(cel(rij, 'naam')),
+      volledigeNaam: cel(rij, 'naam'),
+      bsc: cel(rij, 'bsc'),
+      msc: cel(rij, 'msc'),
+      werk: cel(rij, 'werk'),
+      interessesRuw: cel(rij, 'interesses'),
+      themas: groepeerThemas(cel(rij, 'interesses')),
+      kanaal: cel(rij, 'kanaal'),
+      mail: mail,
+      telefoon: cel(rij, 'telefoon'),
+      linkedin: cel(rij, 'linkedin'),
+      frequentie: cel(rij, 'frequentie'),
+      ruimte: ruimteVan(freq, gebruikt[id] || []),
+    });
+  });
+
+  return lijst;
+}
+
+/* Hoeveel introducties er nog in kunnen. Telt alleen de introducties die
+   in de lopende periode zijn verstuurd, dus aan het begin van een maand
+   staat iedereen weer op nul. */
+function ruimteVan(freq, datums) {
+  const nu = new Date();
+  const inPeriode = datums.filter(function (d) { return zelfdePeriode(d, nu, freq.periode); });
+  const over = freq.aantal - inPeriode.length;
+  return {
+    vol: over <= 0,
+    over: Math.max(0, over),
+    van: freq.aantal,
+    periode: freq.periode,
+    onbeperkt: freq.aantal >= 99,
+  };
+}
+
+function zelfdePeriode(a, b, periode) {
+  if (!(a instanceof Date)) return false;
+  if (a.getFullYear() !== b.getFullYear()) return false;
+  if (periode === 'jaar') return true;
+  if (periode === 'kwartaal') return Math.floor(a.getMonth() / 3) === Math.floor(b.getMonth() / 3);
+  return a.getMonth() === b.getMonth();
+}
+
+/* ═══ 2. INTERESSES GROEPEREN ═══════════════════════════════════════
+
+   "Fields of interest" is een open tekstvak, en dat blijft het: mensen
+   schrijven nu eenmaal wat ze willen. Om erop te kunnen filteren zetten
+   we die antwoorden om naar een vaste lijst thema's.
+
+   De woordenlijst vangt het grootste deel. Wat er niet in past verdwijnt
+   niet: dat komt als "?" terug in de beheerslijst (zie loketOverzicht),
+   en dan zet je het woord hieronder erbij. Elke toevoeging geldt meteen
+   voor iedereen, ook met terugwerkende kracht.
+   ═══════════════════════════════════════════════════════════════════ */
+const THEMAS = {
+  'Choosing a master’s': ['studiekeuze', 'master kiezen', 'vervolgopleiding', 'choosing a master', 'which master', 'study choice', 'master or work'],
+  'Job hunting':              ['sollicit', 'cv', 'resume', 'motivatiebrief', 'cover letter', 'interview', 'loopbaan', 'carriere', 'career', 'arbeidsmarkt', 'vacature', 'netwerken', 'networking', 'job hunt', 'applying', 'application', 'job market', 'first job', 'recruit'],
+  'Policy & government':      ['beleid', 'policy', 'overheid', 'government', 'gemeente', 'municipal', 'ministerie', 'ministry', 'public sector', 'politiek', 'politics', 'governance', 'lobby', 'ngo', 'non-profit', 'water management', 'waterschap', 'watermanagement'],
+  'Consultancy':              ['consult', 'advies', 'advisory', 'strategie', 'strategy', 'big four', 'big 4'],
+  'Engineering':              ['techniek', 'technisch', 'engineering', 'engineer', 'werktuigbouw', 'mechanical', 'civiel', 'civil', 'construction', 'manufacturing', 'logistics', 'supply chain'],
+  'IT & data':                ['ict', 'software', 'developer', 'programmeren', 'coding', 'data', 'machine learning', 'artificial intelligence', 'cyber', 'cloud', 'devops', 'informatica', 'computer science', 'analytics', 'ai', 'tech'],
+  'Health':                   ['zorg', 'health', 'gezondheid', 'medisch', 'medical', 'geneeskunde', 'medicine', 'nursing', 'verpleeg', 'ziekenhuis', 'hospital', 'pharma', 'farma', 'psycholog', 'patient'],
+  'Research & PhD':           ['onderzoek', 'research', 'phd', 'promoveren', 'academ', 'wetenschap', 'postdoc', 'proefschrift', 'thesis', 'universit'],
+  'Entrepreneurship':         ['onderneme', 'entrepreneur', 'startup', 'start-up', 'scale-up', 'eigen bedrijf', 'own business', 'zzp', 'freelance', 'self-employed', 'innovatie', 'innovation', 'venture', 'founder'],
+  'Marketing & communications': ['marketing', 'communicatie', 'communication', 'public relations', 'reclame', 'advertising', 'branding', 'content', 'social media', 'journalist', 'media', 'copywriting', 'growth', 'design'],
+  'Finance':                  ['financ', 'accounting', 'accountancy', 'boekhoud', 'bank', 'investering', 'investment', 'private equity', 'audit', 'controlling', 'fintech', 'economie', 'economics', 'm&a'],
+  'Sustainability':           ['duurzaam', 'sustainab', 'klimaat', 'climate', 'energie', 'energy', 'circulair', 'circular', 'milieu', 'environment', 'esg', 'green', 'transition'],
+  'Education':                ['onderwijs', 'education', 'docent', 'teacher', 'lesgeven', 'teaching', 'school', 'training', 'coach', 'mentor'],
+  'Law':                      ['recht', 'legal', 'juridisch', 'law', 'advocaat', 'lawyer', 'notaris', 'compliance', 'litigation'],
+  'Working abroad':           ['buitenland', 'abroad', 'internationaal', 'international', 'expat', 'emigr', 'global', 'overseas', 'relocat'],
+};
+
+/* Woorden van drie letters of korter zoeken we als heel woord op. Anders
+   zit "ai" in "chain" en "cv" in "cvs", en dan krijgt iedereen alle thema's. */
+const KORTE_WOORDEN = ['cv', 'ngo', 'ai', 'law', 'tech', 'm&a', 'esg', 'ict'];
+
+function plat(tekst) {
+  return String(tekst).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function raaktWoord(schoon, woord) {
+  if (KORTE_WOORDEN.indexOf(woord) === -1) return schoon.indexOf(woord) !== -1;
+  const veilig = woord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('(^|[^a-z0-9])' + veilig + '([^a-z0-9]|$)').test(schoon);
+}
+
+function groepeerThemas(tekst) {
+  if (!tekst) return [];
+  const schoon = plat(tekst);
+  return Object.keys(THEMAS).filter(function (thema) {
+    return THEMAS[thema].some(function (w) { return raaktWoord(schoon, w); });
+  });
+}
+
+/* De losse stukjes die nergens onder vielen. Hiermee zie je in het
+   overzicht welk woord je nog aan THEMAS moet toevoegen. */
+function nietHerkend(tekst) {
+  if (!tekst) return [];
+  return String(tekst).split(/[,;/|]|\ben\b|\band\b|&/i)
+    .map(function (f) { return f.trim(); })
+    .filter(function (f) { return f.length > 2; })
+    .filter(function (f) {
+      const schoon = plat(f);
+      return !Object.keys(THEMAS).some(function (thema) {
+        return THEMAS[thema].some(function (w) { return raaktWoord(schoon, w); });
+      });
+    });
+}
+
+/* ═══ 3. WAT DE WEBSITE OPHAALT ═════════════════════════════════════ */
+
+/* Alleen de velden die een student mag zien. Geen mailadres, geen
+   telefoonnummer, geen LinkedIn, en ook geen achternaam: die staan wel in
+   de sheet, maar ze gaan niet over de lijn. Wat hier niet in staat kan
+   ook niet per ongeluk in de broncode van de pagina belanden. */
+function openbareLijst() {
+  return leesAlumni().map(function (a) {
+    return {
+      id: a.id,
+      naam: a.naam,
+      bsc: a.bsc,
+      msc: a.msc,
+      werk: a.werk,
+      themas: a.themas,
+      vol: a.ruimte.vol,
+      over: a.ruimte.onbeperkt ? null : a.ruimte.over,
+      periode: a.ruimte.periode,
+    };
+  });
+}
+
+/* De lijst verandert hooguit een paar keer per week, maar wordt bij elk
+   bezoek opgehaald. Vijf minuten cache scheelt een hoop leeswerk in de
+   sheet en houdt de pagina snel. Net een nieuwe alumnus goedgekeurd en wil
+   je hem meteen zien? Voer wisAlumniCache() uit in de editor. */
+function alumniJson() {
+  const cache = CacheService.getScriptCache();
+  const bewaard = cache.get('alumnilijst');
+  if (bewaard) return bewaard;
+
+  const json = JSON.stringify({ ok: true, alumni: openbareLijst() });
+  cache.put('alumnilijst', json, 300);
+  return json;
+}
+
+function wisAlumniCache() {
+  CacheService.getScriptCache().remove('alumnilijst');
+  console.log('Cache geleegd. De site haalt de lijst nu opnieuw op.');
+}
+
+/* ═══ 4. DE AANVRAAG VAN EEN STUDENT ════════════════════════════════ */
+
+/* Wordt aangeroepen vanuit doPost in Code.gs bij formulier "loketverzoek". */
+function loketVerzoek(d) {
+  const naam  = eenRegel(tekstOf(d.naam, ''));
+  const email = eenRegel(tekstOf(d.email, ''));
+  const vraag = tekstOf(d.vraag, '');
+
+  if (!naam || !email) return antwoord({ ok: false, fout: 'Naam en e-mailadres zijn verplicht.' });
+  if (!geldigMailadres(email)) return antwoord({ ok: false, fout: 'Dat e-mailadres klopt niet.' });
+  if (vraag.length < 80) return antwoord({ ok: false, fout: 'Schrijf iets meer over je vraag.' });
+
+  const alle = leesAlumni();
+  const gekozen = alle.filter(function (a) { return a.id === d.alumnus; })[0];
+  if (!gekozen) return antwoord({ ok: false, fout: 'Die alumnus staat niet meer op de lijst.' });
+  if (gekozen.ruimte.vol) return antwoord({ ok: false, fout: 'Die alumnus zit deze periode vol.' });
+
+  const student = {
+    naam: naam, email: email, vraag: vraag,
+    studie: tekstOf(d.studie, ''),
+    themas: tekstOf(d.themas, ''),
+  };
+
+  // Eén keer uitrekenen, en daarna zowel in de sheet als in de mail dezelfde
+  // drie gebruiken. Twee keer rekenen kan twee verschillende rijtjes opleveren
+  // als er ondertussen iemand vol raakt, en dan klopt het logboek niet meer
+  // met wat je in je inbox hebt zien staan.
+  const kandidaten = kiesKandidaten(gekozen, alle, student);
+
+  // De rem en het wegschrijven horen bij elkaar: twee aanvragen op precies
+  // hetzelfde moment mogen niet allebei langs een limiet van twee glippen.
+  const uitkomst = metSlot(function () {
+    if (openAanvragen(email) >= MAX_OPEN_PER_STUDENT) return 'teveel';
+    return schrijfIntroductie(student, gekozen, kandidaten);
+  });
+
+  if (uitkomst === 'teveel') {
+    return antwoord({ ok: false, fout: 'Je hebt al twee aanvragen openstaan. Wacht die eerst af.' });
+  }
+
+  mailLoketNaarOns(uitkomst, student, gekozen, kandidaten);
+  try { mailLoketBevestiging(student, gekozen); } catch (err) { console.error(err); }
+
+  return antwoord({ ok: true });
+}
+
+/* Hoeveel aanvragen van dit mailadres nog op een beslissing wachten. */
+function openAanvragen(email) {
+  const blad = alumniBestand().getSheetByName(LOKET_BLAD);
+  if (!blad || blad.getLastRow() < 2) return 0;
+  const rijen = blad.getDataRange().getValues();
+  const kop = rijen[0].map(String);
+  const kEmail = kop.indexOf('E-mail student');
+  const kStatus = kop.indexOf('Status');
+  if (kEmail === -1 || kStatus === -1) return 0;
+  return rijen.slice(1).filter(function (r) {
+    return String(r[kEmail]).toLowerCase() === email.toLowerCase()
+        && String(r[kStatus]) === 'wacht';
+  }).length;
+}
+
+/* De drie namen die wij te zien krijgen: die van de student, plus twee die
+   erbij passen. De volgorde is niet willekeurig maar ook geen oordeel; in
+   de mail staat onder elke naam waaróm die er staat, zodat je hem kunt
+   negeren als je iemand beter kent dan de sheet. */
+function kiesKandidaten(gekozen, alle, student) {
+  const studie = plat(student.studie);
+  const anderen = alle
+    .filter(function (a) { return a.id !== gekozen.id && !a.ruimte.vol; })
+    .map(function (a) {
+      const gedeeld = a.themas.filter(function (t) { return gekozen.themas.indexOf(t) !== -1; });
+      const zelfdeStudie = !!studie && (plat(a.bsc).indexOf(studie) !== -1 || plat(a.msc).indexOf(studie) !== -1);
+      let punten = gedeeld.length * 3;
+      if (zelfdeStudie) punten += 4;
+      if (a.ruimte.onbeperkt || a.ruimte.over > 1) punten += 1;
+      return { a: a, punten: punten, gedeeld: gedeeld, zelfdeStudie: zelfdeStudie };
+    })
+    .sort(function (x, y) { return y.punten - x.punten; })
+    .slice(0, 2);
+
+  return [{ a: gekozen, voorkeur: true, gedeeld: [], zelfdeStudie: false }].concat(anderen);
+}
+
+/* De regel onder een naam in onze mail. */
+function waarom(k) {
+  const r = [];
+  if (k.voorkeur) r.push('door de student zelf gekozen');
+  if (k.zelfdeStudie) r.push('zelfde studie');
+  if (k.gedeeld && k.gedeeld.length) r.push('ook actief in ' + k.gedeeld.join(' en ').toLowerCase());
+  r.push(k.a.ruimte.onbeperkt ? 'geen limiet opgegeven'
+        : k.a.ruimte.over + ' plek(ken) over deze ' + k.a.ruimte.periode);
+  if (k.a.kanaal) r.push('wil contact via ' + k.a.kanaal.toLowerCase());
+  return r.join(' · ');
+}
+
+/* ═══ 5. DE MAILS ═══════════════════════════════════════════════════ */
+
+function webAdres() {
+  return ScriptApp.getService().getUrl();
+}
+
+function mailLoketNaarOns(ref, student, gekozen, kandidaten) {
+  const regels = [
+    'ALUMNI DESK REQUEST',
+    'Ref: ' + ref,
+    '',
+    'STUDENT',
+    'Name:  ' + student.naam,
+    'Email: ' + student.email,
+    student.studie ? 'Study: ' + student.studie : null,
+    student.themas ? 'Themes: ' + student.themas : null,
+    '',
+    'THE QUESTION',
+    student.vraag,
+    '',
+    'KIES WIE JE VOORSTELT',
+    'Klik op een van de drie. Je krijgt eerst een bevestigingspagina te zien;',
+    'pas daarna gaat de introductie de deur uit.',
+    '',
+  ].filter(function (r) { return r !== null; });
+
+  kandidaten.forEach(function (k, i) {
+    regels.push((i + 1) + '. ' + k.a.volledigeNaam + ' — ' + k.a.werk);
+    regels.push('   ' + waarom(k));
+    regels.push('   ' + besluitLink(ref, k.a.id));
+    regels.push('');
+  });
+
+  regels.push('Past niemand van de drie:');
+  regels.push('   ' + besluitLink(ref, 'geen'));
+  regels.push('');
+  regels.push('— Deze links werken ' + TOKEN_DAGEN + ' dagen en zijn eenmalig.');
+
+  MailApp.sendEmail({
+    to: ONTVANGER,
+    subject: 'Alumni desk: ' + student.naam + ' → ' + gekozen.naam,
+    body: regels.join('\n'),
+    replyTo: student.email,
+    name: 'Website ' + AFZENDERNAAM,
+  });
+}
+
+function mailLoketBevestiging(student, gekozen) {
+  const regels = [
+    'Hi ' + student.naam.split(' ')[0] + ',',
+    '',
+    'Thanks for your question. We have it, and we\'ll go through it by hand.',
+    'You\'ll hear from us within three working days.',
+    '',
+    'You asked to speak to ' + gekozen.naam + ' (' + gekozen.werk + ').',
+    'If we think someone else can help you better with this question, we\'ll say',
+    'so and tell you why.',
+    '',
+    'THIS IS WHAT YOU SENT US',
+    '',
+    student.vraag,
+    '',
+    'Anything to add? Just reply to this mail.',
+    '',
+    'Best,',
+    AFZENDERNAAM,
+    ONTVANGER,
+  ];
+
+  MailApp.sendEmail({
+    to: student.email,
+    subject: 'Your alumni request at ' + AFZENDERNAAM,
+    body: regels.join('\n'),
+    name: AFZENDERNAAM,
+    replyTo: ONTVANGER,
+  });
+}
+
+/* De introductie zelf. Beiden in de kop, de vraag erin, en de alumnus
+   hoeft alleen op Beantwoorden te drukken. */
+function mailIntroductie(student, a) {
+  const voornaam = student.naam.split(' ')[0];
+  const slot = a.kanaal.toLowerCase().indexOf('phone') !== -1 || a.kanaal.toLowerCase().indexOf('telefo') !== -1
+    ? 'You told us you\'d rather be called, so ' + voornaam + ' will wait for your go-ahead before ringing.'
+    : a.kanaal.toLowerCase().indexOf('video') !== -1 || a.kanaal.toLowerCase().indexOf('call') !== -1
+    ? 'Your preference is a video call — send ' + voornaam + ' two times that suit you and they\'ll set up the link.'
+    : 'Your preference is email, so a reply is plenty.';
+
+  const regels = [
+    'Hi ' + a.volledigeNaam.split(' ')[0] + ',',
+    '',
+    'You told us students are welcome to approach you with career questions.',
+    voornaam + (student.studie ? ', ' + student.studie : '')
+      + ', has one we think you\'re the right person for.',
+    voornaam + ' is in the cc, so you can simply hit reply.',
+    '',
+    'THE QUESTION',
+    '',
+    student.vraag,
+    '',
+    voornaam.toUpperCase() + '’S DETAILS',
+    'Name:  ' + student.naam,
+    'Email: ' + student.email,
+    student.studie ? 'Study: ' + student.studie : null,
+    '',
+    slot,
+    'And if it doesn\'t suit right now, tell us and we\'ll find someone else.',
+    '',
+    'Thank you,',
+    AFZENDERNAAM,
+    ONTVANGER,
+    '',
+    '— We have you down as: ' + (a.frequentie || 'no frequency given')
+      + (a.kanaal ? ', contact by ' + a.kanaal.toLowerCase() : '') + '.',
+    '  Want to pause or change that? Reply to this mail and we\'ll sort it.',
+  ].filter(function (r) { return r !== null; });
+
+  MailApp.sendEmail({
+    to: a.mail,
+    cc: student.email,
+    subject: student.naam.split(' ')[0] + ' (' + (student.studie || 'Utrecht') + ') has a question for you',
+    body: regels.join('\n'),
+    replyTo: student.email,
+    name: AFZENDERNAAM,
+  });
+}
+
+/* Bericht aan de student dat de introductie eruit is. Koos je iemand anders
+   dan hij vroeg, dan staat dat er in één zin bij; zonder die zin voelt het
+   als een omgeleide aanvraag in plaats van als bemiddeling. */
+function mailIntroductieStudent(student, a, gevraagd) {
+  const anders = gevraagd && gevraagd.id !== a.id;
+  const regels = [
+    'Hi ' + student.naam.split(' ')[0] + ',',
+    '',
+    'Good news: your question has gone to ' + a.naam + ' — ' + a.werk + '.',
+    'You\'re in the cc of that mail, so you have the address.',
+    '',
+    anders ? 'You asked for ' + gevraagd.naam + '. We think ' + a.naam.split(' ')[0]
+      + ' can help you further with this question right now'
+      + (gevraagd.ruimte.vol ? ', as ' + gevraagd.naam + ' is full this period' : '')
+      + '. Would you rather wait for your first choice? Let us know.' : null,
+    anders ? '' : null,
+    'Three things that help: reply within a day when you hear something, keep',
+    'your question concrete, and tell us afterwards how it went. Nothing after',
+    'a week? We\'ll send a reminder.',
+    '',
+    'Good luck,',
+    AFZENDERNAAM,
+    ONTVANGER,
+  ].filter(function (r) { return r !== null; });
+
+  MailApp.sendEmail({
+    to: student.email,
+    subject: 'You’ve been introduced to ' + a.naam,
+    body: regels.join('\n'),
+    name: AFZENDERNAAM,
+    replyTo: ONTVANGER,
+  });
+}
+
+/* Niemand van de drie. De student krijgt alternatieven mee, want een
+   afwijzing zonder vervolg is het einde van zijn zoektocht. */
+function mailLoketAfwijzing(student, gevraagd) {
+  const alternatieven = leesAlumni()
+    .filter(function (a) {
+      return a.id !== gevraagd.id && !a.ruimte.vol
+        && a.themas.some(function (t) { return gevraagd.themas.indexOf(t) !== -1; });
+    })
+    .slice(0, 2);
+
+  let regels = [
+    'Hi ' + student.naam.split(' ')[0] + ',',
+    '',
+    'Thanks for your question. We looked at who could help you best, and right',
+    'now none of them has room — ' + gevraagd.naam + ' included.',
+    '',
+  ];
+
+  if (alternatieven.length) {
+    regels.push('Your question is too good to leave sitting, so here are two alumni who');
+    regels.push('probably will have time in a few weeks:');
+    regels.push('');
+    alternatieven.forEach(function (a) {
+      regels.push('  ' + a.naam + ' — ' + a.werk);
+      regels.push('  ' + (a.msc || a.bsc));
+      regels.push('');
+    });
+    regels.push('Click either of them on the site and your request is back in a minute.');
+  } else {
+    regels.push('We\'ll come back to you as soon as someone has room again.');
+  }
+
+  regels = regels.concat([
+    '',
+    'Best,',
+    AFZENDERNAAM,
+    ONTVANGER,
+    '',
+    '— None of your details were shared with anyone.',
+  ]);
+
+  MailApp.sendEmail({
+    to: student.email,
+    subject: 'About your alumni request',
+    body: regels.join('\n'),
+    name: AFZENDERNAAM,
+    replyTo: ONTVANGER,
+  });
+}
+
+/* ═══ 6. DE KNOPPEN IN ONZE MAIL ════════════════════════════════════
+
+   Een link die meteen iets doet is hier gevaarlijk: mailprogramma's laden
+   links soms vooraf in om ze te scannen op virussen, en dan zou een
+   aanvraag zichzelf goedkeuren zonder dat iemand hem gelezen heeft.
+   Daarom doet de link uit de mail niets anders dan een pagina tonen, en
+   pas de knop op die pagina voert de introductie uit.
+
+   De link is ondertekend, zodat niemand hem kan namaken door een ander
+   nummer in de adresbalk te zetten.
+   ═══════════════════════════════════════════════════════════════════ */
+
+function loketSleutel() {
+  const winkel = PropertiesService.getScriptProperties();
+  let sleutel = winkel.getProperty('loketsleutel');
+  if (!sleutel) {
+    sleutel = Utilities.getUuid() + Utilities.getUuid();
+    winkel.setProperty('loketsleutel', sleutel);
+  }
+  return sleutel;
+}
+
+function handtekening(inhoud) {
+  return Utilities.base64EncodeWebSafe(
+    Utilities.computeHmacSha256Signature(inhoud, loketSleutel()));
+}
+
+function maakToken(ref, keuze) {
+  const inhoud = Utilities.base64EncodeWebSafe(JSON.stringify({
+    r: ref, k: keuze, tot: Date.now() + TOKEN_DAGEN * 24 * 3600 * 1000,
+  }));
+  return inhoud + '.' + handtekening(inhoud);
+}
+
+/* Geeft { ref, keuze } terug, of null als de link niet klopt of verlopen is. */
+function leesToken(token) {
+  const delen = String(token || '').split('.');
+  if (delen.length !== 2) return null;
+  if (handtekening(delen[0]) !== delen[1]) return null;
+  let p;
+  try {
+    p = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(delen[0])).getDataAsString());
+  } catch (e) { return null; }
+  if (!p || !p.tot || Date.now() > p.tot) return null;
+  return { ref: p.r, keuze: p.k };
+}
+
+function besluitLink(ref, keuze) {
+  return webAdres() + '?besluit=' + encodeURIComponent(maakToken(ref, keuze));
+}
+
+/* De pagina die je ziet als je in de mail op een naam klikt. */
+function loketBesluitPagina(token) {
+  const p = leesToken(token);
+  if (!p) return loketPagina('Deze link werkt niet meer',
+    'Hij is verlopen of al gebruikt. Zoek de aanvraag op in het tabblad Introducties en handel hem met de hand af.');
+
+  const rij = vindIntroductie(p.ref);
+  if (!rij) return loketPagina('Aanvraag niet gevonden',
+    'Ref ' + p.ref + ' staat niet in het tabblad ' + LOKET_BLAD + '.');
+  if (rij.status !== 'wacht') return loketPagina('Al afgehandeld',
+    'Deze aanvraag is op ' + rij.beslotenOp + ' al afgehandeld. Er gebeurt nu niets meer.');
+
+  const alle = leesAlumni();
+  const doel = alle.filter(function (a) { return a.id === p.keuze; })[0];
+  const gevraagd = alle.filter(function (a) { return a.id === rij.voorkeur; })[0];
+
+  if (p.keuze !== 'geen' && !doel) return loketPagina('Die alumnus staat niet meer op de lijst',
+    'Waarschijnlijk is de toestemming ingetrokken of het mailadres gewijzigd.');
+
+  const wat = p.keuze === 'geen'
+    ? 'Je wijst deze aanvraag af. ' + rij.naam + ' krijgt een vriendelijke mail met '
+      + 'twee alternatieven. Er worden geen gegevens gedeeld.'
+    : 'Je stelt <b>' + ontsnap(rij.naam) + '</b> voor aan <b>' + ontsnap(doel.volledigeNaam) + '</b>. '
+      + 'Er gaat één mail naar ' + ontsnap(doel.volledigeNaam) + ' met de vraag en de contactgegevens '
+      + 'van de student, met de student in de cc.'
+      + (gevraagd && gevraagd.id !== doel.id
+         ? ' De student vroeg om ' + ontsnap(gevraagd.naam) + ' en krijgt te lezen waarom het iemand anders werd.'
+         : '');
+
+  return loketPagina('Weet je het zeker?',
+    wat + '<div class="vraag">' + ontsnap(rij.vraag) + '</div>',
+    '<form method="post" action="' + webAdres() + '">'
+    + '<input type="hidden" name="formulier" value="loketbesluit">'
+    + '<input type="hidden" name="token" value="' + ontsnap(token) + '">'
+    + '<button type="submit">' + (p.keuze === 'geen' ? 'Ja, afwijzen' : 'Ja, versturen') + '</button>'
+    + '</form>');
+}
+
+/* Wordt aangeroepen vanuit doPost als de knop op die pagina wordt ingedrukt. */
+function loketBesluitUitvoeren(parameter) {
+  const p = leesToken(parameter.token);
+  if (!p) return loketPagina('Deze link werkt niet meer', 'Hij is verlopen of al gebruikt.');
+
+  const uitkomst = metSlot(function () {
+    const rij = vindIntroductie(p.ref);
+    if (!rij) return { fout: 'Aanvraag ' + p.ref + ' niet gevonden.' };
+    if (rij.status !== 'wacht') return { fout: 'Deze aanvraag is al afgehandeld.' };
+    zetIntroductieStatus(p.ref, p.keuze === 'geen' ? 'afgewezen' : 'voorgesteld', p.keuze);
+    return { rij: rij };
+  });
+  if (uitkomst.fout) return loketPagina('Er gebeurt niets', uitkomst.fout);
+
+  const rij = uitkomst.rij;
+  const alle = leesAlumni();
+  const gevraagd = alle.filter(function (a) { return a.id === rij.voorkeur; })[0];
+  const student = {
+    naam: rij.naam, email: rij.email, vraag: rij.vraag, studie: rij.studie,
+  };
+
+  // De cache bevat nog de oude ruimte-telling; na een introductie klopt die niet meer.
+  wisAlumniCache();
+
+  if (p.keuze === 'geen') {
+    mailLoketAfwijzing(student, gevraagd || { id: '', naam: 'de gevraagde alumnus', themas: [], ruimte: {} });
+    return loketPagina('Afgewezen', 'De student heeft bericht gekregen, met twee alternatieven.');
+  }
+
+  const doel = alle.filter(function (a) { return a.id === p.keuze; })[0];
+  if (!doel) return loketPagina('Die alumnus staat niet meer op de lijst',
+    'De aanvraag staat nu op "voorgesteld" maar er is niets verstuurd. Handel hem met de hand af.');
+
+  mailIntroductie(student, doel);
+  try { mailIntroductieStudent(student, doel, gevraagd); } catch (err) { console.error(err); }
+
+  return loketPagina('Verstuurd',
+    ontsnap(doel.volledigeNaam) + ' heeft de vraag van ' + ontsnap(rij.naam)
+    + ' gekregen, met de student in de cc. Je kunt dit venster sluiten.');
+}
+
+/* Eén opmaak voor alle pagina's die dit script toont. Geen stylesheet van
+   de site erbij: die staat op een ander adres en zou hier niet laden. */
+function loketPagina(titel, tekst, extra) {
+  const html =
+    '<!doctype html><html lang="nl"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>' + ontsnap(titel) + ' · Impact Connect</title><style>'
+    + 'body{margin:0;background:#F4EFE3;color:#23291F;'
+    + 'font:16px/1.6 "Familjen Grotesk",system-ui,-apple-system,sans-serif;'
+    + 'display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}'
+    + '.kaart{background:#FFFDF7;border:1px solid #E2DAC7;border-radius:14px;'
+    + 'padding:34px;max-width:520px;box-shadow:0 10px 30px -18px rgba(35,41,31,.4)}'
+    + 'h1{font-family:Georgia,serif;font-size:27px;margin:0 0 14px;color:#13352A;line-height:1.15}'
+    + 'p{margin:0 0 18px;color:#4B5044}'
+    + '.vraag{border-left:2px solid #C2683A;background:#F6E5DB;padding:14px 16px;'
+    + 'border-radius:0 8px 8px 0;margin:18px 0;font-style:italic}'
+    + 'button{font:inherit;font-weight:600;background:#13352A;color:#F4EFE3;border:0;'
+    + 'border-radius:99px;padding:12px 26px;cursor:pointer}'
+    + 'button:hover{background:#2B6B4F}'
+    + '</style></head><body><div class="kaart"><h1>' + ontsnap(titel) + '</h1>'
+    + '<p>' + tekst + '</p>' + (extra || '') + '</div></body></html>';
+
+  return HtmlService.createHtmlOutput(html)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/* Alles wat in een pagina terechtkomt en van een bezoeker of uit de sheet
+   komt, gaat hier eerst doorheen. Anders kan een vraag met HTML erin de
+   pagina overnemen. */
+function ontsnap(s) {
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ═══ 7. HET TABBLAD INTRODUCTIES ═══════════════════════════════════ */
+
+const LOKET_KOP = ['Datum', 'Ref', 'Student', 'Studie', 'E-mail student',
+  'Vraag', 'Thema’s', 'Voorkeur', 'Kandidaten', 'Status', 'Gekozen',
+  'Besloten op', 'Contact gelukt'];
+
+function loketBlad() {
+  const bestand = alumniBestand();
+  let blad = bestand.getSheetByName(LOKET_BLAD);
+  if (!blad) {
+    blad = bestand.insertSheet(LOKET_BLAD);
+    blad.getRange(1, 1, 1, LOKET_KOP.length).setValues([LOKET_KOP]).setFontWeight('bold');
+    blad.setFrozenRows(1);
+  }
+  return blad;
+}
+
+/* Schrijft de aanvraag weg en geeft het referentienummer terug. Dit gaat
+   vóór het mailen: gaat er daarna iets mis met de post, dan staat de
+   aanvraag er nog en kun je hem met de hand oppakken. */
+function schrijfIntroductie(student, gekozen, kandidaten) {
+  const blad = loketBlad();
+  const ref = 'REQ-' + Utilities.formatDate(new Date(), 'Europe/Amsterdam', 'yyyyMMdd')
+    + '-' + ('000' + (blad.getLastRow())).slice(-3);
+
+  blad.appendRow([
+    new Date(), ref, student.naam, student.studie, student.email,
+    student.vraag, student.themas, gekozen.id,
+    kandidaten.map(function (k) { return k.a.naam; }).join(' | '),
+    'wacht', '', '', '',
+  ]);
+  return ref;
+}
+
+function vindIntroductie(ref) {
+  const blad = loketBlad();
+  if (blad.getLastRow() < 2) return null;
+  const rijen = blad.getDataRange().getValues();
+  const kop = rijen[0].map(String);
+  const k = function (naam) { return kop.indexOf(naam); };
+
+  for (let i = 1; i < rijen.length; i++) {
+    if (String(rijen[i][k('Ref')]) !== ref) continue;
+    return {
+      regel: i + 1,
+      ref: ref,
+      naam:   String(rijen[i][k('Student')]),
+      studie: String(rijen[i][k('Studie')]),
+      email:  String(rijen[i][k('E-mail student')]),
+      vraag:  String(rijen[i][k('Vraag')]),
+      voorkeur: String(rijen[i][k('Voorkeur')]),
+      status: String(rijen[i][k('Status')]),
+      beslotenOp: String(rijen[i][k('Besloten op')]),
+    };
+  }
+  return null;
+}
+
+function zetIntroductieStatus(ref, status, gekozen) {
+  const blad = loketBlad();
+  const rij = vindIntroductie(ref);
+  if (!rij) return;
+  const kop = blad.getRange(1, 1, 1, blad.getLastColumn()).getValues()[0].map(String);
+  blad.getRange(rij.regel, kop.indexOf('Status') + 1).setValue(status);
+  blad.getRange(rij.regel, kop.indexOf('Gekozen') + 1).setValue(gekozen === 'geen' ? '' : gekozen);
+  blad.getRange(rij.regel, kop.indexOf('Besloten op') + 1).setValue(new Date());
+}
+
+/* Per alumnus de datums waarop er een introductie is verstuurd. Hiermee
+   telt ruimteVan() hoeveel er deze maand of dit kwartaal al zijn geweest. */
+function introductiesPerAlumnus() {
+  const blad = alumniBestand().getSheetByName(LOKET_BLAD);
+  if (!blad || blad.getLastRow() < 2) return {};
+  const rijen = blad.getDataRange().getValues();
+  const kop = rijen[0].map(String);
+  const kGekozen = kop.indexOf('Gekozen');
+  const kDatum = kop.indexOf('Besloten op');
+  if (kGekozen === -1 || kDatum === -1) return {};
+
+  const per = {};
+  rijen.slice(1).forEach(function (r) {
+    const id = String(r[kGekozen]).trim();
+    if (!id) return;
+    const datum = r[kDatum];
+    if (!(datum instanceof Date)) return;
+    (per[id] = per[id] || []).push(datum);
+  });
+  return per;
+}
+
+/* ═══ 8. OVERZICHT VOOR ONSZELF ═════════════════════════════════════
+   Voer dit uit in de editor als je wilt zien hoe de lijst ervoor staat:
+   wie er vol zit, en welke woorden uit "Fields of interest" nog nergens
+   onder vallen. Dat laatste is je lijstje om THEMAS mee aan te vullen.
+   ═══════════════════════════════════════════════════════════════════ */
+function loketOverzicht() {
+  const lijst = leesAlumni();
+  console.log(lijst.length + ' alumni met toestemming.');
+
+  const vol = lijst.filter(function (a) { return a.ruimte.vol; });
+  console.log(vol.length + ' zitten deze periode vol: '
+    + vol.map(function (a) { return a.naam; }).join(', '));
+
+  const zonderThema = lijst.filter(function (a) { return !a.themas.length; });
+  if (zonderThema.length) {
+    console.log('Zonder enig thema (' + zonderThema.length + '): '
+      + zonderThema.map(function (a) { return a.naam + ' [' + a.interessesRuw + ']'; }).join(' · '));
+  }
+
+  const rest = {};
+  lijst.forEach(function (a) {
+    nietHerkend(a.interessesRuw).forEach(function (w) { rest[w] = (rest[w] || 0) + 1; });
+  });
+  const woorden = Object.keys(rest).sort(function (x, y) { return rest[y] - rest[x]; });
+  console.log(woorden.length
+    ? 'Nog niet herkend, meest voorkomend eerst: ' + woorden.map(function (w) { return w + ' (' + rest[w] + ')'; }).join(', ')
+    : 'Alles herkend.');
+}
+
+/* ═══ 9. ZELFTEST ═══════════════════════════════════════════════════
+   Voer deze functie één keer uit nadat je het loket hebt aangesloten.
+   Er wordt niets verstuurd naar echte alumni: de test doet alleen de
+   dingen die je zonder post kunt controleren.
+   ═══════════════════════════════════════════════════════════════════ */
+function zelftestLoket() {
+  const lijst = leesAlumni();
+  if (!lijst.length) {
+    console.log('Geen alumni gevonden. Controleer of het tabblad "' + ALUMNI_BLAD
+      + '" bestaat, of er een kolom met "permission" in de kop staat, en of daar ja in staat.');
+    return;
+  }
+  console.log('Gevonden: ' + lijst.length + ' alumni met toestemming.');
+  console.log('Eerste profiel zoals de site het krijgt:');
+  console.log(JSON.stringify(openbareLijst()[0], null, 2));
+
+  const token = maakToken('TEST-000', lijst[0].id);
+  const terug = leesToken(token);
+  console.log(terug && terug.ref === 'TEST-000'
+    ? 'Ondertekende links werken.'
+    : 'LET OP: de ondertekening klopt niet.');
+
+  console.log('Adres van dit script: ' + webAdres());
+  console.log('Dat hoort hetzelfde te zijn als FORM_ENDPOINT in data.js;'
+    + ' de lijst en de formulieren gebruiken één adres.');
+}

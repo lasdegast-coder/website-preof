@@ -56,8 +56,8 @@
       The quickest way to find out whether a field suits you is to talk to someone already in it.
       Students who came through Impact Connect are now working in climate policy, consultancy,
       research, water management and their own ventures, and they've agreed to be approached by the
-      students behind them. Tell us who you'd like to speak to, we go through our list, and we send
-      you their details so you can reach out yourself.
+      students behind them. Pick who you'd like to speak to, tell us what you want to ask, and we
+      introduce the two of you by mail.
     </p>
 
     <h2 data-t="al.routes.kop">Two ways to reach them<span class="dot-green">.</span></h2>
@@ -79,16 +79,34 @@
       <div class="route-card">
         <div class="badge clay" data-icon="UserCircle2" data-size="22"></div>
         <div class="ttl" data-t="al.r1.kop">You know who you're after</div>
-        <p data-t="al.r1.tekst">Describe who you're looking for: the field and the kind of organisation. We look through
-          our alumni list by hand and mail you back a LinkedIn profile, plus a phone number if
-          they've given us one.</p>
-        <div class="route-meta" data-t="al.r1.meta">Takes two minutes · usually answered within a week</div>
-        <button class="btn-mag primary" data-open-alumni><span data-icon="UserCircle2" data-size="17"></span> <span data-t="al.r1.knop">Find an alumni</span></button>
+        <p data-t="al.r1.tekst">Have a look at who's on the list, pick the person whose path lines up with yours, and
+          send them your question. We read it, decide who can help you best, and introduce the two
+          of you by mail.</p>
+        <div class="route-meta" data-t="al.r1.meta">Takes two minutes · usually answered within three working days</div>
+        <a class="btn-mag primary" href="#de-lijst"><span data-icon="UserCircle2" data-size="17"></span> <span data-t="al.r1.knop">See who's on the list</span></a>
       </div>
     </div>
 
+    <h2 id="de-lijst" style="margin-top:64px" data-t="al.lijst.kop">Who's on the list<span class="dot-clay">.</span></h2>
+    <p class="team-lead" data-t="al.lijst.lead">These are alumni who told us a student may approach them. You see what they do and what
+      they can help with. Their contact details stay with us until the two of you are actually
+      introduced, so nobody gets a mail out of the blue.</p>
+    <!-- Filters en kaarten worden door script.js gevuld, uit de alumnisheet.
+         Staat het loket nog niet aan, dan blijft dit blok leeg en valt de
+         pagina terug op het formulier eronder; er staat dan dus geen kapotte
+         lijst, alleen geen lijst. -->
+    <div class="alum-filters" data-alum-filters hidden></div>
+    <div class="alum-grid" data-alum-lijst>
+      <p class="alum-status" data-t="al.lijst.laden">Loading the list…</p>
+    </div>
+
+    <div class="alum-geen">
+      <span data-t="al.geen.tekst">Nobody on the list fits your question?</span>
+      <button class="btn-text-link" data-open-alumni type="button" data-t="al.geen.knop">Describe who you're after instead</button>
+    </div>
+
     <h2 style="margin-top:64px" data-t="al.vragen.kop">What people ask about<span class="dot-clay">.</span></h2>
-    <p class="team-lead" data-t="al.vragen.lead">Anything, really. These come up most often.</p>
+    <p class="team-lead" data-t="al.vragen.lead">Anything, really. These come up most often — click one to start your question with it.</p>
     <div class="ask-list">
       <span data-t="al.v1">How did you get into this field?</span>
       <span data-t="al.v2">Was the master's worth it?</span>
@@ -105,23 +123,23 @@
     <div class="about-grid two">
       <div class="about-card">
         <div class="num">01</div>
-        <div class="ttl" data-t="al.s1.kop">You describe who</div>
-        <p data-t="al.s1.tekst">The field and the kind of organisation you're after. Two minutes.</p>
+        <div class="ttl" data-t="al.s1.kop">You pick someone</div>
+        <p data-t="al.s1.tekst">Go through the list and send your question to the person whose path lines up with yours. Two minutes.</p>
       </div>
       <div class="about-card">
         <div class="num">02</div>
-        <div class="ttl" data-t="al.s2.kop">We check the list</div>
-        <p data-t="al.s2.tekst">We go through our alumni ourselves and pick someone whose path actually lines up with yours.</p>
+        <div class="ttl" data-t="al.s2.kop">We read it</div>
+        <p data-t="al.s2.tekst">We look at your question and at who has room. Usually that's the person you picked; sometimes we know someone who fits it better.</p>
       </div>
       <div class="about-card">
         <div class="num">03</div>
-        <div class="ttl" data-t="al.s3.kop">You get their details</div>
-        <p data-t="al.s3.tekst">We mail you their LinkedIn profile, and a phone number if they've given us one, with a line on who they are.</p>
+        <div class="ttl" data-t="al.s3.kop">We introduce you</div>
+        <p data-t="al.s3.tekst">One mail goes out with your question and your details, and you're in the copy. So you have their address, and they know you're coming.</p>
       </div>
       <div class="about-card">
         <div class="num">04</div>
-        <div class="ttl" data-t="al.s4.kop">You reach out</div>
-        <p data-t="al.s4.tekst">Send them a message first. If you both want to, a call comes after.</p>
+        <div class="ttl" data-t="al.s4.kop">You take it from there</div>
+        <p data-t="al.s4.tekst">They can simply hit reply. If you both want to, a call comes after. Three weeks on we ask you both whether it happened.</p>
       </div>
     </div>
 

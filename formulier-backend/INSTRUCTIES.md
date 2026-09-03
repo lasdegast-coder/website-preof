@@ -145,3 +145,112 @@ Voeg je een vraag toe aan een formulier op de site, zet hem dan ook in `VRAGEN` 
   hem, en de student hoeft hem niet opnieuw te versturen.
 - Het adres waar alles naartoe gaat staat op twee plekken, en die moeten hetzelfde zijn:
   `ONTVANGER` bovenin `Code.gs` en `CONTACT_MAIL` bovenin `data.js`.
+
+---
+
+# Het alumniloket aanzetten
+
+Hierna staat op **alumni.html** de lijst met alumni, kunnen studenten er rechtstreeks
+een vraag aan stellen, en kies jij per aanvraag uit drie kandidaten wie je voorstelt.
+
+Je hebt hiervoor niets nieuws nodig: geen extra account, geen sleutels, geen tweede
+server. Het loket draait in hetzelfde Apps Script en gebruikt hetzelfde adres als de
+formulieren. Reken op tien minuten.
+
+## 1. Zet het script erbij
+
+1. Open de sheet met de formulieren en klik op **Extensies → Apps Script**.
+2. Klik links op **+** naast "Bestanden" en kies **Script**.
+3. Noem het bestand **Loket** (Apps Script maakt er zelf `Loket.gs` van).
+4. Open `Loket.gs` uit deze map, kopieer de volledige inhoud en plak die in het lege
+   venster. Opslaan met Cmd+S.
+5. Open daarna `Code.gs` in de editor en vervang de inhoud door de nieuwe versie uit
+   deze map. Daar zijn twee dingen aan veranderd: `doPost` stuurt aanvragen van het
+   loket door, en `doGet` levert de alumnilijst uit.
+
+## 2. Wijs het naar de alumnilijst
+
+Het loket leest de alumni uit een tabblad. Twee mogelijkheden:
+
+**Staan de aanmeldingen in dezelfde sheet?** Noem dat tabblad dan **Alumni**, en je
+bent klaar. Heet het anders, pas dan bovenin `Loket.gs` de regel `ALUMNI_BLAD` aan.
+
+**Staan ze in een eigen sheet** (dat gebeurt als het Google Formulier zijn eigen
+bestand heeft aangemaakt)? Kopieer dan het id uit de adresbalk van dat bestand —
+het stuk tussen `/d/` en `/edit` — en zet het bovenin `Loket.gs` bij
+`ALUMNI_BESTAND_ID`.
+
+De kolommen hoef je niet aan te passen. Het script leest de koprij en zoekt zelf welke
+kolom "Full name", "Permission to be contacted", "Preferred frequency" enzovoort is.
+Hernoem je later een vraag in het formulier, kijk dan even in `KOLOM` bovenin.
+
+> **De poort:** alleen rijen waar bij *permission to be contacted* iets als **Yes** of
+> **Ja** staat komen ooit op de site. Bij twijfel of bij een leeg vakje verschijnt
+> iemand niet. Dat is met opzet zo streng.
+
+## 3. Publiceer opnieuw
+
+Een gewijzigd script gaat pas live als je het opnieuw uitrolt:
+
+1. Klik rechtsboven op **Implementeren → Implementaties beheren**.
+2. Klik op het potlood, zet **Versie** op **Nieuwe versie** en klik **Implementeren**.
+
+Doe dit **niet** via "Nieuwe implementatie", want dan krijg je een nieuw adres en
+staat het oude nog in `data.js`.
+
+## 4. Doe de zelftest
+
+1. Kies in de editor de functie **zelftestLoket** en klik **Uitvoeren**.
+2. In het logboek zie je hoeveel alumni er gevonden zijn en hoe het eerste profiel
+   eruitziet zoals de website het krijgt. Staat daar een mailadres of telefoonnummer
+   in, dan klopt er iets niet — die horen er niet in te staan.
+3. Onderaan staat het adres van het script. Dat hoort hetzelfde te zijn als
+   `FORM_ENDPOINT` in `data.js`.
+
+Geen alumni gevonden? Dan bestaat het tabblad niet, of staat er nergens *yes* in de
+toestemmingskolom.
+
+## 5. Kijk op de site
+
+Open `alumni.html`. Onder "Two ways to reach them" staat nu de lijst met filters.
+
+Zie je nog de oude tekst? De lijst wordt vijf minuten vastgehouden zodat de pagina
+snel blijft. Voer **wisAlumniCache** uit in de editor om dat af te dwingen; dat heb je
+ook nodig als je net iemand hebt goedgekeurd en hem meteen wilt zien.
+
+---
+
+## Wat er gebeurt bij een aanvraag
+
+1. De aanvraag komt in het tabblad **Introducties** te staan, met status `wacht`. Dit
+   gaat vóór het mailen: gaat er daarna iets mis met de post, dan staat de aanvraag er
+   nog steeds.
+2. Jij krijgt één mail met de vraag en **drie kandidaten**: degene die de student koos,
+   plus twee die het script erbij zoekt op gedeelde thema's, dezelfde studie en
+   beschikbare ruimte. Onder elke naam staat waarom die er staat.
+3. Je klikt op een naam. Er opent een pagina die vertelt wat er gaat gebeuren, met één
+   knop. Pas die knop verstuurt de introductie.
+4. De introductie gaat naar de alumnus, met de student in de cc en met *reply-to* op de
+   student. Beantwoorden komt dus bij de student uit.
+
+De knoppen werken zeven dagen en zijn eenmalig; een tweede klik doet niets meer. Ze
+zijn ondertekend, dus ze zijn niet na te maken door een nummer in de adresbalk te
+veranderen.
+
+## De rem op overvragen
+
+De kolom *Preferred frequency of contact* is de enige bescherming van je alumni, want
+zij krijgen zelf geen ja/nee-knop per aanvraag. Het script telt in het tabblad
+Introducties hoeveel introducties iemand deze maand of dit kwartaal al heeft gehad en
+haalt hem daarna automatisch van de site tot de volgende periode. Staat er niets
+ingevuld, dan geldt er geen limiet — dat is dus de kolom om aan te vullen.
+
+Daarnaast mag één student niet meer dan twee aanvragen tegelijk open hebben staan.
+
+## De thema's bijhouden
+
+*Fields of interest* is een open tekstvak. Het script zet die antwoorden om in vaste
+thema's, zodat er gefilterd kan worden. Voer af en toe **loketOverzicht** uit in de
+editor: je ziet dan wie er vol zit, wie er nog geen enkel thema heeft, en welke woorden
+nergens onder vielen. Dat laatste is je lijstje om `THEMAS` bovenin `Loket.gs` mee aan
+te vullen. Elke toevoeging geldt meteen voor iedereen, ook met terugwerkende kracht.

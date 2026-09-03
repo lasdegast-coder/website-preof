@@ -106,6 +106,14 @@ function doPost(e) {
     // het een bot. We doen alsof alles goed ging en gooien het weg.
     if (d.website) return antwoord({ ok: true });
 
+    // Het alumniloket heeft zijn eigen afhandeling: drie kandidaten in
+    // onze mail en ondertekende knoppen. Die staat in Loket.gs.
+    if (d.formulier === 'loketverzoek') return loketVerzoek(d);
+
+    // De bevestigingsknop uit die mail. Die verwacht een pagina terug,
+    // geen JSON, want er kijkt een mens naar.
+    if (d.formulier === 'loketbesluit') return loketBesluitUitvoeren(d);
+
     // hasOwnProperty en niet FORMULIEREN[...], want elk object in JavaScript
     // heeft van zichzelf al namen als "constructor" en "toString". Zonder
     // deze controle zou iemand die "constructor" meestuurt het script laten
@@ -153,8 +161,22 @@ function doPost(e) {
   }
 }
 
-/* Zo kun je in een browser controleren of het script gepubliceerd staat. */
-function doGet() {
+/* Wordt aangeroepen als iemand het adres van dit script in een browser
+   opent, en door de website als die de alumnilijst ophaalt. */
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+
+  // De alumnilijst voor op de site. Alleen wie toestemming gaf, en alleen
+  // de velden die een student mag zien; zie openbareLijst() in Loket.gs.
+  if (p.lijst === 'alumni') {
+    return ContentService.createTextOutput(alumniJson())
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // De pagina achter een knop uit onze eigen mail. Hij toont alleen wat er
+  // gaat gebeuren; pas de knop op die pagina voert het uit.
+  if (p.besluit) return loketBesluitPagina(p.besluit);
+
   return antwoord({ ok: true, bericht: 'Formulierverwerking Impact Connect staat klaar.' });
 }
 
