@@ -38,7 +38,13 @@
    Hier wordt uitsluitend uit gelezen. Dit script schrijft er nooit in.
    ------------------------------------------------------------------- */
 const ALUMNI_BESTAND_ID = '';
-const ALUMNI_BLAD       = 'Alumni';
+
+/* Het tabblad met de aanmeldingen. Laat je dit leeg, dan zoekt het script
+   het zelf op: het pakt het eerste tabblad met een naam-, mail- én
+   toestemmingskolom in de koprij. Dat scheelt gedoe, want een antwoordblad
+   van Google Formulieren heet "Formulierreacties 1" en niet "Alumni".
+   Staan er meerdere formulieren in één bestand, vul dan de naam in. */
+const ALUMNI_BLAD       = '';
 
 /* ---- waar de aanvragen heen gaan ----------------------------------
    Standaard komt het tabblad Introducties in de sheet waar dit script aan
@@ -193,16 +199,43 @@ function frequentieVan(tekst) {
 /* Leest het alumnitabblad uit. Geeft alles terug, inclusief de gegevens
    die niet naar de site mogen; wat er wél naartoe gaat wordt verderop
    in openbareLijst() bepaald. */
+/* Zoekt het tabblad met de aanmeldingen. Is ALUMNI_BLAD ingevuld, dan is
+   dat het; anders het eerste tabblad waarvan de koprij een naam, een
+   mailadres en een toestemmingskolom heeft. */
+function alumniBlad() {
+  const bestand = alumniBestand();
+  if (!bestand) return null;
+
+  if (ALUMNI_BLAD) return bestand.getSheetByName(ALUMNI_BLAD);
+
+  const bladen = bestand.getSheets();
+  for (let i = 0; i < bladen.length; i++) {
+    if (bladen[i].getName() === LOKET_BLAD) continue;     // ons eigen tabblad overslaan
+    if (bladen[i].getLastRow() < 1) continue;
+    const kop = bladen[i].getRange(1, 1, 1, bladen[i].getLastColumn()).getValues()[0];
+    const k = vindKolommen(kop);
+    if (k.naam !== undefined && k.mail !== undefined && k.toestemming !== undefined) {
+      return bladen[i];
+    }
+  }
+  return null;
+}
+
 function leesAlumni() {
-  const blad = alumniBestand().getSheetByName(ALUMNI_BLAD);
-  if (!blad || blad.getLastRow() < 2) return [];
+  const blad = alumniBlad();
+  if (!blad) {
+    console.error('Geen alumnitabblad gevonden. Controleer ALUMNI_BESTAND_ID, of vul '
+      + 'ALUMNI_BLAD in met de naam van het tabblad.');
+    return [];
+  }
+  if (blad.getLastRow() < 2) return [];
 
   const alles = blad.getDataRange().getValues();
   const kolom = vindKolommen(alles[0]);
   if (kolom.naam === undefined || kolom.mail === undefined) {
     // Zonder naam of mailadres valt er niets te doen. Beter meteen leeg
     // dan een halve lijst waarvan niemand doorheeft dat hij fout is.
-    console.error('Alumnitabblad "' + ALUMNI_BLAD + '": kolom Naam of Email niet gevonden.');
+    console.error('Tabblad "' + blad.getName() + '": kolom Naam of Email niet gevonden.');
     return [];
   }
 
@@ -1167,10 +1200,18 @@ function loketOverzicht() {
    dingen die je zonder post kunt controleren.
    ═══════════════════════════════════════════════════════════════════ */
 function zelftestLoket() {
+  const blad = alumniBlad();
+  console.log(blad
+    ? 'Alumni worden gelezen uit bestand "' + blad.getParent().getName()
+      + '", tabblad "' + blad.getName() + '".'
+    : 'GEEN alumnitabblad gevonden.');
+  console.log('Aanvragen worden geschreven in bestand "'
+    + loketBestand().getName() + '", tabblad "' + LOKET_BLAD + '".');
+
   const lijst = leesAlumni();
   if (!lijst.length) {
-    console.log('Geen alumni gevonden. Controleer of het tabblad "' + ALUMNI_BLAD
-      + '" bestaat, of er een kolom met "permission" in de kop staat, en of daar ja in staat.');
+    console.log('Geen alumni met toestemming gevonden. Controleer of er een kolom met '
+      + '"permission" in de koprij staat, en of daar Yes of Ja in staat.');
     return;
   }
   console.log('Gevonden: ' + lijst.length + ' alumni met toestemming.');

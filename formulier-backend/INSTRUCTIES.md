@@ -173,16 +173,35 @@ formulieren. Reken op tien minuten.
 Er zijn twee sheets in het spel. Je hoeft er geen nieuwe voor aan te maken.
 
 **De alumnisheet — hier wordt alleen uit gelezen.**
-Dit is het antwoordbestand van jullie aanmeldformulier voor alumni, met de kolommen
-*Full name*, *BSC*, *Permission to be contacted* enzovoort. Het script schrijft hier
+Het antwoordbestand van jullie aanmeldformulier voor alumni. Het script schrijft hier
 nooit in.
 
-- Staan de aanmeldingen als tabblad in dezelfde sheet als de formulieren? Noem dat
-  tabblad **Alumni** en je bent klaar.
-- Heeft het Google Formulier zijn eigen bestand aangemaakt (dat is het gewoonlijk)?
-  Kopieer dan het id uit de adresbalk van dat bestand — het stuk tussen `/d/` en
-  `/edit` — en zet het bovenin `Loket.gs` bij `ALUMNI_BESTAND_ID`.
-- Heet het tabblad anders dan "Alumni"? Pas dan `ALUMNI_BLAD` aan.
+Eén ding instellen: **het id van dat bestand**. Open de alumnisheet en kijk naar de
+adresbalk:
+
+```
+https://docs.google.com/spreadsheets/d/1aB2cD3eF4gH5iJ6kL7mN8oP9qR/edit#gid=0
+                                       └────────── dit stuk ──────────┘
+```
+
+Kopieer het stuk tussen `/d/` en `/edit` en zet het bovenin `Loket.gs`:
+
+```js
+const ALUMNI_BESTAND_ID = '1aB2cD3eF4gH5iJ6kL7mN8oP9qR';
+```
+
+Het **tabblad** hoef je niet in te vullen. Het script gaat de tabbladen langs en pakt
+het eerste met een naam-, mail- én toestemmingskolom in de koprij. Een antwoordblad van
+Google Formulieren heet "Formulierreacties 1", en dat vindt hij dus zelf. Staan er
+meerdere formulieren in één bestand, vul dan `ALUMNI_BLAD` in met de juiste naam.
+
+De kolommen hoef je ook niet aan te passen: hij zoekt op woorden in de koprij, dus
+"Full name " met een spurie spatie en "Do you hereby give us permission to be contact
+by a student…" vinden allebei hun weg.
+
+> Staat de alumnisheet in een ander Google-account dan het account dat het script
+> draait? Deel hem dan met dat account (leesrechten is genoeg), anders kan het script
+> er niet in kijken.
 
 **De aanvragensheet — hier wordt in geschreven.**
 Dat is de sheet waar dit script aan hangt, met de tabbladen Afspraken,
