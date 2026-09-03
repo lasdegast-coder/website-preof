@@ -249,7 +249,7 @@ const VERTALINGEN = {
   "al.s3.kop":         { nl: "Wij stellen jullie voor" },
   "al.s3.tekst":       { nl: "Er gaat één mail uit met je vraag en je gegevens, en jij staat in de kopie. Zo heb jij hun adres, en weten zij dat je eraan komt." },
   "al.s4.kop":         { nl: "Jij gaat verder" },
-  "al.s4.tekst":       { nl: "Ze kunnen gewoon op Beantwoorden drukken. Willen jullie allebei een gesprek, dan komt dat daarna. Na drie weken vragen we jullie of het gelukt is." },
+  "al.s4.tekst":       { nl: "Ze kunnen gewoon op Beantwoorden drukken. Willen jullie allebei een gesprek, dan komt dat daarna. Drie weken later sturen we jou één mail: hoe nuttig was het, van 1 tot 10, en wat kon er beter." },
   "al.zelf.kop":       { nl: "Ben je zelf alumni?" },
   "al.zelf.tekst":     { nl: "Heb je hier gestudeerd en vind je het leuk om af en toe van een student te horen, dan zetten we je er graag bij. Stuur ons je LinkedIn, en alleen een telefoonnummer als je wilt dat we dat doorgeven. Verder delen we niets, en jij bepaalt over welke onderwerpen je iets wilt zeggen." },
   "al.zelf.knop":      { nl: "Meld je aan als alumni" },

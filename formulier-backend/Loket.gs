@@ -61,6 +61,16 @@ const LOKET_BLAD        = 'Introducties';
    rest van het jaar op. */
 const MAX_OPEN_PER_STUDENT = 2;
 
+/* Hoeveel dagen na de introductie we de student vragen hoe het ging. Drie
+   weken is genoeg om een mail beantwoord te hebben en misschien al gesproken
+   te hebben, en kort genoeg om het je nog te herinneren. */
+const NAVRAAG_DAGEN = 21;
+
+/* De cijferlink mag veel langer mee dan de besluitknoppen: die mail komt
+   binnen op een moment dat niemand erop zit te wachten, en hij wordt vaak
+   pas weken later opengeklikt. */
+const FEEDBACK_DAGEN = 90;
+
 /* Hoe lang de knoppen in onze mail blijven werken. Daarna is de link dood
    en moet je de aanvraag met de hand oppakken; dat is beter dan een knop
    die over een half jaar nog een introductie kan versturen. */
@@ -604,6 +614,9 @@ function mailIntroductieStudent(student, a, gevraagd) {
     'your question concrete, and tell us afterwards how it went. Nothing after',
     'a week? We\'ll send a reminder.',
     '',
+    'In three weeks we\'ll send you one mail asking how useful it was. One click',
+    'is all it takes, and it is how we decide who to keep asking.',
+    '',
     'Good luck,',
     AFZENDERNAAM,
     ONTVANGER,
@@ -695,15 +708,19 @@ function handtekening(inhoud) {
     Utilities.computeHmacSha256Signature(inhoud, loketSleutel()));
 }
 
-function maakToken(ref, keuze) {
+/* De soort staat in het token zelf. Zonder dat zou een cijferlink uit de
+   mail aan de student ook als besluitknop werken: die twee zien er van
+   buiten hetzelfde uit. */
+function maakToken(soort, ref, keuze, dagen) {
   const inhoud = Utilities.base64EncodeWebSafe(JSON.stringify({
-    r: ref, k: keuze, tot: Date.now() + TOKEN_DAGEN * 24 * 3600 * 1000,
+    s: soort, r: ref, k: keuze, tot: Date.now() + dagen * 24 * 3600 * 1000,
   }));
   return inhoud + '.' + handtekening(inhoud);
 }
 
-/* Geeft { ref, keuze } terug, of null als de link niet klopt of verlopen is. */
-function leesToken(token) {
+/* Geeft { ref, keuze } terug, of null als de link niet klopt, verlopen is,
+   of van de verkeerde soort is. */
+function leesToken(token, soort) {
   const delen = String(token || '').split('.');
   if (delen.length !== 2) return null;
   if (handtekening(delen[0]) !== delen[1]) return null;
@@ -712,16 +729,23 @@ function leesToken(token) {
     p = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(delen[0])).getDataAsString());
   } catch (e) { return null; }
   if (!p || !p.tot || Date.now() > p.tot) return null;
+  if (p.s !== soort) return null;
   return { ref: p.r, keuze: p.k };
 }
 
 function besluitLink(ref, keuze) {
-  return webAdres() + '?besluit=' + encodeURIComponent(maakToken(ref, keuze));
+  return webAdres() + '?besluit='
+    + encodeURIComponent(maakToken('besluit', ref, keuze, TOKEN_DAGEN));
+}
+
+function feedbackLink(ref, cijfer) {
+  return webAdres() + '?feedback='
+    + encodeURIComponent(maakToken('feedback', ref, String(cijfer), FEEDBACK_DAGEN));
 }
 
 /* De pagina die je ziet als je in de mail op een naam klikt. */
 function loketBesluitPagina(token) {
-  const p = leesToken(token);
+  const p = leesToken(token, 'besluit');
   if (!p) return loketPagina('Deze link werkt niet meer',
     'Hij is verlopen of al gebruikt. Zoek de aanvraag op in het tabblad Introducties en handel hem met de hand af.');
 
@@ -759,7 +783,7 @@ function loketBesluitPagina(token) {
 
 /* Wordt aangeroepen vanuit doPost als de knop op die pagina wordt ingedrukt. */
 function loketBesluitUitvoeren(parameter) {
-  const p = leesToken(parameter.token);
+  const p = leesToken(parameter.token, 'besluit');
   if (!p) return loketPagina('Deze link werkt niet meer', 'Hij is verlopen of al gebruikt.');
 
   const uitkomst = metSlot(function () {
@@ -814,6 +838,10 @@ function loketPagina(titel, tekst, extra) {
     + 'p{margin:0 0 18px;color:#4B5044}'
     + '.vraag{border-left:2px solid #C2683A;background:#F6E5DB;padding:14px 16px;'
     + 'border-radius:0 8px 8px 0;margin:18px 0;font-style:italic}'
+    + 'textarea{font:inherit;width:100%;box-sizing:border-box;background:#F4EFE3;'
+    + 'border:1px solid #E2DAC7;border-radius:9px;padding:11px 13px;margin-bottom:16px;'
+    + 'resize:vertical;color:#23291F}'
+    + 'textarea:focus{outline:none;border-color:#2B6B4F;box-shadow:0 0 0 3px rgba(43,107,79,.15)}'
     + 'button{font:inherit;font-weight:600;background:#13352A;color:#F4EFE3;border:0;'
     + 'border-radius:99px;padding:12px 26px;cursor:pointer}'
     + 'button:hover{background:#2B6B4F}'
@@ -837,7 +865,7 @@ function ontsnap(s) {
 
 const LOKET_KOP = ['Datum', 'Ref', 'Student', 'Studie', 'E-mail student',
   'Vraag', 'Thema’s', 'Voorkeur', 'Kandidaten', 'Status', 'Gekozen',
-  'Besloten op', 'Contact gelukt'];
+  'Besloten op', 'Nagevraagd op', 'Cijfer', 'Wat beter kan', 'Beantwoord op'];
 
 function loketBlad() {
   const bestand = loketBestand();
@@ -862,7 +890,7 @@ function schrijfIntroductie(student, gekozen, kandidaten) {
     new Date(), ref, student.naam, student.studie, student.email,
     student.vraag, student.themas, gekozen.id,
     kandidaten.map(function (k) { return k.a.naam; }).join(' | '),
-    'wacht', '', '', '',
+    'wacht', '', '', '', '', '', '',
   ]);
   return ref;
 }
@@ -884,8 +912,11 @@ function vindIntroductie(ref) {
       email:  String(rijen[i][k('E-mail student')]),
       vraag:  String(rijen[i][k('Vraag')]),
       voorkeur: String(rijen[i][k('Voorkeur')]),
+      gekozen: String(rijen[i][k('Gekozen')]),
       status: String(rijen[i][k('Status')]),
       beslotenOp: String(rijen[i][k('Besloten op')]),
+      cijfer: String(rijen[i][k('Cijfer')]),
+      beantwoordOp: String(rijen[i][k('Beantwoord op')]),
     };
   }
   return null;
@@ -923,7 +954,185 @@ function introductiesPerAlumnus() {
   return per;
 }
 
-/* ═══ 8. OVERZICHT VOOR ONSZELF ═════════════════════════════════════
+/* ═══ 8. DRIE WEKEN LATER: HOE GING HET? ════════════════════════════
+
+   Eén keer per dag kijkt dit script welke introducties drie weken geleden
+   zijn verstuurd en nog niet zijn nagevraagd. Die studenten krijgen een
+   mail met de vraag hoe nuttig het was, van 1 tot 10, en waar het beter kan.
+
+   De cijfers staan als knop in de mail. Eén klik is genoeg; op de pagina
+   die dan opent kan de student er nog iets bij schrijven, maar dat hoeft
+   niet. Wie op de knop drukt en de pagina wegklikt, heeft zijn cijfer al
+   gegeven — dat scheelt een hoop antwoorden die anders nooit binnenkomen.
+
+   Aanzetten doe je met een tijdtrigger; zie INSTRUCTIES.md. Zonder trigger
+   werkt de rest van het loket gewoon, er wordt dan alleen nooit nagevraagd.
+   ═══════════════════════════════════════════════════════════════════ */
+
+function stuurNavragen() {
+  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  if (!blad || blad.getLastRow() < 2) return;
+
+  const rijen = blad.getDataRange().getValues();
+  const kop = rijen[0].map(String);
+  const k = function (naam) { return kop.indexOf(naam); };
+  if (k('Nagevraagd op') === -1) {
+    // Oud tabblad zonder de nieuwe kolommen. Beter niets doen dan in de
+    // verkeerde cel schrijven.
+    console.error('Tabblad ' + LOKET_BLAD + ' mist de kolom "Nagevraagd op". '
+      + 'Voeg de kolommen Nagevraagd op, Cijfer, Wat beter kan en Beantwoord op toe.');
+    return;
+  }
+
+  const grens = new Date(Date.now() - NAVRAAG_DAGEN * 24 * 3600 * 1000);
+  let verstuurd = 0;
+
+  for (let i = 1; i < rijen.length; i++) {
+    const rij = rijen[i];
+    if (String(rij[k('Status')]) !== 'voorgesteld') continue;
+    if (String(rij[k('Nagevraagd op')]).trim()) continue;      // al gehad
+    const besloten = rij[k('Besloten op')];
+    if (!(besloten instanceof Date) || besloten > grens) continue;
+
+    const ref = String(rij[k('Ref')]);
+    try {
+      mailNavraag(String(rij[k('Student')]), String(rij[k('E-mail student')]), ref);
+      // Pas na een geslaagde verzending stempelen. Gaat het mailen mis, dan
+      // staat de regel er morgen weer bij in plaats van stil te verdwijnen.
+      blad.getRange(i + 1, k('Nagevraagd op') + 1).setValue(new Date());
+      verstuurd++;
+    } catch (err) {
+      console.error('Navraag ' + ref + ' mislukt: ' + err);
+    }
+  }
+
+  if (verstuurd) console.log(verstuurd + ' navraagmail(s) verstuurd.');
+}
+
+/* De mail met de cijfers als knop. Er gaat ook een gewone tekstversie mee:
+   niet elk mailprogramma toont opmaak, en dan moet die student nog steeds
+   iets kunnen aanklikken. */
+function mailNavraag(naam, email, ref) {
+  const voornaam = String(naam).split(' ')[0];
+  const cijfers = [1,2,3,4,5,6,7,8,9,10];
+
+  const knoppen = cijfers.map(function (c) {
+    return '<a href="' + feedbackLink(ref, c) + '" '
+      + 'style="display:inline-block;width:34px;height:34px;line-height:34px;'
+      + 'margin:0 3px 6px 0;text-align:center;border-radius:99px;'
+      + 'background:#EDE6D4;color:#13352A;text-decoration:none;'
+      + 'font-weight:700;font-size:14px">' + c + '</a>';
+  }).join('');
+
+  const html =
+    '<div style="font:15px/1.6 -apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;color:#23291F;max-width:520px">'
+    + '<p>Hi ' + ontsnap(voornaam) + ',</p>'
+    + '<p>Three weeks ago we introduced you to an alumni. We\'d like to know whether '
+    + 'it was worth your time — it tells us who to keep asking, and how to make the '
+    + 'next introduction better.</p>'
+    + '<p style="margin-bottom:8px"><b>How useful was it?</b><br>'
+    + '<span style="font-size:13px;color:#666">1 = not at all, 10 = really helped me</span></p>'
+    + '<p style="margin:0 0 4px">' + knoppen + '</p>'
+    + '<p style="font-size:13px;color:#666">One click is enough. On the page that opens '
+    + 'you can add what could be better, but you don\'t have to.</p>'
+    + '<p>Thanks,<br>' + AFZENDERNAAM + '</p></div>';
+
+  const tekst = [
+    'Hi ' + voornaam + ',',
+    '',
+    'Three weeks ago we introduced you to an alumni. We\'d like to know whether it',
+    'was worth your time.',
+    '',
+    'How useful was it? 1 = not at all, 10 = really helped me.',
+    'Click the number that fits:',
+    '',
+  ].concat(cijfers.map(function (c) {
+    return '  ' + (c < 10 ? ' ' : '') + c + '  ' + feedbackLink(ref, c);
+  })).concat([
+    '',
+    'One click is enough. On the page that opens you can add what could be',
+    'better, but you don\'t have to.',
+    '',
+    'Thanks,',
+    AFZENDERNAAM,
+    ONTVANGER,
+  ]).join('\n');
+
+  MailApp.sendEmail({
+    to: email,
+    subject: 'How did it go with the alumni we introduced you to?',
+    body: tekst,
+    htmlBody: html,
+    name: AFZENDERNAAM,
+    replyTo: ONTVANGER,
+  });
+}
+
+/* De pagina achter een cijferknop. Het cijfer is op dat moment al bewaard;
+   het tekstvak is een extraatje. */
+function loketFeedbackPagina(token) {
+  const p = leesToken(token, 'feedback');
+  if (!p) return loketPagina('This link no longer works',
+    'It has expired. Just reply to our mail instead, we read everything.');
+
+  const rij = vindIntroductie(p.ref);
+  if (!rij) return loketPagina('We can\'t find that request',
+    'Reply to our mail and we\'ll sort it out.');
+
+  const cijfer = Math.max(1, Math.min(10, parseInt(p.keuze, 10) || 0));
+  const alGegeven = !!String(rij.beantwoordOp).trim();
+
+  // Het cijfer meteen vastleggen. Wie hierna niets meer doet, heeft toch
+  // geantwoord; alleen de toelichting ontbreekt dan.
+  metSlot(function () { bewaarFeedback(p.ref, cijfer, null); });
+
+  return loketPagina(
+    'Thanks — you gave it a ' + cijfer + ' out of 10',
+    (alGegeven ? 'We\'ve updated your score. ' : '')
+    + 'One more thing, if you have a minute: what could we have done better?',
+    '<form method="post" action="' + webAdres() + '">'
+    + '<input type="hidden" name="formulier" value="loketfeedback">'
+    + '<input type="hidden" name="token" value="' + ontsnap(token) + '">'
+    + '<textarea name="tekst" rows="5" placeholder="Anything at all. What was missing, '
+    + 'what took too long, what you\'d want next time."></textarea>'
+    + '<button type="submit">Send</button>'
+    + '</form>');
+}
+
+/* Wordt aangeroepen vanuit doPost als het tekstvak wordt verstuurd. */
+function loketFeedbackOpslaan(parameter) {
+  const p = leesToken(parameter.token, 'feedback');
+  if (!p) return loketPagina('This link no longer works', 'Just reply to our mail instead.');
+
+  const cijfer = Math.max(1, Math.min(10, parseInt(p.keuze, 10) || 0));
+  const tekst = tekstOf(parameter.tekst, '');
+  metSlot(function () { bewaarFeedback(p.ref, cijfer, tekst); });
+
+  return loketPagina('Thank you',
+    tekst
+      ? 'We\'ve got it. This is exactly what we use to make the next introduction better.'
+      : 'Your score is in. You can close this window.');
+}
+
+/* Schrijft cijfer en toelichting weg. Een tweede klik op een ander cijfer
+   overschrijft het eerste; wie zich bedenkt, mag dat. Een lege toelichting
+   laat een eerder geschreven tekst staan. */
+function bewaarFeedback(ref, cijfer, tekst) {
+  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  if (!blad) return;
+  const rij = vindIntroductie(ref);
+  if (!rij) return;
+
+  const kop = blad.getRange(1, 1, 1, blad.getLastColumn()).getValues()[0].map(String);
+  const kolom = function (naam) { return kop.indexOf(naam) + 1; };
+  if (!kolom('Cijfer')) return;
+
+  blad.getRange(rij.regel, kolom('Cijfer')).setValue(cijfer);
+  if (tekst) blad.getRange(rij.regel, kolom('Wat beter kan')).setValue(tekst);
+  blad.getRange(rij.regel, kolom('Beantwoord op')).setValue(new Date());
+}
+
+/* ═══ 9. OVERZICHT VOOR ONSZELF ═════════════════════════════════════
    Voer dit uit in de editor als je wilt zien hoe de lijst ervoor staat:
    wie er vol zit, en welke woorden uit "Fields of interest" nog nergens
    onder vallen. Dat laatste is je lijstje om THEMAS mee aan te vullen.
@@ -952,7 +1161,7 @@ function loketOverzicht() {
     : 'Alles herkend.');
 }
 
-/* ═══ 9. ZELFTEST ═══════════════════════════════════════════════════
+/* ═══ 10. ZELFTEST ══════════════════════════════════════════════════
    Voer deze functie één keer uit nadat je het loket hebt aangesloten.
    Er wordt niets verstuurd naar echte alumni: de test doet alleen de
    dingen die je zonder post kunt controleren.
@@ -968,10 +1177,11 @@ function zelftestLoket() {
   console.log('Eerste profiel zoals de site het krijgt:');
   console.log(JSON.stringify(openbareLijst()[0], null, 2));
 
-  const token = maakToken('TEST-000', lijst[0].id);
-  const terug = leesToken(token);
-  console.log(terug && terug.ref === 'TEST-000'
-    ? 'Ondertekende links werken.'
+  const token = maakToken('besluit', 'TEST-000', lijst[0].id, TOKEN_DAGEN);
+  const goed = leesToken(token, 'besluit');
+  const fout = leesToken(token, 'feedback');   // hoort null te zijn
+  console.log(goed && goed.ref === 'TEST-000' && !fout
+    ? 'Ondertekende links werken, en een besluitlink telt niet als cijferlink.'
     : 'LET OP: de ondertekening klopt niet.');
 
   console.log('Adres van dit script: ' + webAdres());

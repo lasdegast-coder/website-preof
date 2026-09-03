@@ -114,6 +114,9 @@ function doPost(e) {
     // geen JSON, want er kijkt een mens naar.
     if (d.formulier === 'loketbesluit') return loketBesluitUitvoeren(d);
 
+    // Het tekstvak uit de navraagmail, drie weken na een introductie.
+    if (d.formulier === 'loketfeedback') return loketFeedbackOpslaan(d);
+
     // hasOwnProperty en niet FORMULIEREN[...], want elk object in JavaScript
     // heeft van zichzelf al namen als "constructor" en "toString". Zonder
     // deze controle zou iemand die "constructor" meestuurt het script laten
@@ -176,6 +179,10 @@ function doGet(e) {
   // De pagina achter een knop uit onze eigen mail. Hij toont alleen wat er
   // gaat gebeuren; pas de knop op die pagina voert het uit.
   if (p.besluit) return loketBesluitPagina(p.besluit);
+
+  // Een cijfer uit de navraagmail. Het cijfer wordt meteen bewaard; de
+  // pagina vraagt daarna nog om een toelichting.
+  if (p.feedback) return loketFeedbackPagina(p.feedback);
 
   return antwoord({ ok: true, bericht: 'Formulierverwerking Impact Connect staat klaar.' });
 }

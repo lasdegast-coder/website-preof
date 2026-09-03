@@ -275,3 +275,49 @@ thema's, zodat er gefilterd kan worden. Voer af en toe **loketOverzicht** uit in
 editor: je ziet dan wie er vol zit, wie er nog geen enkel thema heeft, en welke woorden
 nergens onder vielen. Dat laatste is je lijstje om `THEMAS` bovenin `Loket.gs` mee aan
 te vullen. Elke toevoeging geldt meteen voor iedereen, ook met terugwerkende kracht.
+
+---
+
+# De navraag aanzetten
+
+Drie weken na een introductie krijgt de student één mail: **hoe nuttig was het, van 1
+tot 10, en wat kan er beter?** De cijfers staan als knop in de mail; één klik legt het
+cijfer al vast. Op de pagina die dan opent kan er nog een toelichting bij, maar dat
+hoeft niet.
+
+De antwoorden komen in het tabblad **Introducties** te staan, in de kolommen *Cijfer*,
+*Wat beter kan* en *Beantwoord op*.
+
+Dit gaat niet vanzelf: Google moet één keer per dag gaan kijken welke introducties oud
+genoeg zijn. Dat zet je zo aan:
+
+1. Klik in de Apps Script-editor links op het klokje (**Triggers**).
+2. Klik rechtsonder op **Trigger toevoegen**.
+3. Vul in:
+   - Functie: **stuurNavragen**
+   - Gebeurtenisbron: **Tijdgestuurd**
+   - Type trigger: **Dagteller**
+   - Tijd van de dag: bijvoorbeeld **9:00 tot 10:00**
+4. Klik **Opslaan**. Google vraagt eenmalig om toestemming.
+
+Klaar. Vanaf nu kijkt het script elke ochtend of er introducties zijn van drie weken
+geleden die nog geen navraag hebben gehad.
+
+> Zet je de trigger niet aan, dan werkt de rest van het loket gewoon; er wordt dan
+> alleen nooit nagevraagd.
+
+**Een keer met de hand proberen?** Kies de functie **stuurNavragen** en klik Uitvoeren.
+Er gaat alleen post uit naar introducties die echt drie weken oud zijn, dus meestal
+gebeurt er niets en zie je dat in het logboek.
+
+**Anders dan drie weken?** Verander `NAVRAAG_DAGEN` bovenin `Loket.gs`. Pas dan ook de
+tekst op de site aan (`al.s4.tekst` in `alumni.html` en in `vertalingen.js`), en de
+regel in de introductiemail aan de student, anders beloof je iets anders dan je doet.
+
+## Wat je aan die cijfers hebt
+
+Het gemiddelde zegt weinig. Waar het om gaat is welke alumni structureel hoog scoren —
+die wil je vaker inzetten en misschien om meer ruimte vragen — en welke introducties
+laag scoren, want in de kolom *Wat beter kan* staat dan meestal precies waarom. Een
+student die niets invult maar wel een 8 geeft, telt gewoon mee: het cijfer is al binnen
+voordat de pagina opent.
