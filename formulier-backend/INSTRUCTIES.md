@@ -168,17 +168,38 @@ formulieren. Reken op tien minuten.
    deze map. Daar zijn twee dingen aan veranderd: `doPost` stuurt aanvragen van het
    loket door, en `doGet` levert de alumnilijst uit.
 
-## 2. Wijs het naar de alumnilijst
+## 2. Welke sheet gaat waarheen
 
-Het loket leest de alumni uit een tabblad. Twee mogelijkheden:
+Er zijn twee sheets in het spel. Je hoeft er geen nieuwe voor aan te maken.
 
-**Staan de aanmeldingen in dezelfde sheet?** Noem dat tabblad dan **Alumni**, en je
-bent klaar. Heet het anders, pas dan bovenin `Loket.gs` de regel `ALUMNI_BLAD` aan.
+**De alumnisheet — hier wordt alleen uit gelezen.**
+Dit is het antwoordbestand van jullie aanmeldformulier voor alumni, met de kolommen
+*Full name*, *BSC*, *Permission to be contacted* enzovoort. Het script schrijft hier
+nooit in.
 
-**Staan ze in een eigen sheet** (dat gebeurt als het Google Formulier zijn eigen
-bestand heeft aangemaakt)? Kopieer dan het id uit de adresbalk van dat bestand —
-het stuk tussen `/d/` en `/edit` — en zet het bovenin `Loket.gs` bij
-`ALUMNI_BESTAND_ID`.
+- Staan de aanmeldingen als tabblad in dezelfde sheet als de formulieren? Noem dat
+  tabblad **Alumni** en je bent klaar.
+- Heeft het Google Formulier zijn eigen bestand aangemaakt (dat is het gewoonlijk)?
+  Kopieer dan het id uit de adresbalk van dat bestand — het stuk tussen `/d/` en
+  `/edit` — en zet het bovenin `Loket.gs` bij `ALUMNI_BESTAND_ID`.
+- Heet het tabblad anders dan "Alumni"? Pas dan `ALUMNI_BLAD` aan.
+
+**De aanvragensheet — hier wordt in geschreven.**
+Dat is de sheet waar dit script aan hangt, met de tabbladen Afspraken,
+Alumniverzoeken en Berichten. Daar komt **Introducties** bij, en het script maakt dat
+tabblad zelf aan. Je hoeft niets in te stellen.
+
+Dat het daar komt en niet bij de alumni is een keuze: het is dezelfde soort inhoud
+(een student die iets vraagt), je hoeft maar op één plek te kijken, en een script mag
+zonder extra toestemming in zijn eigen sheet schrijven. Het houdt bovendien de
+gegevens van studenten en die van alumni uit elkaar — twee groepen die niets met
+elkaars gegevens te maken hebben.
+
+> Wil je de introducties tóch in een eigen sheet, bijvoorbeeld omdat er meer mensen bij
+> moeten kunnen dan bij de afspraken: maak die sheet aan, zet het id bij
+> `LOKET_BESTAND_ID` bovenin `Loket.gs`, en verhuis een bestaand tabblad Introducties
+> mee. Zonder die verhuizing begint het script opnieuw met tellen en denkt het dat
+> iedereen weer ruimte heeft.
 
 De kolommen hoef je niet aan te passen. Het script leest de koprij en zoekt zelf welke
 kolom "Full name", "Permission to be contacted", "Preferred frequency" enzovoort is.

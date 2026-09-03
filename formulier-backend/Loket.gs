@@ -26,14 +26,34 @@
    volgorde mag veranderen en er mogen kolommen bij komen.
    =================================================================== */
 
-/* ---- instellingen -------------------------------------------------
-   Staat de alumnilijst in een ander bestand dan de aanvragen (dat is zo
-   als het formulier zijn eigen sheet heeft aangemaakt), zet dan hieronder
-   het id uit die adresbalk: docs.google.com/spreadsheets/d/HET-ID/edit
-   Laat je het leeg, dan wordt de sheet gebruikt waar dit script aan hangt.
+/* ---- waar de alumni vandaan komen ---------------------------------
+   Het antwoordbestand van jullie aanmeldformulier voor alumni. Google
+   Formulieren maakt daar meestal een eigen bestand voor aan; staat dat los
+   van de sheet waar dit script aan hangt, zet hier dan het id uit de
+   adresbalk: docs.google.com/spreadsheets/d/HET-ID-STAAT-HIER/edit
+
+   Laat je het leeg, dan wordt de sheet gebruikt waar dit script aan hangt;
+   dat klopt alleen als de alumni daar als tabblad in staan.
+
+   Hier wordt uitsluitend uit gelezen. Dit script schrijft er nooit in.
    ------------------------------------------------------------------- */
 const ALUMNI_BESTAND_ID = '';
 const ALUMNI_BLAD       = 'Alumni';
+
+/* ---- waar de aanvragen heen gaan ----------------------------------
+   Standaard komt het tabblad Introducties in de sheet waar dit script aan
+   hangt, naast Afspraken, Alumniverzoeken en Berichten. Dat is met opzet:
+   het is dezelfde soort inhoud (een student die iets vraagt), je hoeft maar
+   op één plek te kijken, en een script mag zonder extra toestemming in zijn
+   eigen sheet schrijven.
+
+   Wil je het toch apart, bijvoorbeeld omdat meer mensen bij de introducties
+   moeten kunnen dan bij de afspraken: maak een nieuwe sheet, zet het id
+   hieronder, en het tabblad wordt daar aangemaakt. Verhuis dan ook het
+   bestaande tabblad, want het script kijkt daarna alleen nog in het nieuwe
+   bestand en zou anders opnieuw bij nul beginnen met tellen.
+   ------------------------------------------------------------------- */
+const LOKET_BESTAND_ID  = '';
 const LOKET_BLAD        = 'Introducties';
 
 /* Zoveel aanvragen mag één student tegelijk open hebben staan. Zonder rem
@@ -83,10 +103,30 @@ const GEEN_LIMIET = { aantal: 99, periode: 'maand' };
 
 /* ═══ 1. DE ALUMNILIJST LEZEN ═══════════════════════════════════════ */
 
-/* Het bestand waar de alumnilijst in staat. */
+/* Er zijn twee sheets in het spel, en het is belangrijk ze uit elkaar te
+   houden:
+
+     alumniBestand()  waar de aanmeldingen van alumni binnenkomen. Dat is
+                      meestal het antwoordbestand van het Google Formulier,
+                      en daar schrijven wij nooit in. Alleen lezen.
+
+     loketBestand()   waar de aanvragen van studenten heen gaan. Standaard
+                      de sheet waar dit script aan hangt, dezelfde waar de
+                      formulieren al in terechtkomen; daar komt het tabblad
+                      Introducties bij.
+
+   Ze door elkaar halen zou betekenen dat er namen en vragen van studenten
+   in het antwoordbestand van de alumni terechtkomen. Dat zijn twee groepen
+   mensen die niets met elkaars gegevens te maken hebben. */
 function alumniBestand() {
   return ALUMNI_BESTAND_ID
     ? SpreadsheetApp.openById(ALUMNI_BESTAND_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function loketBestand() {
+  return LOKET_BESTAND_ID
+    ? SpreadsheetApp.openById(LOKET_BESTAND_ID)
     : SpreadsheetApp.getActiveSpreadsheet();
 }
 
@@ -370,7 +410,7 @@ function loketVerzoek(d) {
 
 /* Hoeveel aanvragen van dit mailadres nog op een beslissing wachten. */
 function openAanvragen(email) {
-  const blad = alumniBestand().getSheetByName(LOKET_BLAD);
+  const blad = loketBestand().getSheetByName(LOKET_BLAD);
   if (!blad || blad.getLastRow() < 2) return 0;
   const rijen = blad.getDataRange().getValues();
   const kop = rijen[0].map(String);
@@ -800,7 +840,7 @@ const LOKET_KOP = ['Datum', 'Ref', 'Student', 'Studie', 'E-mail student',
   'Besloten op', 'Contact gelukt'];
 
 function loketBlad() {
-  const bestand = alumniBestand();
+  const bestand = loketBestand();
   let blad = bestand.getSheetByName(LOKET_BLAD);
   if (!blad) {
     blad = bestand.insertSheet(LOKET_BLAD);
@@ -864,7 +904,7 @@ function zetIntroductieStatus(ref, status, gekozen) {
 /* Per alumnus de datums waarop er een introductie is verstuurd. Hiermee
    telt ruimteVan() hoeveel er deze maand of dit kwartaal al zijn geweest. */
 function introductiesPerAlumnus() {
-  const blad = alumniBestand().getSheetByName(LOKET_BLAD);
+  const blad = loketBestand().getSheetByName(LOKET_BLAD);
   if (!blad || blad.getLastRow() < 2) return {};
   const rijen = blad.getDataRange().getValues();
   const kop = rijen[0].map(String);
