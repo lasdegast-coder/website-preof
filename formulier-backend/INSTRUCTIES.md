@@ -308,22 +308,34 @@ De antwoorden komen in het tabblad **Introducties** te staan, in de kolommen *Ci
 *Wat beter kan* en *Beantwoord op*.
 
 Dit gaat niet vanzelf: Google moet één keer per dag gaan kijken welke introducties oud
-genoeg zijn. Dat zet je zo aan:
+genoeg zijn. Dat zet je aan met één functie:
 
-1. Klik in de Apps Script-editor links op het klokje (**Triggers**).
-2. Klik rechtsonder op **Trigger toevoegen**.
-3. Vul in:
-   - Functie: **stuurNavragen**
-   - Gebeurtenisbron: **Tijdgestuurd**
-   - Type trigger: **Dagteller**
-   - Tijd van de dag: bijvoorbeeld **9:00 tot 10:00**
-4. Klik **Opslaan**. Google vraagt eenmalig om toestemming.
+1. Kies in de Apps Script-editor bovenin de functie **zetNavraagTriggerAan**
+2. Klik **Uitvoeren**
 
-Klaar. Vanaf nu kijkt het script elke ochtend of er introducties zijn van drie weken
-geleden die nog geen navraag hebben gehad.
+Meer niet. Het script ruimt eerst eventuele oude triggers op (twee keer uitvoeren levert
+dus geen dubbele mails op), zet er een nieuwe neer voor elke ochtend rond 9 uur, en laat
+daarna meteen zien wie er op dit moment aan de beurt zou zijn.
 
-> Zet je de trigger niet aan, dan werkt de rest van het loket gewoon; er wordt dan
-> alleen nooit nagevraagd.
+Uitzetten kan met **zetNavraagTriggerUit**.
+
+> Je kunt het ook met de hand doen via het klokje in de zijbalk (Triggers → Trigger
+> toevoegen → `stuurNavragen`, tijdgestuurd, dagteller, 9:00). Het resultaat is
+> hetzelfde; de functie is alleen minder klikwerk en voorkomt dubbele triggers.
+
+## Krijgt dan niet iedereen tegelijk een mail?
+
+Nee. Een regel komt pas in aanmerking als aan alle drie deze voorwaarden is voldaan:
+
+1. de status is **voorgesteld** — er is dus echt een introductie verstuurd
+2. **Besloten op** is minstens `NAVRAAG_DAGEN` (nu 21) dagen geleden
+3. **Nagevraagd op** is nog leeg — wie het al heeft gehad, krijgt het nooit opnieuw
+
+Aanvragen die je hebt afgewezen of die nog op een beslissing wachten tellen niet mee.
+
+Wil je zeker weten wat er morgenochtend gaat gebeuren: draai **toonNavraagWachtrij**.
+Die laat zien wie er aan de beurt is en verstuurt niets. Staat er "Niemand aan de beurt",
+dan gebeurt er vannacht ook niets.
 
 **Een keer met de hand proberen?** Kies de functie **stuurNavragen** en klik Uitvoeren.
 Er gaat alleen post uit naar introducties die echt drie weken oud zijn, dus meestal

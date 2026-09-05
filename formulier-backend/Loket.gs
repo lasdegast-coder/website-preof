@@ -1037,44 +1037,110 @@ function introductiesPerAlumnus() {
    werkt de rest van het loket gewoon, er wordt dan alleen nooit nagevraagd.
    ═══════════════════════════════════════════════════════════════════ */
 
-function stuurNavragen() {
+/* Welke regels vandaag aan de beurt zijn. Drie voorwaarden, en alle drie
+   moeten kloppen: er is echt een introductie verstuurd, die is minstens
+   NAVRAAG_DAGEN geleden, en er is nog niet eerder nagevraagd. Wie eenmaal een
+   navraag heeft gehad krijgt hem dus nooit een tweede keer.
+
+   Zowel stuurNavragen() als toonNavraagWachtrij() gebruikt deze functie, zodat
+   wat je in de proefdraai ziet precies is wat er verstuurd wordt. */
+function navraagWachtrij() {
   const blad = loketBestand().getSheetByName(LOKET_BLAD);
-  if (!blad || blad.getLastRow() < 2) return;
+  if (!blad || blad.getLastRow() < 2) return { blad: null, kolom: null, regels: [] };
 
   const rijen = blad.getDataRange().getValues();
   const kop = rijen[0].map(String);
   const k = function (naam) { return kop.indexOf(naam); };
   if (k('Nagevraagd op') === -1) {
-    // Oud tabblad zonder de nieuwe kolommen. Beter niets doen dan in de
-    // verkeerde cel schrijven.
     console.error('Tabblad ' + LOKET_BLAD + ' mist de kolom "Nagevraagd op". '
       + 'Voeg de kolommen Nagevraagd op, Cijfer, Wat beter kan en Beantwoord op toe.');
-    return;
+    return { blad: null, kolom: null, regels: [] };
   }
 
   const grens = new Date(Date.now() - NAVRAAG_DAGEN * 24 * 3600 * 1000);
-  let verstuurd = 0;
+  const regels = [];
 
   for (let i = 1; i < rijen.length; i++) {
     const rij = rijen[i];
-    if (String(rij[k('Status')]) !== 'voorgesteld') continue;
-    if (String(rij[k('Nagevraagd op')]).trim()) continue;      // al gehad
+    if (String(rij[k('Status')]) !== 'voorgesteld') continue;     // nooit voorgesteld
+    if (String(rij[k('Nagevraagd op')]).trim()) continue;          // al gehad
     const besloten = rij[k('Besloten op')];
-    if (!(besloten instanceof Date) || besloten > grens) continue;
+    if (!(besloten instanceof Date) || besloten > grens) continue; // nog te vers
 
-    const ref = String(rij[k('Ref')]);
+    regels.push({
+      regel: i + 1,
+      ref: String(rij[k('Ref')]),
+      naam: String(rij[k('Student')]),
+      email: String(rij[k('E-mail student')]),
+      besloten: besloten,
+    });
+  }
+  return { blad: blad, kolom: k('Nagevraagd op') + 1, regels: regels };
+}
+
+/* Kijken wie er aan de beurt zou zijn, zonder iets te versturen. Draai dit
+   gerust als je wilt weten wat de trigger morgenochtend gaat doen. */
+function toonNavraagWachtrij() {
+  const wacht = navraagWachtrij();
+  if (!wacht.regels.length) {
+    console.log('Niemand aan de beurt. Er wordt vannacht dus niets verstuurd.');
+    console.log('Een regel komt pas in aanmerking als er een introductie is verstuurd,'
+      + ' die minstens ' + NAVRAAG_DAGEN + ' dagen geleden is, en er nog niet is nagevraagd.');
+    return;
+  }
+  console.log(wacht.regels.length + ' student(en) zouden nu een navraag krijgen:');
+  wacht.regels.forEach(function (r) {
+    console.log('  ' + r.ref + '  ' + r.naam + '  <' + r.email + '>  '
+      + 'voorgesteld op ' + Utilities.formatDate(r.besloten, 'Europe/Amsterdam', 'd MMMM yyyy'));
+  });
+}
+
+function stuurNavragen() {
+  const wacht = navraagWachtrij();
+  let verstuurd = 0;
+
+  wacht.regels.forEach(function (r) {
     try {
-      mailNavraag(String(rij[k('Student')]), String(rij[k('E-mail student')]), ref);
+      mailNavraag(r.naam, r.email, r.ref);
       // Pas na een geslaagde verzending stempelen. Gaat het mailen mis, dan
       // staat de regel er morgen weer bij in plaats van stil te verdwijnen.
-      blad.getRange(i + 1, k('Nagevraagd op') + 1).setValue(new Date());
+      wacht.blad.getRange(r.regel, wacht.kolom).setValue(new Date());
       verstuurd++;
     } catch (err) {
-      console.error('Navraag ' + ref + ' mislukt: ' + err);
+      console.error('Navraag ' + r.ref + ' mislukt: ' + err);
     }
-  }
+  });
 
-  if (verstuurd) console.log(verstuurd + ' navraagmail(s) verstuurd.');
+  console.log(verstuurd ? verstuurd + ' navraagmail(s) verstuurd.' : 'Niemand aan de beurt.');
+}
+
+/* ---- de trigger aan- en uitzetten --------------------------------
+   Draai zetNavraagTriggerAan() één keer in de editor. Daarna kijkt Google
+   elke ochtend zelf of er introducties van drie weken oud zijn. Dit hoeft
+   niet via het klokje in de zijbalk; een script mag zijn eigen trigger
+   aanmaken.
+   ------------------------------------------------------------------- */
+function zetNavraagTriggerAan() {
+  // Eerst opruimen. Twee keer uitvoeren zou anders twee triggers opleveren,
+  // en dan gaat elke navraag dubbel de deur uit.
+  const oud = ScriptApp.getProjectTriggers().filter(function (t) {
+    return t.getHandlerFunction() === 'stuurNavragen';
+  });
+  oud.forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  if (oud.length) console.log(oud.length + ' bestaande trigger(s) verwijderd.');
+
+  ScriptApp.newTrigger('stuurNavragen').timeBased().atHour(9).everyDays(1).create();
+  console.log('Klaar. Elke ochtend rond 9 uur kijkt het script of er introducties'
+    + ' van ' + NAVRAAG_DAGEN + ' dagen oud zijn die nog geen navraag hebben gehad.');
+  toonNavraagWachtrij();
+}
+
+function zetNavraagTriggerUit() {
+  const oud = ScriptApp.getProjectTriggers().filter(function (t) {
+    return t.getHandlerFunction() === 'stuurNavragen';
+  });
+  oud.forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  console.log(oud.length ? 'Trigger uitgezet.' : 'Er stond geen trigger aan.');
 }
 
 /* De mail met de cijfers als knop. Er gaat ook een gewone tekstversie mee:
