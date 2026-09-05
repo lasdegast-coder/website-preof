@@ -40,7 +40,8 @@ const MAX_PER_DAG = 60;
    die de student in zijn bevestiging leest. */
 const FORMULIEREN = {
   afspraak: {
-    tabblad: 'Afspraken',
+    tabblad: 'aanvragen voor gesprekken',
+    tabbladId: 1236646472,
     onzeTitel: 'APPOINTMENT REQUEST',
     onderwerp: 'Appointment request',
     bevestiging: [
@@ -50,6 +51,7 @@ const FORMULIEREN = {
   },
   contact: {
     tabblad: 'Berichten',
+    tabbladId: 0,                    // bestaat nog niet; wordt op naam aangemaakt
     onzeTitel: 'MESSAGE VIA THE WEBSITE',
     onderwerp: 'Message via the website',
     bevestiging: [
@@ -58,7 +60,8 @@ const FORMULIEREN = {
     ],
   },
   alumnus: {
-    tabblad: 'Alumniverzoeken',
+    tabblad: 'Alumni die nog ontbreekt',
+    tabbladId: 1891756643,
     onzeTitel: 'ALUMNUS WANTED',
     onderwerp: 'Alumni request',
     bevestiging: [
@@ -354,8 +357,10 @@ function schrijfInBlad(soort, d) {
   const bestand = SpreadsheetApp.getActiveSpreadsheet();
   if (!bestand) return;           // script staat los van een sheet: dan alleen mailen
 
+  // Op nummer zoeken en pas daarna op naam: een hernoemd tabblad zou anders
+  // stilletjes een nieuw leeg tabblad opleveren. Zie bladOp() in Loket.gs.
   const naam = FORMULIEREN[soort].tabblad;
-  let blad = bestand.getSheetByName(naam);
+  let blad = bladOp(bestand, FORMULIEREN[soort].tabbladId, naam);
   if (!blad) {
     blad = bestand.insertSheet(naam);
     blad.setFrozenRows(1);

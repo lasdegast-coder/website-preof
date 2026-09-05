@@ -60,7 +60,18 @@ const ALUMNI_BLAD       = '';
    bestand en zou anders opnieuw bij nul beginnen met tellen.
    ------------------------------------------------------------------- */
 const LOKET_BESTAND_ID  = '';
-const LOKET_BLAD        = 'Introducties';
+
+/* Een tabblad wordt opgezocht op zijn vaste nummer, niet op zijn naam. Dat
+   nummer verandert nooit, ook niet als iemand het tabblad hernoemt; de naam
+   wel. Dat is hier een keer misgegaan: de tabbladen kregen andere namen en
+   het script maakte daarna vrolijk nieuwe lege tabbladen aan, waardoor de
+   telling van hoe vaak een alumnus al benaderd was op nul stond.
+
+   Het nummer staat in de adresbalk van de sheet achter #gid= als je op dat
+   tabblad staat. De naam blijft eronder staan als terugval, en om een nieuw
+   tabblad mee aan te maken als het er nog niet is. */
+const LOKET_BLAD_ID     = 1881025143;
+const LOKET_BLAD        = 'Alumni aanvraag';
 
 /* Zoveel aanvragen mag één student tegelijk open hebben staan. Zonder rem
    stuurt iemand op één avond de hele lijst af en is het netwerk voor de
@@ -150,6 +161,19 @@ function alumniBestand() {
   return ALUMNI_BESTAND_ID
     ? SpreadsheetApp.openById(ALUMNI_BESTAND_ID)
     : SpreadsheetApp.getActiveSpreadsheet();
+}
+
+/* Zoekt een tabblad op nummer, en pas daarna op naam. Geeft null als het er
+   niet is; de aanroeper bepaalt of hij het dan aanmaakt. */
+function bladOp(bestand, nummer, naam) {
+  if (!bestand) return null;
+  if (nummer) {
+    const bladen = bestand.getSheets();
+    for (let i = 0; i < bladen.length; i++) {
+      if (bladen[i].getSheetId() === nummer) return bladen[i];
+    }
+  }
+  return naam ? bestand.getSheetByName(naam) : null;
 }
 
 function loketBestand() {
@@ -495,7 +519,7 @@ function loketVerzoek(d) {
 
 /* Hoeveel aanvragen van dit mailadres nog op een beslissing wachten. */
 function openAanvragen(email) {
-  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  const blad = bladOp(loketBestand(), LOKET_BLAD_ID, LOKET_BLAD);
   if (!blad || blad.getLastRow() < 2) return 0;
   const rijen = blad.getDataRange().getValues();
   const kop = rijen[0].map(String);
@@ -988,7 +1012,7 @@ const LOKET_KOP = ['Datum', 'Ref', 'Student', 'Studie', 'E-mail student',
 
 function loketBlad() {
   const bestand = loketBestand();
-  let blad = bestand.getSheetByName(LOKET_BLAD);
+  let blad = bladOp(bestand, LOKET_BLAD_ID, LOKET_BLAD);
   if (!blad) {
     blad = bestand.insertSheet(LOKET_BLAD);
     blad.getRange(1, 1, 1, LOKET_KOP.length).setValues([LOKET_KOP]).setFontWeight('bold');
@@ -1054,7 +1078,7 @@ function zetIntroductieStatus(ref, status, gekozen) {
 /* Per alumnus de datums waarop er een introductie is verstuurd. Hiermee
    telt ruimteVan() hoeveel er deze maand of dit kwartaal al zijn geweest. */
 function introductiesPerAlumnus() {
-  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  const blad = bladOp(loketBestand(), LOKET_BLAD_ID, LOKET_BLAD);
   if (!blad || blad.getLastRow() < 2) return {};
   const rijen = blad.getDataRange().getValues();
   const kop = rijen[0].map(String);
@@ -1096,7 +1120,7 @@ function introductiesPerAlumnus() {
    Zowel stuurNavragen() als toonNavraagWachtrij() gebruikt deze functie, zodat
    wat je in de proefdraai ziet precies is wat er verstuurd wordt. */
 function navraagWachtrij() {
-  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  const blad = bladOp(loketBestand(), LOKET_BLAD_ID, LOKET_BLAD);
   if (!blad || blad.getLastRow() < 2) return { blad: null, kolom: null, regels: [] };
 
   const rijen = blad.getDataRange().getValues();
@@ -1191,7 +1215,7 @@ function zetNavraagTriggerAan() {
    over. Er wordt niets in de sheet veranderd: de echte navraag komt gewoon
    nog op zijn eigen moment. Puur om te zien hoe het eruitziet. */
 function testNavraagNu() {
-  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  const blad = bladOp(loketBestand(), LOKET_BLAD_ID, LOKET_BLAD);
   if (!blad || blad.getLastRow() < 2) {
     console.log('Er staat nog geen enkele aanvraag in ' + LOKET_BLAD + '.');
     return;
@@ -1343,7 +1367,7 @@ function loketFeedbackOpslaan(parameter) {
    overschrijft het eerste; wie zich bedenkt, mag dat. Een lege toelichting
    laat een eerder geschreven tekst staan. */
 function bewaarFeedback(ref, cijfer, tekst) {
-  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  const blad = bladOp(loketBestand(), LOKET_BLAD_ID, LOKET_BLAD);
   if (!blad) return;
   const rij = vindIntroductie(ref);
   if (!rij) return;
