@@ -167,7 +167,7 @@
       <div class="contact-intro reveal">
         <p class="eyebrow" data-t="ct.eyebrow">Contact</p>
         <h2 data-t="ct.kop">Send us a message<span class="dot-clay">.</span></h2>
-        <p data-t="ct.lead">A question, an idea, an event we should know about, or you would simply rather write than fill in the appointment form. Tell us what is on your mind and one of us gets back to you.</p>
+        <p data-ct-lead>A question, an idea, an event we should know about, or you would simply rather write than fill in the appointment form. Tell us what is on your mind and one of us gets back to you.</p>
         <ul class="contact-details">
           <li><span data-icon="Mail" data-size="18" data-color="#C2683A"></span>
             <a href="mailto:contact@impactconnectutrecht.com">contact@impactconnectutrecht.com</a></li>
@@ -177,6 +177,17 @@
       </div>
 
       <form class="contact-form reveal" data-delay="140" data-contact-form novalidate>
+        <!-- Wie schrijft er? Niet alleen om het derde veld te veranderen: de
+             keuze gaat mee naar de mail en de sheet, zodat een bericht van een
+             organisatie meteen bij de juiste persoon terechtkomt. Student staat
+             standaard aan, dat is verreweg de meeste bezoekers. -->
+        <div class="ct-field ct-soort">
+          <span class="chip-label" data-t="ct.soort">Who's writing?</span>
+          <div class="chip-row">
+            <button type="button" class="chip on" data-ct-soort="Student" data-t="ct.soort.student">I'm a student</button>
+            <button type="button" class="chip" data-ct-soort="Organisation" data-t="ct.soort.org">I'm an organisation</button>
+          </div>
+        </div>
         <div class="ct-row">
           <div class="ct-field">
             <label for="ct-naam" data-t="ct.naam">Your name</label>
@@ -188,8 +199,8 @@
           </div>
         </div>
         <div class="ct-field">
-          <label for="ct-studie"><span data-t="ct.studie">Study and year</span> <span class="ct-opt" data-t="form.optioneel">(optional)</span></label>
-          <input type="text" id="ct-studie" name="studie" data-t-placeholder="ct.studie.hint" placeholder="MSc Sustainable Development, year 1" />
+          <label for="ct-studie"><span data-ct-veldnaam>Study and year</span> <span class="ct-opt" data-t="form.optioneel">(optional)</span></label>
+          <input type="text" id="ct-studie" name="studie" placeholder="MSc Sustainable Development, year 1" />
         </div>
         <div class="ct-field">
           <label for="ct-bericht" data-t="ct.bericht">Your message</label>

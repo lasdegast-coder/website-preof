@@ -88,7 +88,8 @@ const VRAGEN = {
     { sleutel: 'notities',  label: 'Anything else' },
   ],
   contact: [
-    { sleutel: 'studie',  label: 'Study and year' },
+    { sleutel: 'soort',   label: 'Writing as' },
+    { sleutel: 'studie',  label: 'Study / organisation' },
     { sleutel: 'bericht', label: 'Message' },
   ],
   alumnus: [

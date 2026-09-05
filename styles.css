@@ -1454,3 +1454,7 @@ body::before {
 }
 .team-li:hover { color: #0A66C2; }          /* het blauw van LinkedIn zelf */
 .footer-li { display: inline-flex; align-items: center; gap: 6px; }
+
+/* De twee chips bovenin het contactformulier staan iets ruimer van de
+   velden eronder: het is een keuze vooraf, geen invulveld. */
+.ct-soort { margin-bottom: 4px; }

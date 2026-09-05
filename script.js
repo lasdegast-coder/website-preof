@@ -1884,6 +1884,25 @@ function initContactForm() {
     const toon = (el, tekst) => { el.textContent = tekst; el.hidden = false; };
     const verberg = (el) => { el.hidden = true; };
 
+    /* Student of organisatie. De keuze verandert het derde veld en de zin
+       erboven, en gaat als antwoord mee naar de mail en de sheet, zodat een
+       bericht van een organisatie meteen bij de juiste persoon komt. */
+    let soort = "Student";
+    const chips = $$("[data-ct-soort]", form);
+    const lead = $("[data-ct-lead]", form.closest(".contact-section"));
+    const veldnaam = $("[data-ct-veldnaam]", form);
+
+    function pasSoortToe() {
+      const s = soort === "Organisation" ? "org" : "student";
+      chips.forEach((c) => c.classList.toggle("on", c.dataset.ctSoort === soort));
+      if (lead) lead.textContent = t(`ct.lead.${s}`);
+      if (veldnaam) veldnaam.textContent = t(`ct.veld.${s}`);
+      const studie = veldje("studie");
+      if (studie) studie.placeholder = t(`ct.hint.${s}`);
+    }
+    chips.forEach((c) => c.addEventListener("click", () => { soort = c.dataset.ctSoort; pasSoortToe(); }));
+    pasSoortToe();
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       verberg(fout);
@@ -1909,13 +1928,13 @@ function initContactForm() {
         return;
       }
 
-      const onderwerp = `Message via the website, ${naam}`;
-      const tekst = [`Name: ${naam}`, `Email: ${email}`,
-        studie ? `Study: ${studie}` : null, "", bericht]
+      const onderwerp = `Message via the website (${soort}), ${naam}`;
+      const tekst = [`Type: ${soort}`, `Name: ${naam}`, `Email: ${email}`,
+        studie ? `${soort === "Organisation" ? "Organisation" : "Study"}: ${studie}` : null, "", bericht]
         .filter((r) => r !== null).join("\n");
 
       knop.disabled = true;
-      const ok = await sendForm({ formulier: "contact", naam, email, studie, bericht });
+      const ok = await sendForm({ formulier: "contact", soort, naam, email, studie, bericht });
       knop.disabled = false;
 
       if (ok) {
