@@ -349,7 +349,10 @@ function rijGegevens(soort, d) {
   VRAGEN[soort].forEach(function (v) {
     rij[v.label] = tekstOf(d[v.sleutel], '');
   });
-  rij['Afgehandeld'] = '';        // kolom om zelf bij te houden wie je al geholpen hebt
+  // Geen kolom "Afgehandeld" meer: die is vervangen door Status en Contact
+  // person, die met de hand vooraan in het tabblad zijn gezet. Zou hij hier
+  // blijven staan, dan kwam hij bij de volgende aanvraag weer achteraan
+  // terug naast de kolommen die jullie zelf bijhouden.
   return rij;
 }
 
