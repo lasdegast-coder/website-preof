@@ -21,9 +21,19 @@ fi
 
 echo
 echo "▸ Stap 2 van 4: welk Apps Script-project?"
-echo "  Open het project, ga naar het tandwiel (Projectinstellingen) en"
-echo "  kopieer de Script-ID."
-read -r -p "  Script-ID: " SCRIPT_ID
+BEKEND=""
+if [ -f "$HIER/.clasp.json" ]; then
+  BEKEND="$(sed -n 's/.*"scriptId":"\([^"]*\)".*/\1/p' "$HIER/.clasp.json")"
+fi
+if [ -n "$BEKEND" ]; then
+  echo "  Al bekend: $BEKEND"
+  read -r -p "  Enter om deze te houden, of plak een andere Script-ID: " SCRIPT_ID
+  SCRIPT_ID="${SCRIPT_ID:-$BEKEND}"
+else
+  echo "  Open het project, ga naar het tandwiel (Projectinstellingen) en"
+  echo "  kopieer de Script-ID."
+  read -r -p "  Script-ID: " SCRIPT_ID
+fi
 [ -n "$SCRIPT_ID" ] || { echo "Geen ID opgegeven. Gestopt."; exit 1; }
 
 echo
@@ -68,7 +78,7 @@ if [ -f "$KOPIE/Code.gs" ] && ! diff -q "$KOPIE/Code.gs" "$HIER/Code.gs" >/dev/n
 fi
 
 cp "$TIJDELIJK/appsscript.json" "$HIER/appsscript.json"
-printf '{"scriptId":"%s","rootDir":"."}\n' "$SCRIPT_ID" > "$HIER/.clasp.json"
+printf '{"scriptId":"%s","rootDir":".","fileExtension":"gs"}\n' "$SCRIPT_ID" > "$HIER/.clasp.json"
 echo "  Gelukt. De projectinstellingen staan nu in formulier-backend/appsscript.json."
 
 echo
@@ -76,10 +86,15 @@ echo "▸ Stap 4 van 4: welke implementatie is de live webapp?"
 # Er kunnen er meerdere zijn. We willen de bestaande bijwerken en niet een
 # nieuwe maken, want een nieuwe implementatie krijgt een nieuw adres en dan
 # wijst de website nog naar de oude.
-$CLASP deployments 2>/dev/null | sed 's/^/  /'
+# In de map met .clasp.json draaien, anders weet clasp niet welk project je
+# bedoelt. En als het opvragen mislukt mag dat de opzet niet afbreken: de
+# implementatie-ID kun je ook met de hand invullen.
+( cd "$HIER" && $CLASP deployments 2>&1 || true ) | sed 's/^/  /'
 echo
 echo "  Hierboven staan de implementaties. De live webapp is meestal die met"
 echo "  een omschrijving, niet die met @HEAD."
+echo "  Zie je hier niets bruikbaars, kijk dan in de editor onder"
+echo "  Implementeren → Implementaties beheren."
 read -r -p "  Implementatie-ID (leeg laten = alleen code pushen, niet uitrollen): " DEPLOY_ID
 if [ -n "$DEPLOY_ID" ]; then
   echo "$DEPLOY_ID" > "$HIER/.clasp-deployment"
