@@ -1433,3 +1433,14 @@ body::before {
   .nav-cta { width: 100%; justify-content: center; margin-top: 10px; padding: 13px 18px; }
   .taal-knop { align-self: flex-start; margin-top: 12px; }
 }
+
+/* ═══ HET LOGO ══════════════════════════════════════════════════════
+   De lockup is nu een afbeelding in plaats van drie stukken HTML. De
+   hoogte staat vast en de breedte volgt, zodat hij nooit vervormt.
+   ═════════════════════════════════════════════════════════════════ */
+.brand img { display: block; height: 28px; width: auto; }
+.footer-brand img { display: block; height: 31px; width: auto; }
+/* Op een smal scherm moet het logo ruimte laten voor de menuknop. */
+@media (max-width: 460px) {
+  .brand img { height: 23px; }
+}
