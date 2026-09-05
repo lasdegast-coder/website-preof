@@ -1,3 +1,7 @@
 .DS_Store
 *.pyc
 __pycache__/
+
+# clasp: lokale koppeling met het Apps Script-project
+formulier-backend/.clasp.json
+formulier-backend/.clasp-deployment

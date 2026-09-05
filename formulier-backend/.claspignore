@@ -1,0 +1,6 @@
+# Alleen de scriptbestanden en de projectinstellingen gaan naar Google.
+# De hulpscripts en de uitleg horen in de repo thuis, niet in de editor.
+**/**
+!Code.gs
+!Loket.gs
+!appsscript.json

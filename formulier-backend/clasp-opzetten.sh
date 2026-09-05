@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# Eenmalige koppeling tussen deze map en het Apps Script-project.
+# Daarna is `git push` genoeg: de pre-push hook stuurt de backend mee.
+#
+#   ./formulier-backend/clasp-opzetten.sh
+#
+set -euo pipefail
+
+CLASP="npx --yes @google/clasp@2.4.2"
+HIER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$HIER/.." && pwd)"
+
+echo "▸ Stap 1 van 4: inloggen bij Google"
+if [ -f "$HOME/.clasprc.json" ]; then
+  echo "  Je bent al ingelogd. (Ander account nodig? Voer eerst 'npx @google/clasp logout' uit.)"
+else
+  echo "  Er opent een browservenster. Kies het account dat het script beheert."
+  $CLASP login
+fi
+
+echo
+echo "▸ Stap 2 van 4: welk Apps Script-project?"
+echo "  Open het project, ga naar het tandwiel (Projectinstellingen) en"
+echo "  kopieer de Script-ID."
+read -r -p "  Script-ID: " SCRIPT_ID
+[ -n "$SCRIPT_ID" ] || { echo "Geen ID opgegeven. Gestopt."; exit 1; }
+
+echo
+echo "▸ Stap 3 van 4: instellingen van het project ophalen"
+# We halen alleen appsscript.json op (de projectinstellingen: tijdzone, wie de
+# webapp mag aanroepen). Dat doen we in een tijdelijke map, want een gewone
+# 'clasp pull' zou onze eigen Code.gs overschrijven met de versie die nu bij
+# Google staat — precies andersom dan de bedoeling.
+TIJDELIJK="$(mktemp -d)"
+trap 'rm -rf "$TIJDELIJK"' EXIT
+printf '{"scriptId":"%s","rootDir":"."}\n' "$SCRIPT_ID" > "$TIJDELIJK/.clasp.json"
+( cd "$TIJDELIJK" && $CLASP pull >/dev/null )
+
+if [ ! -f "$TIJDELIJK/appsscript.json" ]; then
+  echo "  Geen appsscript.json gevonden. Klopt de Script-ID, en heeft dit account toegang?"
+  exit 1
+fi
+cp "$TIJDELIJK/appsscript.json" "$HIER/appsscript.json"
+printf '{"scriptId":"%s","rootDir":"."}\n' "$SCRIPT_ID" > "$HIER/.clasp.json"
+echo "  Gelukt. De projectinstellingen staan nu in formulier-backend/appsscript.json."
+
+echo
+echo "▸ Stap 4 van 4: welke implementatie is de live webapp?"
+# Er kunnen er meerdere zijn. We willen de bestaande bijwerken en niet een
+# nieuwe maken, want een nieuwe implementatie krijgt een nieuw adres en dan
+# wijst de website nog naar de oude.
+$CLASP deployments 2>/dev/null | sed 's/^/  /'
+echo
+echo "  Hierboven staan de implementaties. De live webapp is meestal die met"
+echo "  een omschrijving, niet die met @HEAD."
+read -r -p "  Implementatie-ID (leeg laten = alleen code pushen, niet uitrollen): " DEPLOY_ID
+if [ -n "$DEPLOY_ID" ]; then
+  echo "$DEPLOY_ID" > "$HIER/.clasp-deployment"
+  echo "  Opgeslagen."
+else
+  rm -f "$HIER/.clasp-deployment"
+  echo "  Overgeslagen. Je moet dan zelf uitrollen via Implementeren → Implementaties beheren."
+fi
+
+echo
+echo "▸ De hook installeren"
+cp "$HIER/pre-push" "$REPO/.git/hooks/pre-push"
+chmod +x "$REPO/.git/hooks/pre-push"
+echo "  Klaar. Vanaf nu stuurt 'git push' de backend automatisch mee."
+echo
+echo "Probeer het uit met:  ./formulier-backend/uitrollen.sh"

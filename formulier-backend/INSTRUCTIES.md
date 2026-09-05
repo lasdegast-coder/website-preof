@@ -340,3 +340,81 @@ die wil je vaker inzetten en misschien om meer ruimte vragen — en welke introd
 laag scoren, want in de kolom *Wat beter kan* staat dan meestal precies waarom. Een
 student die niets invult maar wel een 8 geeft, telt gewoon mee: het cijfer is al binnen
 voordat de pagina opent.
+
+
+---
+
+# Alles met één push (clasp)
+
+Standaard moet je `Code.gs` en `Loket.gs` met de hand in de Apps Script-editor plakken.
+Dat werkt, maar het kan misgaan: een verkeerd geplakt accent, of een wijziging die je
+in de repo doet en vergeet over te zetten. Dan draait er iets anders dan er in git
+staat, en dat zie je pas als er iets stukgaat.
+
+Met **clasp**, Google's eigen commandoregeltool, is `git push` voortaan genoeg. De hook
+merkt dat er Apps Script-code is veranderd, stuurt die naar Google, rolt hem uit naar
+de bestaande webapp, en pas daarna gaat de website weg.
+
+## Eenmalig opzetten
+
+```bash
+cd "/Users/joukenabuurs/Documents/Impact connect/impact-connect-static"
+./formulier-backend/clasp-opzetten.sh
+```
+
+Het script loopt vier stappen langs en vraagt onderweg om twee dingen:
+
+1. **Inloggen bij Google.** Er opent een browservenster. Kies het account dat het
+   script beheert — hetzelfde account dat de mails verstuurt.
+2. **De Script-ID.** Die vind je in het Apps Script-project onder het tandwiel
+   (Projectinstellingen).
+3. Het haalt daarna de projectinstellingen op.
+4. **De implementatie-ID** van de live webapp. Het script laat de lijst zien; kies die
+   met een omschrijving, niet `@HEAD`. Zo wordt de bestaande webapp bijgewerkt en
+   blijft het adres hetzelfde als in `data.js`.
+
+Tot slot installeert het de pre-push hook. Klaar.
+
+## Daarna
+
+```bash
+git push
+```
+
+Meer niet. Verander je alleen de website, dan gebeurt er niets extra's. Verander je
+`Code.gs` of `Loket.gs`, dan zie je:
+
+```
+▸ Er is Apps Script-code gewijzigd. Die gaat eerst naar Google.
+▸ Code naar Google sturen
+▸ Uitrollen naar de bestaande webapp (adres blijft hetzelfde)
+▸ Klaar. De wijziging is live.
+```
+
+Alleen de backend bijwerken, zonder de site aan te raken:
+
+```bash
+./formulier-backend/uitrollen.sh
+```
+
+## Als het misgaat
+
+Mislukt het uitrollen, dan **stopt de push**. Dat is met opzet: een site die live gaat
+terwijl de backend nog de oude versie draait, is precies de situatie waarin de
+alumnilijst leeg blijft en niemand weet waarom.
+
+Moet je toch alleen de site pushen:
+
+```bash
+git push --no-verify
+```
+
+## Wat er lokaal blijft
+
+`formulier-backend/.clasp.json` en `.clasp-deployment` staan in `.gitignore`: dat is
+jouw koppeling, niet die van het project. Je Google-inloggegevens staan in
+`~/.clasprc.json`, buiten de repo. Er komt dus **geen enkel wachtwoord of token in
+GitHub** te staan.
+
+Werkt een collega ook aan de code, dan draait die hetzelfde opzetscript op zijn eigen
+machine.
