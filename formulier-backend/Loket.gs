@@ -616,25 +616,46 @@ function mailLoketBevestiging(student, gekozen) {
 
 /* De introductie zelf. Beiden in de kop en de vraag erin.
 
-   Over de toon: de vraag "wil je reageren" is makkelijker met ja te
-   beantwoorden als je weet hoe weinig er nodig is en waarom het uitmaakt.
-   Vandaar dat er staat dat een paar regels genoeg zijn, en waarom die paar
-   regels ertoe doen. De uitweg staat er los onder, zonder dat iemand zich
-   hoeft te verantwoorden; dat is niet alleen aardiger maar levert ook meer
-   eerlijke nee's op dan een alumnus die de mail maar laat liggen.
+   Over de toon: we vragen hier om een echt antwoord, niet om een snel
+   antwoord. De drie voorbeelden maken concreet wat een goed antwoord is,
+   zodat een alumnus niet hoeft te raden wat er van hem verwacht wordt. En de
+   uitnodiging voor een gesprek erna staat er met opzet in: één mail is
+   zelden waar het bij blijft als het klikt.
+
+   Dit kost wel wat: hoe meer je vraagt, hoe meer mensen het uitstellen. De
+   herinnering na een week vangt dat op.
+
+   De uitweg staat er los onder, zonder dat iemand zich hoeft te
+   verantwoorden; dat levert meer eerlijke nee's op dan een alumnus die de
+   mail maar laat liggen.
 
    Over "zij" en "hij": van studenten weten we het geslacht niet, en dat gaan
    we ook niet vragen. Daarom overal "they". */
 function mailIntroductie(student, a) {
   const voornaam = student.naam.split(' ')[0];
   const kanaal = a.kanaal.toLowerCase();
-  const vraagOmActie = kanaal.indexOf('phone') !== -1 || kanaal.indexOf('telefo') !== -1
-    ? 'You told us you would rather talk than type. Let ' + voornaam
-      + ' know when it suits you and they will call.'
-    : kanaal.indexOf('video') !== -1 || kanaal.indexOf('call') !== -1
-    ? 'You told us you prefer a video call. Send ' + voornaam
-      + ' two times that suit you and they will set up the link.'
-    : 'It would help ' + voornaam + ' a lot if you could write back, even just a few lines.';
+  const perTelefoon = kanaal.indexOf('phone') !== -1 || kanaal.indexOf('telefo') !== -1;
+  const perVideo = kanaal.indexOf('video') !== -1 || kanaal.indexOf('call') !== -1;
+
+  // Een lijst regels en geen lange zin, want dit is een tekstmail: regels die
+  // niet zijn afgebroken worden door het mailprogramma op een willekeurige
+  // plek gevouwen en dat leest rommelig. Bij telefoon en video staat er een
+  // lege regel achter, zodat het afspreken en de inhoud niet aan elkaar plakken.
+  const opening = perTelefoon
+    ? ['You told us you would rather talk than type. Let ' + voornaam + ' know when',
+       'it suits you and they will call.', '']
+    : perVideo
+    ? ['You told us you prefer a video call. Send ' + voornaam + ' two times that suit',
+       'you and they will set up the link.', '']
+    : ['It would help ' + voornaam + ' a lot if you could write back, and to take',
+       'the space you need for it.'];
+
+  // Bij telefoon en video is het gesprek al het plan, dus daar zou "en als er
+  // ruimte is voor een gesprek" nergens op slaan.
+  const vervolg = (perTelefoon || perVideo)
+    ? ['And if it turns into more than one conversation, so much the better.']
+    : ['And if there is room for a call or a coffee afterwards, do say so. The',
+       'conversations that stick rarely fit in one email.'];
 
   const regels = [
     'Hi ' + a.volledigeNaam.split(' ')[0] + ',',
@@ -653,9 +674,11 @@ function mailIntroductie(student, a) {
     'Email: ' + student.email,
     student.studie ? 'Study: ' + student.studie : null,
     '',
-    vraagOmActie,
-    'You do not need a long answer. How it actually went for you is worth more',
-    'than advice, and it is the one thing ' + voornaam + ' cannot read anywhere.',
+  ].concat(opening).concat([
+    'What you actually did, what you would do differently, what nobody told you',
+    'at the time: that is the kind of answer a student cannot find anywhere else.',
+    '',
+  ]).concat(vervolg).concat([
     '',
     'Not a good moment? Let us know and we will pick it up from there. No need',
     'to explain yourself.',
@@ -667,7 +690,7 @@ function mailIntroductie(student, a) {
     '— We have you down as: ' + (a.frequentie || 'no frequency given')
       + (a.kanaal ? ', contact by ' + a.kanaal.toLowerCase() : '') + '.',
     '  Want to pause or change that? Reply to this mail and we\'ll sort it.',
-  ].filter(function (r) { return r !== null; });
+  ]).filter(function (r) { return r !== null; });
 
   MailApp.sendEmail({
     to: a.mail,
