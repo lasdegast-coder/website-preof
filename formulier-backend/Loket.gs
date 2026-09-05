@@ -1252,7 +1252,7 @@ function mailNavraag(naam, email, ref) {
     + '<span style="font-size:13px;color:#666">1 = not at all, 10 = really helped me</span></p>'
     + '<p style="margin:0 0 4px">' + knoppen + '</p>'
     + '<p style="font-size:13px;color:#666">One click is enough. On the page that opens '
-    + 'you can add what could be better, but you don\'t have to.</p>'
+    + 'you can tell us how it went, but you don\'t have to.</p>'
     + '<p>Thanks,<br>' + AFZENDERNAAM + '</p></div>';
 
   const tekst = [
@@ -1268,8 +1268,8 @@ function mailNavraag(naam, email, ref) {
     return '  ' + (c < 10 ? ' ' : '') + c + '  ' + feedbackLink(ref, c);
   })).concat([
     '',
-    'One click is enough. On the page that opens you can add what could be',
-    'better, but you don\'t have to.',
+    'One click is enough. On the page that opens you can tell us how it went,',
+    'but you don\'t have to.',
     '',
     'Thanks,',
     AFZENDERNAAM,
@@ -1304,15 +1304,22 @@ function loketFeedbackPagina(token) {
   // geantwoord; alleen de toelichting ontbreekt dan.
   metSlot(function () { bewaarFeedback(p.ref, cijfer, null); });
 
+  // De vraag gaat over het contact zelf en niet over ons proces. Het cijfer
+  // zegt al of het nuttig was; wat we hier willen weten is wat er in dat
+  // contact gebeurde. Wat wij anders moeten doen staat er als bijzin achter.
+  // Geen naam van de alumnus erin: die is een student na drie weken misschien
+  // al kwijt, en dan is de vraag verwarrend in plaats van behulpzaam.
   return loketPagina(
     'Thanks, you gave it a ' + cijfer + ' out of 10',
     (alGegeven ? 'We\'ve updated your score. ' : '')
-    + 'One more thing, if you have a minute: what could we have done better?',
+    + 'One more thing, if you have a minute: how did it go with the alumni we '
+    + 'introduced you to? What they told you, and whether it got you further. '
+    + 'And if there is something we should do differently, put that in at the end.',
     '<form method="post" action="' + webAdres() + '">'
     + '<input type="hidden" name="formulier" value="loketfeedback">'
     + '<input type="hidden" name="token" value="' + ontsnap(token) + '">'
-    + '<textarea name="tekst" rows="5" placeholder="Anything at all. What was missing, '
-    + 'what took too long, what you\'d want next time."></textarea>'
+    + '<textarea name="tekst" rows="5" placeholder="Did they write back, did you '
+    + 'speak, what did you take from it?"></textarea>'
     + '<button type="submit">Send</button>'
     + '</form>');
 }
