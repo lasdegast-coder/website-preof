@@ -654,8 +654,8 @@ function mailIntroductie(student, a) {
   // ruimte is voor een gesprek" nergens op slaan.
   const vervolg = (perTelefoon || perVideo)
     ? ['And if it turns into more than one conversation, so much the better.']
-    : ['And if there is room for a call or a coffee afterwards, do say so. The',
-       'conversations that stick rarely fit in one email.'];
+    : ['And if there is room for a call afterwards, do say so. The conversations',
+       'that stick rarely fit in one email.'];
 
   const regels = [
     'Hi ' + a.volledigeNaam.split(' ')[0] + ',',
