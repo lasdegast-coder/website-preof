@@ -2119,7 +2119,7 @@ function openLoketForm(alumnus) {
     const p = payload();
     const body = [
       "ALUMNI DESK REQUEST",
-      `Alumni: ${alumnus.naam} — ${alumnus.werk}`,
+      `Alumni: ${alumnus.naam}, ${alumnus.werk}`,
       "",
       "THE QUESTION",
       p.vraag,
