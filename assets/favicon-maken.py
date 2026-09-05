@@ -61,6 +61,13 @@ def maak():
     teken(48).save("assets/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
     print("geschreven: assets/favicon.ico (16, 32 en 48)")
 
+    # Ook eentje in de hoofdmap. De link in de HTML wijst naar assets/, maar
+    # veel crawlers en oude browsers vragen uit gewoonte /favicon.ico op zonder
+    # naar de pagina te kijken. Zonder dit bestand krijgen die een 404 en tonen
+    # ze een wereldbolletje.
+    teken(48).save("favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+    print("geschreven: favicon.ico (in de hoofdmap, voor crawlers)")
+
 
 if __name__ == "__main__":
     maak()
