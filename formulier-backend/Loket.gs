@@ -656,7 +656,12 @@ function mailIntroductie(student, a) {
   MailApp.sendEmail({
     to: a.mail,
     cc: student.email,
-    subject: student.naam.split(' ')[0] + ' (' + (student.studie || 'Utrecht') + ') has a question for you',
+    // "Impact Connect (UU)" staat vooraan omdat dit voor de alumnus vaak de
+    // eerste mail van ons is sinds hij zich aanmeldde. Zonder die afzender in
+    // het onderwerp leest het als een vreemde die zomaar iets vraagt.
+    subject: 'Impact Connect (UU) request: ' + voornaam
+      + (student.studie ? ' (' + student.studie + ')' : '')
+      + ' has a question for you',
     body: regels.join('\n'),
     replyTo: student.email,
     name: AFZENDERNAAM,
