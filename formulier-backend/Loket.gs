@@ -562,7 +562,7 @@ function mailLoketNaarOns(ref, student, gekozen, kandidaten) {
   ].filter(function (r) { return r !== null; });
 
   kandidaten.forEach(function (k, i) {
-    regels.push((i + 1) + '. ' + k.a.volledigeNaam + ' — ' + k.a.werk);
+    regels.push((i + 1) + '. ' + k.a.volledigeNaam + ', ' + k.a.werk);
     regels.push('   ' + waarom(k));
     regels.push('   ' + besluitLink(ref, k.a.id));
     regels.push('');
@@ -587,8 +587,8 @@ function mailLoketBevestiging(student, gekozen) {
     'Hi ' + student.naam.split(' ')[0] + ',',
     '',
     'Thanks for your question. We have it, and we\'ll go through it by hand.',
-    'We\'ll email you back as soon as we can, at this address — so keep an eye on',
-    'your inbox, and check your spam folder if it stays quiet.',
+    'We\'ll email you back as soon as we can, at this address, so keep an eye on',
+    'your inbox. Check your spam folder if it stays quiet.',
     '',
     'You asked to speak to ' + gekozen.naam + ' (' + gekozen.werk + ').',
     'If we think someone else can help you better with this question, we\'ll say',
@@ -621,7 +621,7 @@ function mailIntroductie(student, a) {
   const slot = a.kanaal.toLowerCase().indexOf('phone') !== -1 || a.kanaal.toLowerCase().indexOf('telefo') !== -1
     ? 'You told us you\'d rather be called, so ' + voornaam + ' will wait for your go-ahead before ringing.'
     : a.kanaal.toLowerCase().indexOf('video') !== -1 || a.kanaal.toLowerCase().indexOf('call') !== -1
-    ? 'Your preference is a video call — send ' + voornaam + ' two times that suit you and they\'ll set up the link.'
+    ? 'Your preference is a video call, so send ' + voornaam + ' two times that suit you and they\'ll set up the link.'
     : 'Your preference is email, so a reply is plenty.';
 
   const regels = [
@@ -671,7 +671,7 @@ function mailIntroductieStudent(student, a, gevraagd) {
   const regels = [
     'Hi ' + student.naam.split(' ')[0] + ',',
     '',
-    'Good news: your question has gone to ' + a.naam + ' — ' + a.werk + '.',
+    'Good news: your question has gone to ' + a.naam + ', ' + a.werk + '.',
     'You\'re in the cc of that mail, so you have the address.',
     '',
     anders ? 'You asked for ' + gevraagd.naam + '. We think ' + a.naam.split(' ')[0]
@@ -714,7 +714,7 @@ function mailLoketAfwijzing(student, gevraagd) {
     'Hi ' + student.naam.split(' ')[0] + ',',
     '',
     'Thanks for your question. We looked at who could help you best, and right',
-    'now none of them has room — ' + gevraagd.naam + ' included.',
+    'now none of them has room, ' + gevraagd.naam + ' included.',
     '',
   ];
 
@@ -723,7 +723,7 @@ function mailLoketAfwijzing(student, gevraagd) {
     regels.push('probably will have time in a few weeks:');
     regels.push('');
     alternatieven.forEach(function (a) {
-      regels.push('  ' + a.naam + ' — ' + a.werk);
+      regels.push('  ' + a.naam + ', ' + a.werk);
       regels.push('  ' + (a.msc || a.bsc));
       regels.push('');
     });
@@ -1163,7 +1163,7 @@ function mailNavraag(naam, email, ref) {
     '<div style="font:15px/1.6 -apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;color:#23291F;max-width:520px">'
     + '<p>Hi ' + ontsnap(voornaam) + ',</p>'
     + '<p>Three weeks ago we introduced you to an alumni. We\'d like to know whether '
-    + 'it was worth your time — it tells us who to keep asking, and how to make the '
+    + 'it was worth your time. It tells us who to keep asking, and how to make the '
     + 'next introduction better.</p>'
     + '<p style="margin-bottom:8px"><b>How useful was it?</b><br>'
     + '<span style="font-size:13px;color:#666">1 = not at all, 10 = really helped me</span></p>'
@@ -1222,7 +1222,7 @@ function loketFeedbackPagina(token) {
   metSlot(function () { bewaarFeedback(p.ref, cijfer, null); });
 
   return loketPagina(
-    'Thanks — you gave it a ' + cijfer + ' out of 10',
+    'Thanks, you gave it a ' + cijfer + ' out of 10',
     (alGegeven ? 'We\'ve updated your score. ' : '')
     + 'One more thing, if you have a minute: what could we have done better?',
     '<form method="post" action="' + webAdres() + '">'
