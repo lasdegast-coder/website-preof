@@ -71,7 +71,7 @@ const LOKET_BESTAND_ID  = '';
    tabblad staat. De naam blijft eronder staan als terugval, en om een nieuw
    tabblad mee aan te maken als het er nog niet is. */
 const LOKET_BLAD_ID     = 1881025143;
-const LOKET_BLAD        = 'Feedback Op alumni gesprek';
+const LOKET_BLAD        = 'Alumni introducties';
 
 /* Zoveel aanvragen mag één student tegelijk open hebben staan. Zonder rem
    stuurt iemand op één avond de hele lijst af en is het netwerk voor de
@@ -1015,11 +1015,13 @@ function ontsnap(s) {
    er wordt geschreven op kolomnaam, niet op positie. Je mag de kolommen dus
    verslepen zoals je wilt.
 
-   Het meest gelezen staat vooraan: wat de student ervan vond, en met wie. */
-const LOKET_KOP = ['Cijfer', 'Wat beter kan', 'Alumnus', 'Datum', 'Ref',
-  'Student', 'Studie', 'E-mail student', 'Vraag', 'Thema’s', 'Voorkeur',
-  'Kandidaten', 'Status', 'Gekozen', 'Besloten op', 'Nagevraagd op',
-  'Beantwoord op'];
+   De volgorde volgt het verhaal van één regel: iemand vraagt iets, wij kiezen
+   iemand, en drie weken later komt er een oordeel. Wat er gebeurde staat
+   vooraan, de details en de administratie erachter. */
+const LOKET_KOP = ['Datum', 'Student', 'Alumnus', 'Status', 'Cijfer',
+  'Wat beter kan', 'Studie', 'E-mail student', 'Vraag', 'Thema’s',
+  'Kandidaten', 'Voorkeur', 'Besloten op', 'Ref', 'Gekozen',
+  'Nagevraagd op', 'Beantwoord op'];
 
 function loketBlad() {
   const bestand = loketBestand();

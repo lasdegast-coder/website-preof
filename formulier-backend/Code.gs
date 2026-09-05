@@ -60,7 +60,7 @@ const FORMULIEREN = {
     ],
   },
   alumnus: {
-    tabblad: 'Alumni gesprek aanvraag',
+    tabblad: 'Alumni die we nog missen',
     tabbladId: 1891756643,
     onzeTitel: 'ALUMNUS WANTED',
     onderwerp: 'Alumni request',
