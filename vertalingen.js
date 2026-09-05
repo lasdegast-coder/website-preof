@@ -108,7 +108,7 @@ const VERTALINGEN = {
      niet: daar geven we richting en meld je je zelf aan. Bij een alumni of
      een partner leggen we het contact wel. Nu staat het er zoals het is. */
   "home.stap3.kop":    { nl: "Je krijgt richting" },
-  "home.stap3.tekst":  { nl: "Je gaat weg met concrete programma's, plekken en mensen die bij je passen. En waar een introductie helpt, bij een alumni of een partner, leggen wij het contact." },
+  "home.stap3.tekst":  { nl: "Je gaat weg met concrete programma's, plekken en mensen die bij je passen. En waar een introductie helpt, bij een van onze alumni of bij een partner, leggen wij het contact." },
 
   "home.ingangen.kop": { nl: "Vier ingangen<span class=\"dot-clay\">.</span>" },
   "home.in1.kop":      { nl: "Programma's" },
@@ -189,7 +189,7 @@ const VERTALINGEN = {
   "ab.kop":            { nl: "Over ons<span class=\"dot-clay\">.</span>" },
   "ab.foto":           { nl: "Het team van Impact Connect" },
   "ab.intro1":         { nl: "De meeste studenten weten nog niet wat ze willen doen. Dat is niet iets om eerst uit te zoeken, het is juist de reden om te beginnen: door het te doen kom je erachter. Impact Connect is er zodat je die ervaring naast je studie kunt opdoen. We zoeken met de hand stages, afstudeerplekken, events en programma's uit, en helpen je de plek te vinden die van je studie je werk maakt." },
-  "ab.intro2":         { nl: "Opgezet door studenten en ondersteund door de Universiteit Utrecht. We werken anders dan een vacaturebank: deze site is er om je te laten zien wat er mogelijk is en je enthousiast te maken. Het echte matchen gebeurt in een gesprek: jij vertelt wat je eigenlijk wilt, en wij wijzen je de programma's, plekken en mensen die je tijd waard zijn. Waar een introductie helpt, bij een alumni of een partner, leggen we het contact zelf." },
+  "ab.intro2":         { nl: "Opgezet door studenten en ondersteund door de Universiteit Utrecht. We werken anders dan een vacaturebank: deze site is er om je te laten zien wat er mogelijk is en je enthousiast te maken. Het echte matchen gebeurt in een gesprek: jij vertelt wat je eigenlijk wilt, en wij wijzen je de programma's, plekken en mensen die je tijd waard zijn. Waar een introductie helpt, bij een van onze alumni of bij een partner, leggen wij het contact." },
   "ab.waarom.kop":     { nl: "Het probleem dat we proberen op te lossen<span class=\"dot-green\">.</span>" },
   "ab.waarom.lead":    { nl: "Ambitie is zelden het probleem bij studenten. Weten wat je ermee moet wel. Vier dingen zitten in de weg." },
   "ab.k1.kop":         { nl: "Je weet het nog niet" },
