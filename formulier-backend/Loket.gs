@@ -647,8 +647,7 @@ function mailIntroductie(student, a) {
     : perVideo
     ? ['You told us you prefer a video call. Send ' + voornaam + ' two times that suit',
        'you and they will set up the link.', '']
-    : ['It would help ' + voornaam + ' a lot if you could write back, and to take',
-       'the space you need for it.'];
+    : ['It would help ' + voornaam + ' a lot if you could write back, and take your time with it.'];
 
   // Bij telefoon en video is het gesprek al het plan, dus daar zou "en als er
   // ruimte is voor een gesprek" nergens op slaan.
