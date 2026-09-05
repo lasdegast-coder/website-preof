@@ -71,7 +71,7 @@ const LOKET_BESTAND_ID  = '';
    tabblad staat. De naam blijft eronder staan als terugval, en om een nieuw
    tabblad mee aan te maken als het er nog niet is. */
 const LOKET_BLAD_ID     = 1881025143;
-const LOKET_BLAD        = 'Alumni aanvraag';
+const LOKET_BLAD        = 'Feedback Op alumni gesprek';
 
 /* Zoveel aanvragen mag één student tegelijk open hebben staan. Zonder rem
    stuurt iemand op één avond de hele lijst af en is het netwerk voor de
