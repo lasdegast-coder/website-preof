@@ -614,15 +614,27 @@ function mailLoketBevestiging(student, gekozen) {
   });
 }
 
-/* De introductie zelf. Beiden in de kop, de vraag erin, en de alumnus
-   hoeft alleen op Beantwoorden te drukken. */
+/* De introductie zelf. Beiden in de kop en de vraag erin.
+
+   Over de toon: de vraag "wil je reageren" is makkelijker met ja te
+   beantwoorden als je weet hoe weinig er nodig is en waarom het uitmaakt.
+   Vandaar dat er staat dat een paar regels genoeg zijn, en waarom die paar
+   regels ertoe doen. De uitweg staat er los onder, zonder dat iemand zich
+   hoeft te verantwoorden; dat is niet alleen aardiger maar levert ook meer
+   eerlijke nee's op dan een alumnus die de mail maar laat liggen.
+
+   Over "zij" en "hij": van studenten weten we het geslacht niet, en dat gaan
+   we ook niet vragen. Daarom overal "they". */
 function mailIntroductie(student, a) {
   const voornaam = student.naam.split(' ')[0];
-  const slot = a.kanaal.toLowerCase().indexOf('phone') !== -1 || a.kanaal.toLowerCase().indexOf('telefo') !== -1
-    ? 'You told us you\'d rather be called, so ' + voornaam + ' will wait for your go-ahead before ringing.'
-    : a.kanaal.toLowerCase().indexOf('video') !== -1 || a.kanaal.toLowerCase().indexOf('call') !== -1
-    ? 'Your preference is a video call, so send ' + voornaam + ' two times that suit you and they\'ll set up the link.'
-    : 'Your preference is email, so a reply is plenty.';
+  const kanaal = a.kanaal.toLowerCase();
+  const vraagOmActie = kanaal.indexOf('phone') !== -1 || kanaal.indexOf('telefo') !== -1
+    ? 'You told us you would rather talk than type. Let ' + voornaam
+      + ' know when it suits you and they will call.'
+    : kanaal.indexOf('video') !== -1 || kanaal.indexOf('call') !== -1
+    ? 'You told us you prefer a video call. Send ' + voornaam
+      + ' two times that suit you and they will set up the link.'
+    : 'It would help ' + voornaam + ' a lot if you could write back, even just a few lines.';
 
   const regels = [
     'Hi ' + a.volledigeNaam.split(' ')[0] + ',',
@@ -630,7 +642,7 @@ function mailIntroductie(student, a) {
     'You told us students are welcome to approach you with career questions.',
     voornaam + (student.studie ? ', ' + student.studie : '')
       + ', has one we think you\'re the right person for.',
-    voornaam + ' is in the cc, so you can simply hit reply.',
+    voornaam + ' is in the copy of this mail, so your reply reaches them directly.',
     '',
     'THE QUESTION',
     '',
@@ -641,8 +653,12 @@ function mailIntroductie(student, a) {
     'Email: ' + student.email,
     student.studie ? 'Study: ' + student.studie : null,
     '',
-    slot,
-    'And if it doesn\'t suit right now, tell us and we\'ll find someone else.',
+    vraagOmActie,
+    'You do not need a long answer. How it actually went for you is worth more',
+    'than advice, and it is the one thing ' + voornaam + ' cannot read anywhere.',
+    '',
+    'Not a good moment? Let us know and we will pick it up from there. No need',
+    'to explain yourself.',
     '',
     'Thank you,',
     AFZENDERNAAM,
