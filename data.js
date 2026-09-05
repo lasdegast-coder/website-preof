@@ -198,13 +198,13 @@ const PROGRAMMES = [
 
    De sleutel is de naam zoals die op de over-onspagina staat.
    ═══════════════════════════════════════════════════════════════════ */
-const LINKEDIN_IMPACT_CONNECT = "";
+const LINKEDIN_IMPACT_CONNECT = "https://www.linkedin.com/company/impact-connect-utrecht/";
 
 const LINKEDIN_TEAM = {
-  "Valentijn Roorda": "",
-  "Zoya Frumau":      "",
-  "Noah van Sprang":  "",
-  "Jouke Nabuurs":    "",
+  "Valentijn Roorda": "https://www.linkedin.com/in/valentijn-roorda-934735239/",
+  "Zoya Frumau":      "https://www.linkedin.com/in/zoya-frumau-4980a334a/",
+  "Noah van Sprang":  "",   // heeft geen LinkedIn; blijft dus zonder icoontje
+  "Jouke Nabuurs":    "https://www.linkedin.com/in/jouke-nabuurs/",
 };
 
 const WHATSAPP_GROEPEN = {
