@@ -231,19 +231,23 @@ body::before {
   background: var(--paper); padding: 26px 0;
   border-top: 1px solid rgba(19,53,42,.08); border-bottom: 1px solid rgba(19,53,42,.08);
 }
+/* De logo's staan in kleur. Ze stonden hier eerst grijs met opacity .7,
+   zodat de band rustig bleef en het merk van Impact Connect vooraan stond.
+   Nu vol in kleur: het zijn echte organisaties waar studenten terechtkomen,
+   en dat herken je aan de kleur sneller dan aan de vorm. */
 .logo-band .logo-item {
   display: inline-flex; align-items: center; justify-content: center;
   margin: 0 28px;
-  filter: grayscale(1); opacity: .7;
-  transition: filter .3s ease, opacity .3s ease;
+  opacity: .92;
+  transition: opacity .3s ease, transform .3s ease;
 }
 .logo-band img { height: 44px; width: auto; max-width: 150px; object-fit: contain; }
 /* Witte logo's hebben een donker vlak nodig, net als op de programmakaartjes. */
 .logo-band .logo-item.on-dark {
   background: var(--dark); border-radius: 8px; padding: 6px 10px;
 }
-/* De band loopt gewoon door; alleen het logo onder de muis licht op. */
-.logo-band .logo-item:hover { filter: none; opacity: 1; }
+/* De band loopt gewoon door; alleen het logo onder de muis komt naar voren. */
+.logo-band .logo-item:hover { opacity: 1; transform: scale(1.06); }
 
 .section { padding: 100px 5vw; background: var(--paper); }
 /* Twee lichte secties onder elkaar hadden samen 200px lucht ertussen. Dat
