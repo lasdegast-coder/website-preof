@@ -32,7 +32,13 @@
     <span class="brand-mark" data-mark="#13352A" data-size="30"></span>
     <span class="brand-word"><span>Connect</span></span>
   </a>
-  <nav class="site-nav">
+  <!-- Alleen zichtbaar op een smal scherm. Zonder deze knop viel het menu
+       daar uiteen over drie regels en was de balk 139px hoog, oftewel 17%
+       van een telefoonscherm, permanent. Zie initMenu() in script.js. -->
+  <button class="nav-toggle" data-nav-toggle type="button"
+          aria-expanded="false" aria-controls="site-nav"
+          data-t-aria="nav.menu"></button>
+  <nav class="site-nav" id="site-nav">
     <a class="nav-link on" href="index.html" data-t="nav.home">Home</a>
     <div class="nav-drop">
       <a class="nav-link" href="programmes.html" data-t="nav.programmes">Programmes<span class="nav-caret" data-icon="ChevronRight" data-size="14"></span></a>
@@ -363,7 +369,7 @@
           <span class="brand-mark" data-mark="#C2683A" data-size="36"></span>
           <span class="brand-word"><span>Connect</span></span>
         </div>
-        <p data-t="footer.blurb">Connecting students to ambition, internships, theses, jobs, events and programmes that turn what you study into what you do.</p>
+        <p data-t="footer.blurb">Bridging the gap between students and opportunities, turning passion into impact before graduation.</p>
       </div>
       <div class="footer-cols">
         <div>

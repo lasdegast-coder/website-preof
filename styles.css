@@ -1392,3 +1392,44 @@ body::before {
   .alum-grid { grid-template-columns: 1fr; }
   .alum-filters .telling { margin-left: 0; width: 100%; }
 }
+
+/* ═══ MENUKNOP OP SMALLE SCHERMEN ═══════════════════════════════════
+   Boven de 1000px past het menu op één regel naast het woordmerk en is
+   deze knop er niet. Die grens is gemeten, niet gegokt: het menu heeft
+   648px nodig en het woordmerk 179px, plus de marges is dat 943px. Met
+   1000 zit er wat lucht omheen. Daaronder viel het uiteen over regels: de balk
+   werd 139px hoog op een telefoon, 17% van het scherm, en dat blijft in
+   beeld omdat hij plakt. Nu klapt het menu open en dicht.
+   ═════════════════════════════════════════════════════════════════ */
+.nav-toggle {
+  display: none;                       /* op breed scherm niet nodig */
+  background: none; border: 1.5px solid var(--line); border-radius: 11px;
+  padding: 8px 10px; cursor: pointer; color: var(--dark); line-height: 0;
+}
+.nav-toggle:hover { border-color: var(--sand); }
+
+@media (max-width: 1000px) {
+  .site-header { flex-wrap: nowrap; padding: 12px 5vw; }
+  .nav-toggle { display: inline-flex; align-items: center; }
+
+  /* Het menu wordt een paneel onder de balk. position: absolute en niet
+     in de flexrij, anders duwt het de balk weer hoog zodra het openstaat. */
+  .site-nav {
+    display: none;
+    position: absolute; left: 0; right: 0; top: 100%;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 10px 5vw 18px;
+    box-shadow: 0 14px 30px rgba(0,0,0,.10);
+  }
+  .site-header.menu-open .site-nav { display: flex; }
+
+  .site-nav .nav-link { padding: 12px 2px; font-size: 16px; }
+  /* De programma's hebben op breed scherm een uitklapmenu bij hover. Op
+     een telefoon bestaat hover niet, dus daar is het gewoon een link. */
+  .site-nav .nav-drop { display: block; }
+  .site-nav .nav-drop-menu { display: none !important; }
+  .site-nav .nav-caret { display: none; }
+  .nav-cta { width: 100%; justify-content: center; margin-top: 10px; padding: 13px 18px; }
+  .taal-knop { align-self: flex-start; margin-top: 12px; }
+}

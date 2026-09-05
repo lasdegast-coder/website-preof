@@ -1790,6 +1790,7 @@ document.addEventListener("DOMContentLoaded", () => {
   pasTaalToe();
   initTaalknop();
   initContactForm();
+  initMenu();
 
   // uitklapmenu onder Programmes, gevuld vanuit PROGRAMME_CATS zodat het
   // meeloopt met de categorieën die uit de sheet komen
@@ -2260,4 +2261,42 @@ function openLoketForm(alumnus) {
   }
 
   render();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MENUKNOP OP SMALLE SCHERMEN
+
+   De knop staat alleen in beeld onder de 900px (zie styles.css). Hij
+   klapt het menu open en dicht, en sluit weer bij een klik op een link,
+   bij Escape, en bij een klik ergens anders op de pagina.
+   ═══════════════════════════════════════════════════════════════════ */
+function initMenu() {
+  const knop = $("[data-nav-toggle]");
+  const kop = $(".site-header");
+  if (!knop || !kop) return;
+
+  const teken = () => {
+    const open = kop.classList.contains("menu-open");
+    knop.innerHTML = icon(open ? "X" : "Menu", 22);
+    knop.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+  const zet = (open) => { kop.classList.toggle("menu-open", open); teken(); };
+
+  teken();
+  knop.addEventListener("click", () => zet(!kop.classList.contains("menu-open")));
+
+  // Doorklikken naar een andere pagina hoort het menu te sluiten. De knop
+  // die het afspraakvenster opent ook: anders staat het menu er open achter.
+  $$(".site-nav a, .site-nav button").forEach((el) =>
+    el.addEventListener("click", () => zet(false)));
+
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") zet(false); });
+  document.addEventListener("click", (e) => {
+    if (kop.classList.contains("menu-open") && !kop.contains(e.target)) zet(false);
+  });
+  // Draait iemand zijn telefoon en past het menu weer op één regel, dan
+  // moet de open-stand eraf; anders blijft het paneel hangen.
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 1000) zet(false);
+  });
 }

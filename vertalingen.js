@@ -59,9 +59,10 @@ const VERTALINGEN = {
   "nav.internships":   { nl: "Stages" },
   "nav.about":         { nl: "Over ons" },
   "nav.appointment":   { nl: "Plan een afspraak", en: "Plan an appointment" },
+  "nav.menu":         { en: "Open the menu", nl: "Open het menu" },
   "nav.uu":            { nl: "Universiteit<br />Utrecht" },
 
-  "footer.blurb":      { nl: "We brengen ambitieuze studenten in contact met stages, scripties, banen, events en programma's die van je studie je werk maken." },
+  "footer.blurb":      { nl: "We slaan een brug tussen studenten en kansen, en maken van passie impact nog voordat je afstudeert." },
   "footer.internships": { nl: "Stages" },
   "footer.partner":    { nl: "Partnerstages" },
   "footer.thesis":     { nl: "Afstudeerstages" },
