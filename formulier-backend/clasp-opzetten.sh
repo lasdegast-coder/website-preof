@@ -27,11 +27,14 @@ read -r -p "  Script-ID: " SCRIPT_ID
 [ -n "$SCRIPT_ID" ] || { echo "Geen ID opgegeven. Gestopt."; exit 1; }
 
 echo
-echo "▸ Stap 3 van 4: instellingen van het project ophalen"
-# We halen alleen appsscript.json op (de projectinstellingen: tijdzone, wie de
-# webapp mag aanroepen). Dat doen we in een tijdelijke map, want een gewone
-# 'clasp pull' zou onze eigen Code.gs overschrijven met de versie die nu bij
-# Google staat — precies andersom dan de bedoeling.
+echo "▸ Stap 3 van 4: ophalen wat er nu bij Google staat"
+# Dit doen we in een tijdelijke map, want een gewone 'clasp pull' zou onze
+# eigen Code.gs overschrijven met de versie die nu bij Google staat — precies
+# andersom dan de bedoeling.
+#
+# Wat we wél overnemen is appsscript.json: de projectinstellingen (tijdzone,
+# wie de webapp mag aanroepen). Die moeten blijven zoals ze zijn, anders
+# verandert straks stilletjes wie er bij het script mag.
 TIJDELIJK="$(mktemp -d)"
 trap 'rm -rf "$TIJDELIJK"' EXIT
 printf '{"scriptId":"%s","rootDir":"."}\n' "$SCRIPT_ID" > "$TIJDELIJK/.clasp.json"
@@ -41,6 +44,29 @@ if [ ! -f "$TIJDELIJK/appsscript.json" ]; then
   echo "  Geen appsscript.json gevonden. Klopt de Script-ID, en heeft dit account toegang?"
   exit 1
 fi
+
+# Alles wat er nu bij Google staat bewaren voordat er ooit iets overheen gaat.
+# Er kan in de editor iets zijn aangepast dat nooit in de repo is beland; dat
+# zou de eerste push weggooien zonder dat iemand het merkt.
+KOPIE="$HIER/.backup-google-$(date '+%Y%m%d-%H%M%S')"
+mkdir -p "$KOPIE"
+cp "$TIJDELIJK"/* "$KOPIE"/ 2>/dev/null || true
+echo "  Kopie van de huidige versie bij Google:"
+echo "    ${KOPIE#"$REPO/"}"
+ls "$KOPIE" | sed 's/^/      /'
+
+# Verschilt de live Code.gs van die in de repo? Dan is er in de editor
+# gewerkt, en moet je even kijken wat je weggooit.
+if [ -f "$KOPIE/Code.gs" ] && ! diff -q "$KOPIE/Code.gs" "$HIER/Code.gs" >/dev/null 2>&1; then
+  echo
+  echo "  LET OP: de Code.gs bij Google is niet gelijk aan die in de repo."
+  echo "  De eerste push vervangt de versie bij Google. Vergelijk ze eerst:"
+  echo "    diff \"${KOPIE#"$REPO/"}/Code.gs\" formulier-backend/Code.gs"
+  echo
+  read -r -p "  Toch doorgaan? (j/n) " AKKOORD
+  [ "$AKKOORD" = "j" ] || { echo "  Gestopt. Er is niets veranderd."; exit 1; }
+fi
+
 cp "$TIJDELIJK/appsscript.json" "$HIER/appsscript.json"
 printf '{"scriptId":"%s","rootDir":"."}\n' "$SCRIPT_ID" > "$HIER/.clasp.json"
 echo "  Gelukt. De projectinstellingen staan nu in formulier-backend/appsscript.json."
