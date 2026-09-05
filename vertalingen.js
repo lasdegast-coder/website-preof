@@ -217,7 +217,7 @@ const VERTALINGEN = {
   "al.routes.kop":     { nl: "Twee manieren om ze te bereiken<span class=\"dot-green\">.</span>" },
   "al.r1.kop":         { nl: "Je weet wie je zoekt" },
   "al.r1.tekst":       { nl: "Kijk wie er op de lijst staat, kies degene wiens pad op het jouwe lijkt, en stuur je vraag. Wij lezen hem, bepalen wie je het beste kan helpen, en stellen jullie per mail aan elkaar voor." },
-  "al.r1.meta":        { nl: "Kost twee minuten · meestal binnen drie werkdagen antwoord" },
+  "al.r1.meta":        { nl: "Kost twee minuten · we mailen je zo snel mogelijk terug" },
   // Ook de kop van het alumnivenster, dat script.js opbouwt. Zonder
   // Engels stond daar letterlijk "null" op de Engelse site.
   "al.r1.knop":        { en: "See who's on the list", nl: "Bekijk wie er op de lijst staan" },
@@ -416,8 +416,8 @@ const VERTALINGEN = {
   "lok.akkoord":       { en: "By sending this you agree that we may share your name, study, email and question with {naam} if we go ahead. Nothing is shared before that.",
                          nl: "Door te versturen ga je ermee akkoord dat we je naam, studie, mailadres en vraag met {naam} delen als we doorgaan. Daarvóór wordt er niets gedeeld." },
   "lok.verstuur":      { en: "Send my question", nl: "Verstuur mijn vraag" },
-  "lok.gelukt":        { en: "We've got it, and a copy is on its way to your own inbox. We read every question by hand and come back within three working days. If we think someone else can help you better than {naam}, we'll say so and tell you why.",
-                         nl: "Hij is binnen, en er gaat een kopie naar je eigen inbox. We lezen elke vraag met de hand en komen binnen drie werkdagen terug. Denken we dat iemand anders je beter kan helpen dan {naam}, dan zeggen we dat erbij, met de reden." },
+  "lok.gelukt":        { en: "We've got it, and a copy is already in your inbox. We read every question by hand, so keep an eye on your email — that's where our answer comes. We'll get back to you as soon as we can. If we think someone else can help you better than {naam}, we'll say so and tell you why.",
+                         nl: "Hij is binnen, en er staat al een kopie in je inbox. We lezen elke vraag met de hand, dus houd je mail in de gaten — daar komt ons antwoord. We komen zo snel mogelijk bij je terug. Denken we dat iemand anders je beter kan helpen dan {naam}, dan zeggen we dat erbij, met de reden." },
   "lok.leeg":          { en: "There's nobody on the list yet. Use the button below to tell us who you're after and we'll look ourselves.",
                          nl: "Er staat nog niemand op de lijst. Gebruik de knop hieronder om te vertellen wie je zoekt, dan kijken wij zelf." },
   "lok.fout":          { en: "The list can't be loaded right now. Use the button below and we'll look ourselves.",
