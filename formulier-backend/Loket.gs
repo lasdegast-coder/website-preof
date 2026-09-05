@@ -172,12 +172,30 @@ function vindKolommen(kop) {
   return gevonden;
 }
 
-/* "Sanne Vermeulen" wordt "Sanne V." — genoeg om iemand te herkennen,
-   te weinig om hem op te zoeken en buiten ons om te benaderen. */
+/* Alleen de voornaam gaat naar de site. "Sanne Vermeulen" wordt "Sanne".
+   Genoeg om iemand aan te spreken, te weinig om hem op te zoeken en buiten
+   ons om te benaderen. De volledige naam blijft in de sheet staan en gaat
+   pas mee in de introductiemail. */
 function toonNaam(volledig) {
-  const delen = String(volledig).trim().split(/\s+/);
-  if (delen.length < 2) return delen[0] || '';
-  return delen[0] + ' ' + delen[delen.length - 1].charAt(0).toUpperCase() + '.';
+  return String(volledig).trim().split(/\s+/)[0] || '';
+}
+
+/* Niet iedereen schrijft "BSc" voor zijn opleiding; de een vult
+   "Milieu-maatschappijwetenschappen" in, de ander "BSc Bestuurskunde".
+   Op de kaart hoort het er altijd te staan, anders weet een student niet
+   of hij naar een bachelor of een master kijkt. */
+const GRADEN = ['bsc', 'msc', 'bachelor', 'master', 'ba ', 'ma ', 'llm', 'llb',
+                'b.sc', 'm.sc', 'bs ', 'ms ', 'meng', 'beng'];
+const LEEG = ['-', '—', '–', 'n/a', 'na', 'geen', 'none', 'nvt', 'n.v.t.', 'x'];
+
+function metGraad(waarde, graad) {
+  const ruw = String(waarde).trim();
+  if (!ruw) return '';
+  if (LEEG.indexOf(ruw.toLowerCase()) !== -1) return '';
+
+  const laag = ruw.toLowerCase();
+  const heeftAl = GRADEN.some(function (g) { return laag.indexOf(g) === 0; });
+  return heeftAl ? ruw : graad + ' ' + ruw;
 }
 
 /* Een vast kenmerk per alumnus, afgeleid van het mailadres. Het mailadres
@@ -269,8 +287,8 @@ function leesAlumni() {
       id: id,
       naam: toonNaam(cel(rij, 'naam')),
       volledigeNaam: cel(rij, 'naam'),
-      bsc: cel(rij, 'bsc'),
-      msc: cel(rij, 'msc'),
+      bsc: metGraad(cel(rij, 'bsc'), 'BSc'),
+      msc: metGraad(cel(rij, 'msc'), 'MSc'),
       werk: cel(rij, 'werk'),
       interessesRuw: cel(rij, 'interesses'),
       themas: groepeerThemas(cel(rij, 'interesses')),
