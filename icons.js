@@ -25,6 +25,9 @@ const ICON_PATHS = {
   "Sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />",
   "Ticket": "<path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\" /> <path d=\"M13 5v2\" /> <path d=\"M13 17v2\" /> <path d=\"M13 11v2\" />",
   "UserCircle2": "<path d=\"M18 20a6 6 0 0 0-12 0\" /> <circle cx=\"12\" cy=\"10\" r=\"4\" /> <circle cx=\"12\" cy=\"12\" r=\"10\" />",
+  // Geen Lucide-icoon maar het merkteken van LinkedIn zelf, dus dit is een
+  // gevulde vorm in plaats van lijnen. Vandaar fill in plaats van stroke.
+  "LinkedIn": "<path fill=\"currentColor\" stroke=\"none\" d=\"M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM2.4 21h5.2V9.5H2.4V21zM10.4 9.5h4.98v1.57h.07c.7-1.24 2.4-2.07 4.05-2.07 4.33 0 5.13 2.6 5.13 6v6H19.4v-5.32c0-1.27-.02-2.9-1.86-2.9-1.86 0-2.15 1.38-2.15 2.81V21H10.4V9.5z\" />",
   "Menu": "<path d=\"M4 6h16\" /> <path d=\"M4 12h16\" /> <path d=\"M4 18h16\" />",
   "X": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />",
   "Zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />",

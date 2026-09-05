@@ -1444,3 +1444,13 @@ body::before {
 @media (max-width: 460px) {
   .brand img { height: 23px; }
 }
+
+/* ═══ LINKEDIN ══════════════════════════════════════════════════════ */
+/* Het icoontje staat achter de naam, niet eronder: zo blijft het kaartje
+   even hoog als een kaartje van iemand zonder LinkedIn. */
+.team-li {
+  display: inline-flex; vertical-align: middle; margin-left: 7px;
+  color: var(--muted-soft); transition: color .2s ease;
+}
+.team-li:hover { color: #0A66C2; }          /* het blauw van LinkedIn zelf */
+.footer-li { display: inline-flex; align-items: center; gap: 6px; }

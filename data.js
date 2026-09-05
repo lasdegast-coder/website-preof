@@ -189,6 +189,24 @@ const PROGRAMMES = [
    Let op: met zo'n link kan iedereen erin. Zet in de groepsinstellingen
    "Nieuwe leden goedkeuren" aan voor je hem publiek maakt.
    ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   LINKEDIN
+   ═══════════════════════════════════════════════════════════════════
+   Leeg laten mag. Bij een teamlid zonder adres verschijnt er gewoon geen
+   icoontje, en staat de link in de voettekst er niet; er komt dus nooit
+   een knop die nergens heen gaat.
+
+   De sleutel is de naam zoals die op de over-onspagina staat.
+   ═══════════════════════════════════════════════════════════════════ */
+const LINKEDIN_IMPACT_CONNECT = "";
+
+const LINKEDIN_TEAM = {
+  "Valentijn Roorda": "",
+  "Zoya Frumau":      "",
+  "Noah van Sprang":  "",
+  "Jouke Nabuurs":    "",
+};
+
 const WHATSAPP_GROEPEN = {
   all:        "https://chat.whatsapp.com/FwZa8qR1HdK70ZBJfkpfxe",   // zelfde als general, zie hieronder
   energy:     "https://chat.whatsapp.com/J0NAq2MFgGzDoeLlraA5Ma",

@@ -1791,6 +1791,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTaalknop();
   initContactForm();
   initMenu();
+  initLinkedIn();
 
   // uitklapmenu onder Programmes, gevuld vanuit PROGRAMME_CATS zodat het
   // meeloopt met de categorieën die uit de sheet komen
@@ -2298,5 +2299,39 @@ function initMenu() {
   // moet de open-stand eraf; anders blijft het paneel hangen.
   window.addEventListener("resize", () => {
     if (window.innerWidth > 1000) zet(false);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LINKEDIN
+
+   Twee plekken: een klein icoontje onder elke naam op de over-onspagina,
+   en de vaste pagina van Impact Connect onderaan elke pagina. De adressen
+   staan in data.js. Is er geen adres, dan komt er ook geen link; zo kan
+   er nooit een icoontje staan dat nergens heen gaat.
+   ═══════════════════════════════════════════════════════════════════ */
+function initLinkedIn() {
+  const ic = (typeof LINKEDIN_IMPACT_CONNECT === "string" ? LINKEDIN_IMPACT_CONNECT : "").trim();
+  const el = $("[data-linkedin-ic]");
+  if (el && ic) {
+    el.href = ic;
+    el.target = "_blank";
+    el.rel = "noreferrer";
+    el.innerHTML = `${icon("LinkedIn", 15)} LinkedIn`;
+    el.hidden = false;
+  }
+
+  const team = (typeof LINKEDIN_TEAM === "object" && LINKEDIN_TEAM) || {};
+  $$(".team-grid .name").forEach((naam) => {
+    const adres = (team[naam.textContent.trim()] || "").trim();
+    if (!adres) return;
+    const a = document.createElement("a");
+    a.className = "team-li";
+    a.href = adres;
+    a.target = "_blank";
+    a.rel = "noreferrer";
+    a.setAttribute("aria-label", `${naam.textContent.trim()} op LinkedIn`);
+    a.innerHTML = icon("LinkedIn", 16);
+    naam.appendChild(a);
   });
 }
