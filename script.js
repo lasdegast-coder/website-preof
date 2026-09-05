@@ -1962,6 +1962,11 @@ let alumniLijst = null;
 let alumniFilter = "";
 let alumniVraagbegin = "";
 
+/* Met ?test=1 achter het adres komen ook de testprofielen mee. Die staan
+   niet in de gewone lijst, zodat je de hele keten kunt uitproberen zonder
+   dat studenten een nepprofiel zien. */
+const LOKET_TESTMODUS = new URLSearchParams(location.search).get("test") === "1";
+
 function initAlumniloket() {
   bindVoorbeeldvragen();
 
@@ -1969,7 +1974,7 @@ function initAlumniloket() {
   if (!bak) return;
   if (!FORM_ENDPOINT) return alumniStatus("lok.uit");
 
-  fetch(FORM_ENDPOINT + "?lijst=alumni", { cache: "no-store" })
+  fetch(FORM_ENDPOINT + "?lijst=alumni" + (LOKET_TESTMODUS ? "&test=1" : ""), { cache: "no-store" })
     .then((res) => res.json())
     .then((d) => {
       alumniLijst = (d && d.alumni) || [];
@@ -2043,7 +2048,8 @@ function tekenAlumniLijst() {
   bak.innerHTML = lijst.map((a) => {
     const r = ruimteTekst(a);
     const opleiding = [a.bsc, a.msc].filter((x) => x && x !== "—").join("<br>");
-    return `<article class="alum-card${a.vol ? " vol" : ""}">
+    return `<article class="alum-card${a.vol ? " vol" : ""}${a.test ? " test" : ""}">
+      ${a.test ? `<div class="alum-testvlag">${t("lok.test")}</div>` : ""}
       <div class="alum-top">
         <div class="alum-mono" aria-hidden="true">${esc(initialen(a.naam))}</div>
         <div>

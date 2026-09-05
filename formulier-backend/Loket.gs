@@ -102,6 +102,18 @@ const KOLOM = {
   frequentie:  ['frequency'],
 };
 
+/* Een regel waarvan de naam hiermee begint is een testprofiel. Die staat
+   niet in de lijst die studenten zien, maar is wel te bereiken door
+   ?test=1 achter het adres van de alumnipagina te zetten. Zo kun je de hele
+   keten uitproberen — aanvraag, onze mail, de introductie, de navraag —
+   zonder dat er een echte alumnus wordt lastiggevallen en zonder dat er een
+   nepprofiel op de site staat. */
+const TEST_VOORVOEGSEL = 'test';
+
+function isTestNaam(naam) {
+  return String(naam).trim().toLowerCase().indexOf(TEST_VOORVOEGSEL) === 0;
+}
+
 /* Wat "ja" mag betekenen in de toestemmingskolom. Alles wat hier niet in
    staat telt als nee: bij twijfel komt iemand niet op de site. */
 const JA = ['ja', 'yes', 'y', 'true', 'x', '1', 'akkoord', 'agree'];
@@ -267,6 +279,7 @@ function leesAlumni() {
       telefoon: cel(rij, 'telefoon'),
       linkedin: cel(rij, 'linkedin'),
       frequentie: cel(rij, 'frequentie'),
+      test: isTestNaam(cel(rij, 'naam')),
       ruimte: ruimteVan(freq, gebruikt[id] || []),
     });
   });
@@ -370,8 +383,10 @@ function nietHerkend(tekst) {
    telefoonnummer, geen LinkedIn, en ook geen achternaam: die staan wel in
    de sheet, maar ze gaan niet over de lijn. Wat hier niet in staat kan
    ook niet per ongeluk in de broncode van de pagina belanden. */
-function openbareLijst() {
-  return leesAlumni().map(function (a) {
+function openbareLijst(metTest) {
+  return leesAlumni().filter(function (a) {
+    return metTest || !a.test;          // testprofielen blijven uit de gewone lijst
+  }).map(function (a) {
     return {
       id: a.id,
       naam: a.naam,
@@ -382,6 +397,7 @@ function openbareLijst() {
       vol: a.ruimte.vol,
       over: a.ruimte.onbeperkt ? null : a.ruimte.over,
       periode: a.ruimte.periode,
+      test: a.test || undefined,
     };
   });
 }
@@ -390,18 +406,19 @@ function openbareLijst() {
    bezoek opgehaald. Vijf minuten cache scheelt een hoop leeswerk in de
    sheet en houdt de pagina snel. Net een nieuwe alumnus goedgekeurd en wil
    je hem meteen zien? Voer wisAlumniCache() uit in de editor. */
-function alumniJson() {
+function alumniJson(metTest) {
   const cache = CacheService.getScriptCache();
-  const bewaard = cache.get('alumnilijst');
+  const sleutel = metTest ? 'alumnilijst-test' : 'alumnilijst';
+  const bewaard = cache.get(sleutel);
   if (bewaard) return bewaard;
 
-  const json = JSON.stringify({ ok: true, alumni: openbareLijst() });
-  cache.put('alumnilijst', json, 300);
+  const json = JSON.stringify({ ok: true, alumni: openbareLijst(metTest) });
+  cache.put(sleutel, json, 300);
   return json;
 }
 
 function wisAlumniCache() {
-  CacheService.getScriptCache().remove('alumnilijst');
+  CacheService.getScriptCache().removeAll(['alumnilijst', 'alumnilijst-test']);
   console.log('Cache geleegd. De site haalt de lijst nu opnieuw op.');
 }
 
@@ -1214,7 +1231,11 @@ function zelftestLoket() {
       + '"permission" in de koprij staat, en of daar Yes of Ja in staat.');
     return;
   }
-  console.log('Gevonden: ' + lijst.length + ' alumni met toestemming.');
+  const testprofielen = lijst.filter(function (a) { return a.test; });
+  console.log('Gevonden: ' + lijst.length + ' alumni met toestemming, waarvan '
+    + testprofielen.length + ' testprofiel(en): '
+    + (testprofielen.map(function (a) { return a.naam; }).join(', ') || 'geen'));
+  console.log('Studenten zien er ' + openbareLijst(false).length + '.');
   console.log('Eerste profiel zoals de site het krijgt:');
   console.log(JSON.stringify(openbareLijst()[0], null, 2));
 

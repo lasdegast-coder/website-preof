@@ -393,6 +393,7 @@ const VERTALINGEN = {
 
   /* ── het alumniloket: teksten die script.js zelf opbouwt ────────── */
   "lok.titel":         { en: "Ask an alumni", nl: "Vraag het een alumni" },
+  "lok.test":          { en: "Test profile", nl: "Testprofiel" },
   "lok.stap1":         { en: "Your question", nl: "Je vraag" },
   "lok.stap2":         { en: "About you", nl: "Wie ben je" },
   "lok.alle":          { en: "All", nl: "Alles" },

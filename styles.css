@@ -1321,6 +1321,14 @@ body::before {
 .alum-card.vol { opacity: .68; }
 .alum-card.vol:hover { transform: none; box-shadow: none; }
 
+/* Een testprofiel moet je nooit per ongeluk voor een echte alumnus aanzien. */
+.alum-card.test { border-color: var(--clay); border-style: dashed; }
+.alum-testvlag {
+  align-self: flex-start; background: var(--clay); color: #fff;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 5px;
+}
+
 .alum-top { display: flex; gap: 13px; align-items: flex-start; }
 .alum-mono {
   flex: none; width: 46px; height: 46px; border-radius: 999px;

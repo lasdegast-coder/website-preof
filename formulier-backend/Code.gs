@@ -172,7 +172,10 @@ function doGet(e) {
   // De alumnilijst voor op de site. Alleen wie toestemming gaf, en alleen
   // de velden die een student mag zien; zie openbareLijst() in Loket.gs.
   if (p.lijst === 'alumni') {
-    return ContentService.createTextOutput(alumniJson())
+    // ?test=1 laat ook de testprofielen zien. Die staan niet in de gewone
+    // lijst, zodat je de hele keten kunt uitproberen zonder dat studenten
+    // een nepprofiel te zien krijgen.
+    return ContentService.createTextOutput(alumniJson(p.test === '1'))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
