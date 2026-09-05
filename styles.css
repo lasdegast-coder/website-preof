@@ -1318,7 +1318,9 @@ body::before {
   transition: transform .14s, box-shadow .14s, border-color .14s;
 }
 .alum-card:hover { transform: translateY(-2px); border-color: var(--sand); box-shadow: 0 14px 34px -22px rgba(35,41,31,.5); }
-.alum-card.vol { opacity: .68; }
+/* Wel duidelijk anders, maar goed leesbaar: de student moet nog steeds
+   kunnen zien wie dit is en volgende maand terugkomen. */
+.alum-card.vol { opacity: .82; background: var(--paper2); }
 .alum-card.vol:hover { transform: none; box-shadow: none; }
 
 /* Een testprofiel moet je nooit per ongeluk voor een echte alumnus aanzien. */

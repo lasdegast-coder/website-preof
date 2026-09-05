@@ -2034,7 +2034,10 @@ function initialen(naam) {
 }
 
 function ruimteTekst(a) {
-  if (a.vol) return { klasse: "vol", tekst: t("lok.vol") };
+  // Iemand die vol zit blijft gewoon in de lijst staan. Weghalen zou de
+  // student laten denken dat die alumnus niet bestaat, en volgende maand
+  // staat hij er weer. Alleen de knop gaat uit.
+  if (a.vol) return { klasse: "vol", tekst: t("lok.vol").replace("{periode}", t("lok.periode." + a.periode)) };
   if (a.over === 1) return { klasse: "bijna", tekst: t("lok.plek1").replace("{periode}", t("lok.periode." + a.periode)) };
   return { klasse: "open", tekst: t("lok.beschikbaar") };
 }
