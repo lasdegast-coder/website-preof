@@ -929,17 +929,22 @@ function loketBesluitUitvoeren(parameter) {
   const p = leesToken(parameter.token, 'besluit');
   if (!p) return loketPagina('Deze link werkt niet meer', 'Hij is verlopen of al gebruikt.');
 
+  // De lijst eerst ophalen: hij is zowel binnen het slot nodig, om de naam
+  // van de gekozen alumnus weg te schrijven, als daarna voor de mails.
+  const alle = leesAlumni();
+  const doel = alle.filter(function (a) { return a.id === p.keuze; })[0];
+
   const uitkomst = metSlot(function () {
     const rij = vindIntroductie(p.ref);
     if (!rij) return { fout: 'Aanvraag ' + p.ref + ' niet gevonden.' };
     if (rij.status !== 'wacht') return { fout: 'Deze aanvraag is al afgehandeld.' };
-    zetIntroductieStatus(p.ref, p.keuze === 'geen' ? 'afgewezen' : 'voorgesteld', p.keuze);
+    zetIntroductieStatus(p.ref, p.keuze === 'geen' ? 'afgewezen' : 'voorgesteld',
+      p.keuze, doel ? doel.volledigeNaam : '');
     return { rij: rij };
   });
   if (uitkomst.fout) return loketPagina('Er gebeurt niets', uitkomst.fout);
 
   const rij = uitkomst.rij;
-  const alle = leesAlumni();
   const gevraagd = alle.filter(function (a) { return a.id === rij.voorkeur; })[0];
   const student = {
     naam: rij.naam, email: rij.email, vraag: rij.vraag, studie: rij.studie,
@@ -953,7 +958,6 @@ function loketBesluitUitvoeren(parameter) {
     return loketPagina('Afgewezen', 'De student heeft bericht gekregen, met twee alternatieven.');
   }
 
-  const doel = alle.filter(function (a) { return a.id === p.keuze; })[0];
   if (!doel) return loketPagina('Die alumnus staat niet meer op de lijst',
     'De aanvraag staat nu op "voorgesteld" maar er is niets verstuurd. Handel hem met de hand af.');
 
@@ -1006,9 +1010,16 @@ function ontsnap(s) {
 
 /* ═══ 7. HET TABBLAD INTRODUCTIES ═══════════════════════════════════ */
 
-const LOKET_KOP = ['Datum', 'Ref', 'Student', 'Studie', 'E-mail student',
-  'Vraag', 'Thema’s', 'Voorkeur', 'Kandidaten', 'Status', 'Gekozen',
-  'Besloten op', 'Nagevraagd op', 'Cijfer', 'Wat beter kan', 'Beantwoord op'];
+/* De kolommen van het tabblad, in de volgorde waarin ze worden aangemaakt als
+   het tabblad nog niet bestaat. Daarna doet deze volgorde er niet meer toe:
+   er wordt geschreven op kolomnaam, niet op positie. Je mag de kolommen dus
+   verslepen zoals je wilt.
+
+   Het meest gelezen staat vooraan: wat de student ervan vond, en met wie. */
+const LOKET_KOP = ['Cijfer', 'Wat beter kan', 'Alumnus', 'Datum', 'Ref',
+  'Student', 'Studie', 'E-mail student', 'Vraag', 'Thema’s', 'Voorkeur',
+  'Kandidaten', 'Status', 'Gekozen', 'Besloten op', 'Nagevraagd op',
+  'Beantwoord op'];
 
 function loketBlad() {
   const bestand = loketBestand();
@@ -1029,13 +1040,45 @@ function schrijfIntroductie(student, gekozen, kandidaten) {
   const ref = 'REQ-' + Utilities.formatDate(new Date(), 'Europe/Amsterdam', 'yyyyMMdd')
     + '-' + ('000' + (blad.getLastRow())).slice(-3);
 
-  blad.appendRow([
-    new Date(), ref, student.naam, student.studie, student.email,
-    student.vraag, student.themas, gekozen.id,
-    kandidaten.map(function (k) { return k.a.naam; }).join(' | '),
-    'wacht', '', '', '', '', '', '',
-  ]);
+  schrijfOpNaam(blad, {
+    'Datum': new Date(),
+    'Ref': ref,
+    'Student': student.naam,
+    'Studie': student.studie,
+    'E-mail student': student.email,
+    'Vraag': student.vraag,
+    'Thema’s': student.themas,
+    'Voorkeur': gekozen.id,
+    'Kandidaten': kandidaten.map(function (k) { return k.a.naam; }).join(' | '),
+    'Status': 'wacht',
+  });
   return ref;
+}
+
+/* Schrijft een regel op kolomnaam in plaats van op positie. Dat maakt het
+   ongevoelig voor het verslepen van kolommen, en het vult wat er niet in het
+   object staat met een lege cel. Ontbreekt een kolom helemaal, dan komt hij
+   er achteraan bij; zo gaat er nooit iets verloren.
+
+   Dezelfde aanpak als schrijfInBlad() in Code.gs. */
+function schrijfOpNaam(blad, waardenPerKolom) {
+  let kop = [];
+  if (blad.getLastColumn() > 0) {
+    kop = blad.getRange(1, 1, 1, blad.getLastColumn()).getValues()[0]
+      .map(function (v) { return String(v).trim(); })
+      .filter(function (v) { return v !== ''; });
+  }
+
+  const nieuw = Object.keys(waardenPerKolom).filter(function (n) { return kop.indexOf(n) === -1; });
+  if (nieuw.length) {
+    blad.getRange(1, kop.length + 1, 1, nieuw.length).setValues([nieuw]);
+    kop = kop.concat(nieuw);
+    blad.getRange(1, 1, 1, kop.length).setFontWeight('bold');
+  }
+
+  blad.appendRow(kop.map(function (n) {
+    return Object.prototype.hasOwnProperty.call(waardenPerKolom, n) ? waardenPerKolom[n] : '';
+  }));
 }
 
 function vindIntroductie(ref) {
@@ -1065,14 +1108,21 @@ function vindIntroductie(ref) {
   return null;
 }
 
-function zetIntroductieStatus(ref, status, gekozen) {
+function zetIntroductieStatus(ref, status, gekozen, naam) {
   const blad = loketBlad();
   const rij = vindIntroductie(ref);
   if (!rij) return;
   const kop = blad.getRange(1, 1, 1, blad.getLastColumn()).getValues()[0].map(String);
-  blad.getRange(rij.regel, kop.indexOf('Status') + 1).setValue(status);
-  blad.getRange(rij.regel, kop.indexOf('Gekozen') + 1).setValue(gekozen === 'geen' ? '' : gekozen);
-  blad.getRange(rij.regel, kop.indexOf('Besloten op') + 1).setValue(new Date());
+  const zet = function (kolom, waarde) {
+    const i = kop.indexOf(kolom);
+    if (i !== -1) blad.getRange(rij.regel, i + 1).setValue(waarde);
+  };
+  zet('Status', status);
+  zet('Gekozen', gekozen === 'geen' ? '' : gekozen);
+  // De naam erbij, want in Gekozen staat een intern kenmerk waar je bij het
+  // teruglezen niets aan hebt.
+  zet('Alumnus', gekozen === 'geen' ? '' : (naam || ''));
+  zet('Besloten op', new Date());
 }
 
 /* Per alumnus de datums waarop er een introductie is verstuurd. Hiermee
