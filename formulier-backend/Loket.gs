@@ -1355,6 +1355,45 @@ function bewaarFeedback(ref, cijfer, tekst) {
    wie er vol zit, en welke woorden uit "Fields of interest" nog nergens
    onder vallen. Dat laatste is je lijstje om THEMAS mee aan te vullen.
    ═══════════════════════════════════════════════════════════════════ */
+/* Waarom staat iemand op vol? Laat per alumnus zien wat er letterlijk in de
+   frequentiekolom staat, hoe het script dat leest, en hoeveel introducties er
+   in de lopende periode al zijn geweest. Zonder argument toont hij iedereen
+   die vol zit; geef je een stukje naam mee, dan alleen die persoon. */
+function toonRuimte(zoek) {
+  const lijst = leesAlumni();
+  const gebruikt = introductiesPerAlumnus();
+  const filter = String(zoek || '').toLowerCase();
+
+  const tonen = lijst.filter(function (a) {
+    return filter ? a.volledigeNaam.toLowerCase().indexOf(filter) !== -1 : a.ruimte.vol;
+  });
+
+  if (!tonen.length) {
+    console.log(filter ? 'Niemand gevonden met "' + zoek + '" in de naam.'
+                       : 'Niemand zit vol.');
+    return;
+  }
+
+  tonen.forEach(function (a) {
+    const freq = frequentieVan(a.frequentie);
+    const datums = gebruikt[a.id] || [];
+    const nu = new Date();
+    const inPeriode = datums.filter(function (d) { return zelfdePeriode(d, nu, freq.periode); });
+
+    console.log(a.volledigeNaam);
+    console.log('  in de kolom staat: "' + a.frequentie + '"');
+    console.log('  gelezen als:       ' + (freq.aantal >= 99 ? 'geen limiet'
+      : freq.aantal + ' per ' + freq.periode));
+    console.log('  introducties totaal: ' + datums.length
+      + ', waarvan in de lopende ' + freq.periode + ': ' + inPeriode.length);
+    inPeriode.forEach(function (d) {
+      console.log('    ' + Utilities.formatDate(d, 'Europe/Amsterdam', 'd MMMM yyyy'));
+    });
+    console.log('  resultaat: ' + (a.ruimte.vol ? 'VOL' : a.ruimte.over + ' plek(ken) over'));
+    console.log('');
+  });
+}
+
 function loketOverzicht() {
   const lijst = leesAlumni();
   console.log(lijst.length + ' alumni met toestemming.');
