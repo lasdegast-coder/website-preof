@@ -175,7 +175,7 @@ function doGet(e) {
     // ?test=1 laat ook de testprofielen zien. Die staan niet in de gewone
     // lijst, zodat je de hele keten kunt uitproberen zonder dat studenten
     // een nepprofiel te zien krijgen.
-    return ContentService.createTextOutput(alumniJson(p.test === '1'))
+    return ContentService.createTextOutput(alumniJson(p.test === '1', p.vers === '1'))
       .setMimeType(ContentService.MimeType.JSON);
   }
 

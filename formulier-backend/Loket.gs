@@ -424,11 +424,18 @@ function openbareLijst(metTest) {
    bezoek opgehaald. Vijf minuten cache scheelt een hoop leeswerk in de
    sheet en houdt de pagina snel. Net een nieuwe alumnus goedgekeurd en wil
    je hem meteen zien? Voer wisAlumniCache() uit in de editor. */
-function alumniJson(metTest) {
+function alumniJson(metTest, vers) {
   const cache = CacheService.getScriptCache();
   const sleutel = metTest ? 'alumnilijst-test' : 'alumnilijst';
-  const bewaard = cache.get(sleutel);
-  if (bewaard) return bewaard;
+
+  // Met ?vers=1 sla je de cache over. Handig als je net iets in de sheet hebt
+  // aangepast en meteen wilt zien of het klopt, zonder vijf minuten te wachten
+  // of de editor te openen. De verse lijst gaat wel weer in de cache, zodat de
+  // volgende bezoeker er ook wat aan heeft.
+  if (!vers) {
+    const bewaard = cache.get(sleutel);
+    if (bewaard) return bewaard;
+  }
 
   const json = JSON.stringify({ ok: true, alumni: openbareLijst(metTest) });
   cache.put(sleutel, json, 300);
@@ -1177,6 +1184,39 @@ function zetNavraagTriggerAan() {
   console.log('Klaar. Elke ochtend rond 9 uur kijkt het script of er introducties'
     + ' van ' + NAVRAAG_DAGEN + ' dagen oud zijn die nog geen navraag hebben gehad.');
   toonNavraagWachtrij();
+}
+
+/* De navraagmail nu versturen in plaats van over drie weken te wachten.
+   Pakt de laatste introductie die is verstuurd en mailt daar de cijfervraag
+   over. Er wordt niets in de sheet veranderd: de echte navraag komt gewoon
+   nog op zijn eigen moment. Puur om te zien hoe het eruitziet. */
+function testNavraagNu() {
+  const blad = loketBestand().getSheetByName(LOKET_BLAD);
+  if (!blad || blad.getLastRow() < 2) {
+    console.log('Er staat nog geen enkele aanvraag in ' + LOKET_BLAD + '.');
+    return;
+  }
+
+  const rijen = blad.getDataRange().getValues();
+  const kop = rijen[0].map(String);
+  const k = function (naam) { return kop.indexOf(naam); };
+
+  let laatste = null;
+  for (let i = 1; i < rijen.length; i++) {
+    if (String(rijen[i][k('Status')]) === 'voorgesteld') laatste = rijen[i];
+  }
+  if (!laatste) {
+    console.log('Er is nog geen introductie verstuurd, dus er valt niets na te vragen.');
+    return;
+  }
+
+  const naam = String(laatste[k('Student')]);
+  const email = String(laatste[k('E-mail student')]);
+  mailNavraag(naam, email, String(laatste[k('Ref')]));
+
+  console.log('Navraagmail verstuurd naar ' + naam + ' <' + email + '>.');
+  console.log('Er is niets in de sheet veranderd; de echte navraag komt nog op'
+    + ' zijn eigen moment, ' + NAVRAAG_DAGEN + ' dagen na de introductie.');
 }
 
 function zetNavraagTriggerUit() {
