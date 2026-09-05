@@ -37,7 +37,7 @@
 
    Hier wordt uitsluitend uit gelezen. Dit script schrijft er nooit in.
    ------------------------------------------------------------------- */
-const ALUMNI_BESTAND_ID = '';
+const ALUMNI_BESTAND_ID = '1cM6KoZDUoYCmr3QkeqaVyJXRqSOl7hmQCbu83PMojec';
 
 /* Het tabblad met de aanmeldingen. Laat je dit leeg, dan zoekt het script
    het zelf op: het pakt het eerste tabblad met een naam-, mail- én
