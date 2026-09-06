@@ -1448,9 +1448,13 @@ body::before {
 /* ═══ LINKEDIN ══════════════════════════════════════════════════════ */
 /* Het icoontje staat achter de naam, niet eronder: zo blijft het kaartje
    even hoog als een kaartje van iemand zonder LinkedIn. */
+/* De naam is een flexrij geworden, zodat het icoontje precies op de hoogte
+   van de letters staat. Met vertical-align lukte dat niet: de naam staat in
+   een schreefletter met een andere x-hoogte, en dan gokt de browser. */
+.team-grid .name { display: flex; align-items: center; gap: 7px; }
 .team-li {
-  display: inline-flex; vertical-align: middle; margin-left: 7px;
-  color: var(--muted-soft); transition: color .2s ease;
+  display: inline-flex; flex-shrink: 0;
+  color: #C9C4B8; transition: color .2s ease;
 }
 .team-li:hover { color: #0A66C2; }          /* het blauw van LinkedIn zelf */
 .footer-li { display: inline-flex; align-items: center; gap: 6px; }
