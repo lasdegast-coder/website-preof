@@ -1336,13 +1336,17 @@ body::before {
 }
 
 .alum-top { display: flex; gap: 13px; align-items: flex-start; }
-.alum-mono {
-  flex: none; width: 46px; height: 46px; border-radius: 999px;
-  background: var(--mint); color: var(--clay); display: grid; place-items: center;
-  font-family: var(--font-display); font-weight: 900; font-size: 16px;
+/* Geen naam en geen monogram meer op het kaartje. Wat iemand nu doet is de
+   kop geworden: dat is waar een student op kiest. Het monogram was afgeleid
+   van de naam en zei zonder naam niets meer. */
+.alum-card .werk-nu {
+  font-family: var(--font-display); font-weight: 900; font-size: 18px; line-height: 1.2;
 }
-.alum-card .naam { font-family: var(--font-display); font-weight: 900; font-size: 19px; line-height: 1.15; }
-.alum-card .werk { font-size: 14.5px; line-height: 1.45; margin-top: 4px; }
+/* De eerdere rol staat er gedempt onder: het is context bij het pad, geen
+   tweede kop. Zo blijft in een oogopslag duidelijk waar iemand nu zit. */
+.alum-card .werk-eerder {
+  font-size: 13.5px; line-height: 1.45; margin-top: 5px; color: var(--muted);
+}
 .alum-card .studie { font-size: 12.5px; color: var(--muted-soft); line-height: 1.45; margin-top: 6px; }
 .alum-themas { display: flex; flex-wrap: wrap; gap: 6px; }
 .alum-themas span {

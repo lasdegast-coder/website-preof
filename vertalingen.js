@@ -394,6 +394,7 @@ const VERTALINGEN = {
   "al.studie":         { en: "Study and year", nl: "Studie en jaar" },
 
   /* ── het alumniloket: teksten die script.js zelf opbouwt ────────── */
+  "lok.eerder":        { en: "Before that:", nl: "Daarvoor:" },
   "lok.titel":         { en: "Ask an alumni", nl: "Vraag het een alumni" },
   "lok.test":          { en: "Test profile", nl: "Testprofiel" },
   "lok.stap1":         { en: "Your question", nl: "Je vraag" },

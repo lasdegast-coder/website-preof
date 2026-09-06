@@ -2096,10 +2096,9 @@ function tekenAlumniLijst() {
     return `<article class="alum-card${a.vol ? " vol" : ""}${a.test ? " test" : ""}">
       ${a.test ? `<div class="alum-testvlag">${t("lok.test")}</div>` : ""}
       <div class="alum-top">
-        <div class="alum-mono" aria-hidden="true">${esc(initialen(a.naam))}</div>
         <div>
-          <div class="naam">${esc(a.naam)}</div>
-          ${a.werk ? `<div class="werk">${esc(a.werk)}</div>` : ""}
+          ${a.werk ? `<div class="werk-nu">${esc(a.werk)}</div>` : ""}
+          ${a.eerder ? `<div class="werk-eerder">${t("lok.eerder")} ${esc(a.eerder)}</div>` : ""}
           ${opleiding ? `<div class="studie">${opleiding}</div>` : ""}
         </div>
       </div>
