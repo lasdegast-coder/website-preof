@@ -145,7 +145,7 @@ const VERTALINGEN = {
   "ev.qrsoon":         { nl: "QR VOLGT" },
   "ev.scan":           { nl: "Scan om lid te worden" },
   "ev.tip.kop":        { nl: "Weet je een event dat hier mist?" },
-  "ev.tip.tekst":      { nl: "We houden deze agenda met de hand bij; tips van studenten maken hem beter voor iedereen." },
+  "ev.tip.tekst":      { nl: "We houden deze agenda met de hand bij, dus hij is zo goed als wat we te horen krijgen. Mis je iets? Stuur het ons." },
   "ev.tip.knop":       { nl: "Tip ons een event" },
 
   /* ── programma's ───────────────────────────────────────────────── */
