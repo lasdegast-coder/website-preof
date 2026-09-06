@@ -1408,10 +1408,14 @@ function sendForm(payload) {
 /* ═══════════════════════════════════════════════════════════════════
    AFSPRAAKFORMULIER
    ═══════════════════════════════════════════════════════════════════ */
+/* Zelfde waarde als in het alumniformulier, en die staat al in KEUZES_NL,
+   dus de Nederlandse versie ("Iets anders") komt vanzelf mee. */
+const VELD_ANDERS = "Something else";
+
 function openForm() {
   if ($("#form-root")) return;
   const steps = ["afspr.stap1", "afspr.stap2", "afspr.stap3", "afspr.stap4"].map(t);
-  const data = { types: [], fields: [], level: "", commit: "", paid: "", lang: "", name: "", email: "", notes: "" };
+  const data = { types: [], fields: [], fieldOther: "", level: "", commit: "", paid: "", lang: "", name: "", email: "", notes: "" };
   let step = 0, done = false, sending = false, viaMail = false;
 
   const wrap = document.createElement("div");
@@ -1420,6 +1424,7 @@ function openForm() {
 
   const canNext = () => step === 0 ? data.types.length > 0
     : step === 1 ? data.fields.length > 0
+      && (!data.fields.includes(VELD_ANDERS) || !!data.fieldOther.trim())
     : step === 3 ? !!(data.name && data.email) : true;
 
   // de keuzes uit stap 1 staan als id in data; in de mail en de sheet
@@ -1431,7 +1436,9 @@ function openForm() {
     naam: data.name.trim(),
     email: data.email.trim(),
     zoekt: data.types.map(labelVan),
-    themas: data.fields,
+    // In de mail en de sheet hoort te staan wat iemand zelf heeft ingevuld,
+    // niet het woord "Something else".
+    themas: data.fields.map((f) => (f === VELD_ANDERS && data.fieldOther.trim() ? data.fieldOther.trim() : f)),
     niveau: data.level,
     tijd: data.commit,
     betaald: data.paid,
@@ -1470,9 +1477,17 @@ function openForm() {
         </button>`).join("")}</div>`;
     }
     if (step === 1) {
+      // "Something else" staat achteraan en opent een tekstvak. Zonder die
+      // uitweg moet iemand met een vakgebied dat er niet bij staat iets kiezen
+      // wat hij niet bedoelt, en dan klopt de match die wij maken niet.
       return `<p style="font-size:13.5px;color:#555;margin:0 0 14px">${t("afspr.themas.hint")}</p>
-        <div class="chip-row">${FIELD_OPTIONS.map((f) =>
-          `<button type="button" class="chip${data.fields.includes(f) ? " on" : ""}" data-field="${esc(f)}">${esc(keuzeLabel(f))}</button>`).join("")}</div>`;
+        <div class="chip-row">${[...FIELD_OPTIONS, VELD_ANDERS].map((f) =>
+          `<button type="button" class="chip${data.fields.includes(f) ? " on" : ""}" data-field="${esc(f)}">${esc(keuzeLabel(f))}</button>`).join("")}</div>
+        ${data.fields.includes(VELD_ANDERS) ? `
+          <div class="chip-other">
+            <label for="f-fieldother">${t("afspr.anders.vraag")}</label>
+            <input id="f-fieldother" placeholder="${esc(t("afspr.anders.hint"))}" value="${esc(data.fieldOther)}">
+          </div>` : ""}`;
     }
     if (step === 2) {
       const group = (key, label, opts) => `<div><label>${esc(label)}</label><div class="chip-row">${
@@ -1545,6 +1560,14 @@ function openForm() {
       data.types = data.types.includes(id) ? data.types.filter((x) => x !== id) : [...data.types, id];
       render();
     }));
+    const anders = $("#f-fieldother", wrap);
+    if (anders) anders.addEventListener("input", () => {
+      data.fieldOther = anders.value;
+      // Niet opnieuw tekenen: dan raak je bij elke aanslag de cursor kwijt.
+      // Alleen de knop hoeft bij te komen.
+      const verder = $("#f-next", wrap);
+      if (verder) verder.disabled = !canNext();
+    });
     $$("[data-field]", wrap).forEach((b) => b.addEventListener("click", () => {
       const f = b.dataset.field;
       data.fields = data.fields.includes(f) ? data.fields.filter((x) => x !== f) : [...data.fields, f];

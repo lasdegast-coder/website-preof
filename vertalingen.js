@@ -363,6 +363,8 @@ const VERTALINGEN = {
   "soort.specific.sub": { en: "I have an idea in mind", nl: "Ik heb al iets in gedachten" },
   "afspr.themas.hint": { en: "Pick the themes that excite you, choose as many as you like.",
                           nl: "Kies de thema's waar je enthousiast van wordt, zo veel als je wilt." },
+  "afspr.anders.vraag": { en: "Which field is that?", nl: "Welk vakgebied is dat?" },
+  "afspr.anders.hint":  { en: "Marine biology, urban mobility, climate law…", nl: "Mariene biologie, stedelijke mobiliteit, klimaatrecht…" },
   "afspr.niveau":      { en: "Your experience level", nl: "Hoeveel ervaring je hebt" },
   "afspr.tijd":        { en: "Time you can commit", nl: "Hoeveel tijd je hebt" },
   "afspr.betaald":     { en: "Paid or unpaid?", nl: "Betaald of onbetaald?" },
