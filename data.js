@@ -150,6 +150,12 @@ const PROGRAMMES = [
 /* ═══════════════════════════════════════════════════════════════════
    LIVE KOPPELING VOOR DE EVENTS
    ═══════════════════════════════════════════════════════════════════
+   LET OP: gebruik het adres van een specifiek tabblad (met gid= erin), niet
+   dat van "hele document". Publiceer je later een los tabblad, dan vervalt
+   de publicatie van het hele document en geeft dat adres HTTP 400. De site
+   valt dan stilzwijgend terug op de lijst hieronder; dat is precies wat er
+   op 6 september 2026 gebeurde.
+
    Plak hier het adres van het gepubliceerde tabblad uit de sheet
    "Linked to bot events Database" (Bestand → Delen → Publiceren op
    internet → tabblad → CSV). Dat is dezelfde sheet die de WhatsApp-bot
@@ -223,7 +229,7 @@ const WHATSAPP_GROEPEN = {
   general:    "https://chat.whatsapp.com/FwZa8qR1HdK70ZBJfkpfxe",
 };
 
-const EVENT_SHEET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTrUbw_rA5cng3cegScM_f8J13UT389W8TUdGio_zThzOscCeyeeWQ7x1yx70_2N2NR4TEJPET_yVm4/pub?output=csv";
+const EVENT_SHEET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTrUbw_rA5cng3cegScM_f8J13UT389W8TUdGio_zThzOscCeyeeWQ7x1yx70_2N2NR4TEJPET_yVm4/pub?gid=1320948588&single=true&output=csv";
 
 const EVENTS = [
   {"name": "Sustainability Career Event", "date": "06-02-2026", "time": "10:00 to 17:00", "loc": "Jaarbeurs, Utrecht", "cost": "Free for students", "link": "https://sustainabilitycareerevent.nl", "cat": "general", "desc": "A career fair connecting students directly with employers hiring for sustainability roles across the Netherlands.", "descNl": "Een banenbeurs die studenten rechtstreeks in contact brengt met werkgevers die mensen zoeken voor duurzaamheidsfuncties door heel Nederland."},
