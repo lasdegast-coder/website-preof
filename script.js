@@ -2136,7 +2136,9 @@ function tekenAlumniLijst() {
     const r = ruimteTekst(a);
     // Master eerst: dat is de recentste, en op een regel in plaats van twee.
     const opleiding = [a.msc, a.bsc].filter((x) => x && x !== "—").join(" · ");
-    return `<article class="alum-card${a.vol ? " vol" : ""}${a.test ? " test" : ""}">
+    // De klasse van de beschikbaarheid gaat mee naar het kaartje, zodat het
+    // randje links dezelfde kleur kan krijgen als het bolletje onderaan.
+    return `<article class="alum-card ruimte-${r.klasse}${a.vol ? " vol" : ""}${a.test ? " test" : ""}">
       ${a.test ? `<div class="alum-testvlag">${t("lok.test")}</div>` : ""}
       <!-- Het pad als pad: twee piepkleine labels doen de structuur, zodat
            allebei de rollen in dezelfde grootte kunnen staan. Stond hier
