@@ -1908,7 +1908,7 @@ function initContactForm() {
     /* Student of organisatie. De keuze verandert het derde veld en de zin
        erboven, en gaat als antwoord mee naar de mail en de sheet, zodat een
        bericht van een organisatie meteen bij de juiste persoon komt. */
-    let soort = "Student";
+    let soort = "Organisation";
     const chips = $$("[data-ct-soort]", form);
     const lead = $("[data-ct-lead]", form.closest(".contact-section"));
     const veldnaam = $("[data-ct-veldnaam]", form);
@@ -2134,16 +2134,20 @@ function tekenAlumniLijst() {
 
   bak.innerHTML = lijst.map((a) => {
     const r = ruimteTekst(a);
-    const opleiding = [a.bsc, a.msc].filter((x) => x && x !== "—").join("<br>");
+    // Master eerst: dat is de recentste, en op een regel in plaats van twee.
+    const opleiding = [a.msc, a.bsc].filter((x) => x && x !== "—").join(" · ");
     return `<article class="alum-card${a.vol ? " vol" : ""}${a.test ? " test" : ""}">
       ${a.test ? `<div class="alum-testvlag">${t("lok.test")}</div>` : ""}
-      <div class="alum-top">
-        <div>
-          ${a.werk ? `<div class="werk-nu">${esc(a.werk)}</div>` : ""}
-          ${a.eerder ? `<div class="werk-eerder">${t("lok.eerder")} ${esc(a.eerder)}</div>` : ""}
-          ${opleiding ? `<div class="studie">${opleiding}</div>` : ""}
-        </div>
-      </div>
+      <!-- Het pad als pad: twee piepkleine labels doen de structuur, zodat
+           allebei de rollen in dezelfde grootte kunnen staan. Stond hier
+           eerst als twee zinnen onder elkaar, waarvan de bovenste in een
+           schreefletter die voor een naam bedoeld was — die schreeuwde
+           harder dan de inhoud rechtvaardigde. -->
+      <dl class="alum-pad">
+        ${a.werk ? `<dt>${t("lok.nu")}</dt><dd>${esc(a.werk)}</dd>` : ""}
+        ${a.eerder ? `<dt>${t("lok.eerder")}</dt><dd>${esc(a.eerder)}</dd>` : ""}
+      </dl>
+      ${opleiding ? `<div class="studie">${opleiding}</div>` : ""}
       ${(a.themas || []).length ? `<div class="alum-themas">${a.themas.map((x) => `<span>${esc(x)}</span>`).join("")}</div>` : ""}
       <div class="alum-foot">
         <span class="alum-ruimte ${r.klasse}"><i></i>${esc(r.tekst)}</span>

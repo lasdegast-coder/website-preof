@@ -1318,9 +1318,22 @@ body::before {
 
 .alum-card {
   background: #fff; border: 1px solid #EDE7DA; border-radius: 14px;
-  padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  /* Een gekleurd randje links, net als op de eventkaartjes. Sinds het
+     monogram weg is begon dit kaartje met een blok tekst en had je oog geen
+     plek om te landen. Dit kost geen ruimte en maakt de alumnikaartjes
+     onderdeel van dezelfde taal als de rest van de site.
+     Een kleur per thema zou hier niets toevoegen: van de dertien thema's is
+     "Sustainability" er 37 van de 48, dus bijna alles zou hetzelfde randje
+     krijgen. */
+  border-left: 3px solid var(--clay);
+  padding: 20px; display: flex; flex-direction: column; gap: 0;
   transition: transform .14s, box-shadow .14s, border-color .14s;
 }
+/* De gap stond op 14px voor alle onderdelen door elkaar. Nu bepaalt elk blok
+   zijn eigen afstand, want het pad en de opleiding horen dichter op elkaar
+   dan de chips en de voet. */
+.alum-card .alum-themas { margin-bottom: 16px; }
+.alum-card .alum-foot { margin-top: auto; }
 .alum-card:hover { transform: translateY(-2px); border-color: var(--sand); box-shadow: 0 14px 34px -22px rgba(35,41,31,.5); }
 /* Wel duidelijk anders, maar goed leesbaar: de student moet nog steeds
    kunnen zien wie dit is en volgende maand terugkomen. */
@@ -1336,18 +1349,29 @@ body::before {
 }
 
 .alum-top { display: flex; gap: 13px; align-items: flex-start; }
-/* Geen naam en geen monogram meer op het kaartje. Wat iemand nu doet is de
-   kop geworden: dat is waar een student op kiest. Het monogram was afgeleid
-   van de naam en zei zonder naam niets meer. */
-.alum-card .werk-nu {
-  font-family: var(--font-display); font-weight: 900; font-size: 18px; line-height: 1.2;
+/* Het loopbaanpad. De labels "Nu" en "Eerder" zijn klein en gedempt: ze
+   structureren, ze concurreren niet. Daardoor kunnen allebei de rollen in
+   dezelfde grootte staan en leest het als een pad in plaats van als een
+   kop met een bijzin.
+
+   Geen schreefletter meer voor de rol. Die stond er nog van toen dit een
+   naam was; een functieomschrijving van vijf woorden wordt daarin te zwaar
+   en valt over twee regels. */
+.alum-pad {
+  display: grid; grid-template-columns: auto 1fr; gap: 3px 12px;
+  margin: 0 0 12px; align-items: baseline;
 }
-/* De eerdere rol staat er gedempt onder: het is context bij het pad, geen
-   tweede kop. Zo blijft in een oogopslag duidelijk waar iemand nu zit. */
-.alum-card .werk-eerder {
-  font-size: 13.5px; line-height: 1.45; margin-top: 5px; color: var(--muted);
+.alum-pad dt {
+  font-size: 10.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted-soft); white-space: nowrap;
 }
-.alum-card .studie { font-size: 12.5px; color: var(--muted-soft); line-height: 1.45; margin-top: 6px; }
+.alum-pad dd { margin: 0; font-size: 15px; line-height: 1.35; color: var(--ink); }
+/* De eerdere rol een tint lichter: het pad loopt van nu naar toen, en dat
+   mag je zien zonder het te lezen. */
+.alum-pad dt:nth-of-type(2), .alum-pad dd:nth-of-type(2) { color: var(--muted); }
+.alum-pad dd:nth-of-type(2) { font-size: 14px; }
+/* Opleidingen op een regel, master eerst. Was twee regels grijs. */
+.alum-card .studie { font-size: 12.5px; color: var(--muted-soft); line-height: 1.45; margin: 0 0 14px; }
 .alum-themas { display: flex; flex-wrap: wrap; gap: 6px; }
 .alum-themas span {
   font-size: 11px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase;

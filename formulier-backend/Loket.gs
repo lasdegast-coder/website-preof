@@ -366,22 +366,29 @@ function zelfdePeriode(a, b, periode) {
    en dan zet je het woord hieronder erbij. Elke toevoeging geldt meteen
    voor iedereen, ook met terugwerkende kracht.
    ═══════════════════════════════════════════════════════════════════ */
+/* Let op bij het toevoegen van een zoekterm: hij wordt als losse tekst in de
+   hele zin gezocht, dus een woord dat ook in een ander vakgebied voorkomt
+   levert verkeerde labels op. Zo gaf 'psycholog' aan iedereen met
+   "environmental psychology" het label Health, en 'economie' maakte van
+   "circulaire economie" iets financieels. Die zijn er daarom uit. Kies dus
+   woorden die alleen in dat ene vakgebied voorkomen, en test met
+   toonNietHerkend() of overzicht() in de editor. */
 const THEMAS = {
   'Choosing a master’s': ['studiekeuze', 'master kiezen', 'vervolgopleiding', 'choosing a master', 'which master', 'study choice', 'master or work'],
   'Job hunting':              ['sollicit', 'cv', 'resume', 'motivatiebrief', 'cover letter', 'interview', 'loopbaan', 'carriere', 'career', 'arbeidsmarkt', 'vacature', 'netwerken', 'networking', 'job hunt', 'applying', 'application', 'job market', 'first job', 'recruit'],
   'Policy & government':      ['beleid', 'policy', 'overheid', 'government', 'gemeente', 'municipal', 'ministerie', 'ministry', 'public sector', 'politiek', 'politics', 'governance', 'lobby', 'ngo', 'non-profit', 'water management', 'waterschap', 'watermanagement'],
-  'Consultancy':              ['consult', 'advies', 'advisory', 'strategie', 'strategy', 'big four', 'big 4'],
-  'Engineering':              ['techniek', 'technisch', 'engineering', 'engineer', 'werktuigbouw', 'mechanical', 'civiel', 'civil', 'construction', 'manufacturing', 'logistics', 'supply chain'],
+  'Consultancy':              ['consult', 'advies', 'advisory', 'strategie', 'big four', 'big 4'],
+  'Engineering':              ['techniek', 'technisch', 'engineering', 'engineer', 'werktuigbouw', 'mechanical', 'civiel', 'civil', 'construction', 'manufacturing', 'logistics'],
   'IT & data':                ['ict', 'software', 'developer', 'programmeren', 'coding', 'data', 'machine learning', 'artificial intelligence', 'cyber', 'cloud', 'devops', 'informatica', 'computer science', 'analytics', 'ai', 'tech'],
-  'Health':                   ['zorg', 'health', 'gezondheid', 'medisch', 'medical', 'geneeskunde', 'medicine', 'nursing', 'verpleeg', 'ziekenhuis', 'hospital', 'pharma', 'farma', 'psycholog', 'patient'],
+  'Health':                   ['zorg', 'health', 'gezondheid', 'medisch', 'medical', 'geneeskunde', 'medicine', 'nursing', 'verpleeg', 'ziekenhuis', 'hospital', 'pharma', 'farma', 'patient'],
   'Research & PhD':           ['onderzoek', 'research', 'phd', 'promoveren', 'academ', 'wetenschap', 'postdoc', 'proefschrift', 'thesis', 'universit'],
-  'Entrepreneurship':         ['onderneme', 'entrepreneur', 'startup', 'start-up', 'scale-up', 'eigen bedrijf', 'own business', 'zzp', 'freelance', 'self-employed', 'innovatie', 'innovation', 'venture', 'founder'],
+  'Entrepreneurship':         ['onderneme', 'entrepreneur', 'startup', 'start-up', 'scale-up', 'eigen bedrijf', 'own business', 'zzp', 'freelance', 'self-employed', 'venture', 'founder'],
   'Marketing & communications': ['marketing', 'communicatie', 'communication', 'public relations', 'reclame', 'advertising', 'branding', 'content', 'social media', 'journalist', 'media', 'copywriting', 'growth', 'design'],
-  'Finance':                  ['financ', 'accounting', 'accountancy', 'boekhoud', 'bank', 'investering', 'investment', 'private equity', 'audit', 'controlling', 'fintech', 'economie', 'economics', 'm&a'],
+  'Finance':                  ['financ', 'accounting', 'accountancy', 'boekhoud', 'bank', 'investering', 'investment', 'private equity', 'audit', 'controlling', 'fintech', 'm&a'],
   'Sustainability':           ['duurzaam', 'sustainab', 'klimaat', 'climate', 'energie', 'energy', 'circulair', 'circular', 'milieu', 'environment', 'esg', 'green', 'transition'],
   'Education':                ['onderwijs', 'education', 'docent', 'teacher', 'lesgeven', 'teaching', 'school', 'training', 'coach', 'mentor'],
-  'Law':                      ['recht', 'legal', 'juridisch', 'law', 'advocaat', 'lawyer', 'notaris', 'compliance', 'litigation'],
-  'Working abroad':           ['buitenland', 'abroad', 'internationaal', 'international', 'expat', 'emigr', 'global', 'overseas', 'relocat'],
+  'Law':                      ['recht', 'legal', 'juridisch', 'law', 'advocaat', 'lawyer', 'notaris', 'litigation'],
+  'Working abroad':           ['buitenland', 'abroad', 'expat', 'emigr', 'global', 'overseas', 'relocat'],
 };
 
 /* Woorden van drie letters of korter zoeken we als heel woord op. Anders
