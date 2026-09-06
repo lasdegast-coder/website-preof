@@ -1823,9 +1823,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // merkteken + UU-logo in header en footer
   $$("[data-mark]").forEach((el) => el.innerHTML = bridgeMark(+el.dataset.size || 42, el.dataset.mark));
   // Mag het UU-logo nog niet gevoerd worden (zie UU_BRANDING in data.js),
-  // dan blijft het plaatje weg maar de tekst staan: "Utrecht University"
-  // in de balk en de regel in de voettekst mogen wel. Het lege blokje
-  // krijgt display:none zodat er geen gat naast de tekst valt.
+  // dan gaat het blokje in de menubalk in zijn geheel weg: zonder logo bleef
+  // daar alleen "Utrecht University" naast de knop zweven, en dat leest als
+  // een losse regel tekst in plaats van een co-branding.
+  // De regel in de voettekst blijft wel staan, alleen zonder logo. Dat is een
+  // zin die de samenwerking noemt, geen merkteken.
+  if (!UU_BRANDING) $$(".uu-cobrand").forEach((el) => { el.style.display = "none"; });
   $$("[data-uu-logo]").forEach((el) => {
     if (!UU_BRANDING) { el.style.display = "none"; return; }
     const s = +el.dataset.uuLogo || 38;

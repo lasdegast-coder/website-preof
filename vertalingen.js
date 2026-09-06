@@ -155,7 +155,7 @@ const VERTALINGEN = {
   "prog.lead1":        { nl: "Ruim" },
   "prog.lead2":        { nl: "programma's die je vaardigheden, je netwerk en een cv opbouwen waarmee deuren opengaan, van vrijwilligerswerk tot betaalde fellowships. De details bewaren we voor een gesprek, want een goede match begint bij <em>jou</em> leren kennen." },
   "prog.hint":         { nl: "Hou je muis erboven voor een voorproefje, klik om het gesprek te beginnen." },
-  "prog.rechten":      { nl: "Logo's en namen zijn eigendom van de organisaties zelf. Dat ze hier staan, betekent niet dat ze met Impact Connect samenwerken. Ben je rechthebbende en sta je er liever niet op? Mail ons op <a href=\"mailto:contact@impactconnectutrecht.com\">contact@impactconnectutrecht.com</a> en we halen het weg." },
+  "prog.rechten":      { nl: "De organisaties hier zijn degenen die deze programma's draaien. We noemen ze zodat studenten weten dat ze bestaan, niet omdat ze met ons samenwerken. Hun namen en logo's zijn van henzelf. Liever niet vermeld? Mail <a href=\"mailto:contact@impactconnectutrecht.com\">contact@impactconnectutrecht.com</a> en we halen het weg." },
   "prog.cta.kop":      { nl: "Word je <span class=\"ital\" style=\"font-weight:500\">enthousiast</span> van deze programma's?" },
   "prog.cta.tekst":    { nl: "Kom langs. We zoeken samen uit welk programma bij je ambities past, en helpen je erin te komen." },
   "prog.cta.knop":     { nl: "Kom met ons praten" },

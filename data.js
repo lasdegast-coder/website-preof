@@ -19,10 +19,16 @@ const INTERNSHIPS_LIVE = false;
    beeldmerk te voeren, dus staat dit uit. Dan verdwijnt op alle acht de
    pagina's het logo rechts in de menubalk en dat in de voettekst.
 
-   Alleen het plaatje. De tekst blijft wel staan: "Utrecht University"
-   in de balk en "Ondersteund door de Universiteit Utrecht · Faculteit
-   Geowetenschappen" onderaan. De samenwerking noemen mag; het logo
-   voeren nog niet.
+   Weg gaat: het blokje rechts in de menubalk, logo en woordmerk samen.
+   Zonder logo bleef daar alleen "Utrecht University" zweven naast de
+   knop, en dat leest als een losse regel tekst.
+
+   Blijft staan: de regel onderaan, "Ondersteund door de Universiteit
+   Utrecht · Faculteit Geowetenschappen", alleen zonder logo. Dat is een
+   zin die de samenwerking noemt, geen merkteken.
+
+   De HTML blijft op alle acht de pagina's staan, dus true zetten is
+   genoeg om het logo in een keer terug te halen.
 
    Zodra het mag: zet hier true neer. Aan de HTML hoeft niets te
    veranderen, die staat op alle acht de pagina's al klaar.            */
