@@ -626,7 +626,13 @@ function mailLoketBevestiging(student, gekozen) {
     'We\'ll email you back as soon as we can, at this address, so keep an eye on',
     'your inbox. Check your spam folder if it stays quiet.',
     '',
-    'You asked to speak to ' + gekozen.naam + ' (' + gekozen.werk + ').',
+    // Bewust de functie en niet de naam. Deze mail gaat meteen bij het
+    // insturen de deur uit, dus voor wij iets hebben goedgekeurd en voor de
+    // alumnus is gevraagd. Stond hier de voornaam, dan kon iedereen die
+    // ophalen door een willekeurige vraag in te sturen, en dan heeft het
+    // weglaten van de naam op de site geen zin meer. De student weet zelf
+    // wel wie hij koos; hij zag dat profiel.
+    'You asked to speak to the ' + gekozen.werk + '.',
     'If we think someone else can help you better with this question, we\'ll say',
     'so and tell you why.',
     '',
@@ -792,8 +798,11 @@ function mailLoketAfwijzing(student, gevraagd) {
   let regels = [
     'Hi ' + student.naam.split(' ')[0] + ',',
     '',
+    // Ook hier de functie in plaats van de naam: er is niemand geintroduceerd,
+    // dus de student hoort nog niet te weten wie dit zijn. En het werkt beter:
+    // op de site staan de kaartjes op functie, dus hiermee vindt hij ze terug.
     'Thanks for your question. We looked at who could help you best, and right',
-    'now none of them has room, ' + gevraagd.naam + ' included.',
+    'now none of them has room, the ' + gevraagd.werk + ' included.',
     '',
   ];
 
@@ -802,7 +811,7 @@ function mailLoketAfwijzing(student, gevraagd) {
     regels.push('probably will have time in a few weeks:');
     regels.push('');
     alternatieven.forEach(function (a) {
-      regels.push('  ' + a.naam + ', ' + a.werk);
+      regels.push('  ' + a.werk);
       regels.push('  ' + (a.msc || a.bsc));
       regels.push('');
     });
