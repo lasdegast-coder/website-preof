@@ -1458,3 +1458,12 @@ body::before {
 /* De twee chips bovenin het contactformulier staan iets ruimer van de
    velden eronder: het is een keuze vooraf, geen invulveld. */
 .ct-soort { margin-bottom: 4px; }
+
+/* De rechtenregel onderaan de programmapagina. Kleine letters en gedempt:
+   het hoort er te staan, maar het is niet waar een student voor komt. */
+.prog-rechten {
+  max-width: 700px; margin: 44px auto 0;
+  font-size: 12.5px; line-height: 1.6; color: var(--muted-soft);
+}
+.prog-rechten a { color: inherit; text-decoration: underline; }
+.prog-rechten a:hover { color: var(--clay); }
