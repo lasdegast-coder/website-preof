@@ -104,6 +104,7 @@ const KOLOM = {
   bsc:         ['bsc'],
   msc:         ['msc'],
   werk:        ['current occupation', 'occupation'],
+  eerder:      ['previous occupation', 'previous role', 'eerdere rol'],
   interesses:  ['fields of interest', 'interest'],
   toestemming: ['permission'],
   kanaal:      ['prefer to be contact', 'contacted by'],
@@ -314,6 +315,7 @@ function leesAlumni() {
       bsc: metGraad(cel(rij, 'bsc'), 'BSc'),
       msc: metGraad(cel(rij, 'msc'), 'MSc'),
       werk: cel(rij, 'werk'),
+      eerder: cel(rij, 'eerder'),
       interessesRuw: cel(rij, 'interesses'),
       themas: groepeerThemas(cel(rij, 'interesses')),
       kanaal: cel(rij, 'kanaal'),
@@ -431,10 +433,13 @@ function openbareLijst(metTest) {
   }).map(function (a) {
     return {
       id: a.id,
-      naam: a.naam,
+      // Geen naam meer. Die stond hier eerst wel, en dan staat hij in het
+      // netwerkantwoord van de site ook al toont het kaartje hem niet. Wie
+      // iemand is hoort de student pas te weten als wij de introductie maken.
       bsc: a.bsc,
       msc: a.msc,
       werk: a.werk,
+      eerder: a.eerder,
       themas: a.themas,
       vol: a.ruimte.vol,
       over: a.ruimte.onbeperkt ? null : a.ruimte.over,

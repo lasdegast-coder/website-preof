@@ -2071,10 +2071,6 @@ function tekenAlumniFilters() {
 }
 
 /* ── de kaarten ──────────────────────────────────────────────────── */
-function initialen(naam) {
-  return naam.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-}
-
 function ruimteTekst(a) {
   // Iemand die vol zit blijft gewoon in de lijst staan. Weghalen zou de
   // student laten denken dat die alumnus niet bestaat, en volgende maand
@@ -2107,7 +2103,7 @@ function tekenAlumniLijst() {
         <span class="alum-ruimte ${r.klasse}"><i></i>${esc(r.tekst)}</span>
         ${a.vol
           ? `<button class="alum-vraag" disabled>${t("lok.volknop")}</button>`
-          : `<button class="alum-vraag" data-vraag-aan="${esc(a.id)}">${t("lok.vraagknop").replace("{naam}", esc(a.naam.split(" ")[0]))}</button>`}
+          : `<button class="alum-vraag" data-vraag-aan="${esc(a.id)}">${t("lok.vraagknop")}</button>`}
       </div>
     </article>`;
   }).join("");
@@ -2160,7 +2156,7 @@ function openLoketForm(alumnus) {
     const p = payload();
     const body = [
       "ALUMNI DESK REQUEST",
-      `Alumni: ${alumnus.naam}, ${alumnus.werk}`,
+      `Alumni: ${alumnus.id} (${alumnus.werk})`,
       "",
       "THE QUESTION",
       p.vraag,
@@ -2178,11 +2174,13 @@ function openLoketForm(alumnus) {
     if (step === 0) {
       const over = LOKET_MIN_TEKENS - data.vraag.trim().length;
       return `
+        <!-- Ook hier geen naam en geen monogram: wie het is hoort de student
+             pas te weten als wij de introductie maken. Wat iemand doet is
+             genoeg om te weten aan wie je schrijft. -->
         <div class="lok-wie">
-          <div class="alum-mono" aria-hidden="true">${esc(initialen(alumnus.naam))}</div>
           <div>
-            <div class="naam">${esc(alumnus.naam)}</div>
-            <div class="werk">${esc(alumnus.werk || "")}</div>
+            <div class="werk-nu">${esc(alumnus.werk || "")}</div>
+            ${alumnus.eerder ? `<div class="werk-eerder">${t("lok.eerder")} ${esc(alumnus.eerder)}</div>` : ""}
           </div>
         </div>
         <label class="chip-label">${t("lok.themas")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
@@ -2201,7 +2199,7 @@ function openLoketForm(alumnus) {
       <div><label>${t("form.email")}</label><input id="a-email" placeholder="you@students.uu.nl" value="${esc(data.email)}"></div>
       <div><label>${t("al.studie")} <span style="font-weight:400;color:#999">${t("form.optioneel")}</span></label>
         <input id="a-study" placeholder="${esc(t("al.studie.hint"))}" value="${esc(data.study)}"></div>
-      <p class="form-note">${t("lok.akkoord").replace("{naam}", esc(alumnus.naam))}</p>
+      <p class="form-note">${t("lok.akkoord")}</p>
     </div>`;
   }
 
@@ -2215,7 +2213,7 @@ function openLoketForm(alumnus) {
           <p style="font-size:13px;color:#777">${t("al.viamail.niets")
             .replace("{opnieuw}", `<a href="${mailtoLink()}">${t("al.mailopnieuw")}</a>`)
             .replace("{adres}", `<a href="mailto:${CONTACT_MAIL}">${CONTACT_MAIL}</a>`)}</p>`
-        : `<p>${t("lok.gelukt").replace("{naam}", esc(alumnus.naam))}</p>`}
+        : `<p>${t("lok.gelukt")}</p>`}
         <button class="btn-next" data-close>${t("form.terug")}</button>
       </div>` : `
       <div class="progress">${steps.map((_, i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</div>
