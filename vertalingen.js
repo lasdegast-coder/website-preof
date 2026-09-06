@@ -402,6 +402,7 @@ const VERTALINGEN = {
   "lok.test":          { en: "Test profile", nl: "Testprofiel" },
   "lok.stap1":         { en: "Your question", nl: "Je vraag" },
   "lok.stap2":         { en: "About you", nl: "Wie ben je" },
+  "lok.geenthema":     { en: "Your field not here?", nl: "Staat je vakgebied er niet bij?" },
   "lok.alle":          { en: "All", nl: "Alles" },
   "lok.telling":       { en: "{n} of {totaal} profiles", nl: "{n} van {totaal} profielen" },
   "lok.beschikbaar":   { en: "Available", nl: "Beschikbaar" },

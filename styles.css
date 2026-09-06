@@ -1506,3 +1506,11 @@ body::before {
 }
 .prog-rechten a { color: inherit; text-decoration: underline; }
 .prog-rechten a:hover { color: var(--clay); }
+
+/* De uitweg tussen de themafilters. Omlijnd in plaats van gevuld: het is
+   geen vakgebied maar een manier om de lijst te verlaten, en dat moet je
+   kunnen zien zonder het te lezen. */
+.chip-uitweg {
+  border-color: var(--clay); color: var(--clay); background: none; font-weight: 700;
+}
+.chip-uitweg:hover { background: var(--clay); color: #fff; border-color: var(--clay); }

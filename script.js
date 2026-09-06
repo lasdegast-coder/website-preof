@@ -2130,8 +2130,20 @@ function tekenAlumniFilters() {
     [["", t("lok.alle")]].concat(themas.map((x) => [x, x]))
       .map(([waarde, label]) =>
         `<button type="button" class="chip${alumniFilter === waarde ? " on" : ""}" data-thema="${esc(waarde)}">${esc(label)}</button>`)
-      .join("") + `<span class="telling" data-alum-telling></span>`;
+      .join("")
+    // De uitweg staat ook hier, als laatste in de rij. Hij stond alleen onder
+    // de lijst, en dat is na 48 kaartjes: wie hem nodig heeft is dan allang
+    // weg. Juist bij het kiezen van een vakgebied merk je dat het jouwe er
+    // niet bij staat. Omlijnd in plaats van gevuld, zodat het geen veertiende
+    // vakgebied lijkt maar een uitweg.
+    + `<button type="button" class="chip chip-uitweg" data-open-alumni>${t("lok.geenthema")}</button>`
+    + `<span class="telling" data-alum-telling></span>`;
 
+  // Deze chip wordt hier gemaakt, dus de koppeling bij het opstarten heeft
+  // hem nooit gezien. Daarom hier zelf aanhaken.
+  $("[data-open-alumni]", bak)?.addEventListener("click", (e) => {
+    e.preventDefault(); openAlumniForm();
+  });
   $$("[data-thema]", bak).forEach((b) => b.addEventListener("click", () => {
     alumniFilter = b.dataset.thema;
     tekenAlumniFilters();
