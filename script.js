@@ -530,7 +530,7 @@ function paintComingSoon(cfg) {
       <p>${t("soon.reden").replace("{wat}", esc(t(`lijst.soon.${cfg.sleutel}`)))}</p>
       <p class="soon-talk">${t("soon.gesprek")}</p>
       <button class="btn-mag primary" data-open-form>
-        ${icon("Sparkles", 17)} ${t("nav.appointment")}</button>
+        ${bridgeMark(22, "currentColor")} ${t("nav.appointment")}</button>
       <p class="soon-alt">${t("soon.rest")}</p>
     </div>`;
   $("[data-open-form]", grid)?.addEventListener("click", openForm);
@@ -1087,7 +1087,7 @@ function openProgrammePopup(p) {
       <div class="body">
         <p>${t("prog.pop.tekst")}</p>
         <div class="actions">
-          <a class="primary" href="mailto:${CONTACT_MAIL}?subject=${apptSubject}&body=${apptBody}">${icon("Sparkles", 17)} ${t("nav.appointment")}</a>
+          <a class="primary" href="mailto:${CONTACT_MAIL}?subject=${apptSubject}&body=${apptBody}">${bridgeMark(22, "currentColor")} ${t("nav.appointment")}</a>
           <a class="ghost-btn" href="mailto:${CONTACT_MAIL}?subject=${subject}&body=${body}">${icon("Mail", 16)} ${t("prog.pop.mail")}</a>
         </div>
       </div>
