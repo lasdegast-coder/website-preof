@@ -492,6 +492,7 @@ const VERTALINGEN = {
 
   /* ── tellertjes op de vier ingangen ────────────────────────────── */
   "teller.programmas": { en: "programmes", nl: "programma's" },
+  "teller.alumninamen": { en: "alumni", nl: "alumni" },
   "teller.alumni":     { en: "Get matched", nl: "Wij koppelen je" },
   "teller.open":       { en: "open", nl: "open" },
 

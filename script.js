@@ -311,6 +311,7 @@ function initScrollProgress() {
   };
   window.addEventListener("scroll", paint, { passive: true });
   paint();
+
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1188,6 +1189,10 @@ async function initHome() {
   // zijn. Zo staat er meteen iets en klopt het even later precies.
   let programmes = knownCats(PROGRAMMES_DATA);
   let events = EVENTS;
+  // Het aantal alumni komt uit hetzelfde loket als de lijst op alumni.html.
+  // Blijft null zolang dat niet gelukt is, en dan blijft er "Get matched"
+  // staan; een kaartje belooft dus nooit een aantal dat er niet is.
+  let alumniAantal = null;
 
   function paint() {
     // Wat geweest is telt niet mee, niet in de teller en niet in de kaartjes.
@@ -1197,7 +1202,7 @@ async function initHome() {
     const counts = {
       programmes:  `${programmes.length} ${t("teller.programmas")}`,
       events:      `${open.length} events`,
-      alumni:      t("teller.alumni"),
+      alumni:      alumniAantal ? `${alumniAantal} ${t("teller.alumninamen")}` : t("teller.alumni"),
       // zolang de internships nog niet naar buiten mogen geen aantal beloven
       internships: INTERNSHIPS_LIVE
         ? `${PARTNER_INTERNSHIPS.length + THESIS.length + OTHER_INTERNSHIPS.length} ${t("teller.open")}`
@@ -1232,6 +1237,19 @@ async function initHome() {
   $$("[data-portrait]").forEach((el) => { el.innerHTML = SCENES.portrait(parseInt(el.dataset.portrait, 10) || 0); });
 
   paint();
+  /* Het aantal alumni erbij zoeken. Dit gebeurt na de eerste paint(), zodat
+     de pagina niet op dit verzoek staat te wachten: er staat meteen iets, en
+     het getal schuift erin zodra het er is. Mislukt het, dan verandert er
+     niets aan wat de bezoeker ziet. */
+  if ($('[data-cat-count="alumni"]') && FORM_ENDPOINT) {
+    fetch(FORM_ENDPOINT + "?lijst=alumni", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        const n = ((d && d.alumni) || []).length;
+        if (n) { alumniAantal = n; paint(); }
+      })
+      .catch(() => { /* dan blijft "Get matched" staan */ });
+  }
   paintBand(programmes);
   initWall();
 
