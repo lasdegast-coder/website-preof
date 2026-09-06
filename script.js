@@ -2009,6 +2009,40 @@ let alumniVraagbegin = "";
    dat studenten een nepprofiel zien. */
 const LOKET_TESTMODUS = new URLSearchParams(location.search).get("test") === "1";
 
+/* ── De lijst bewaren tussen bezoeken ────────────────────────────────
+   Apps Script doet er anderhalve tot drie en een halve seconde over, en
+   de pagina stond al die tijd op "Loading the list…". Bij elk bezoek
+   opnieuw, want er werd expliciet om geen cache gevraagd.
+
+   Nu bewaren we de vorige lijst en tonen die meteen, terwijl de verse
+   lijst op de achtergrond binnenkomt. Wie terugkomt ziet dus geen
+   wachttekst meer. Verandert er iets, dan schuift het er een seconde
+   later in.
+
+   In wat we bewaren zit niets persoonlijks: het is precies wat de pagina
+   toont, en sinds openbareLijst() geen namen meer meestuurt staan die er
+   ook niet in. Een uur oud is oud genoeg om weg te gooien; de lijst
+   verandert hooguit een paar keer per week.
+------------------------------------------------------------------- */
+const ALUMNI_BEWAAR = "impact-connect:alumni";
+const ALUMNI_HOUDBAAR = 60 * 60 * 1000;
+
+function bewaardeAlumni() {
+  try {
+    const rauw = localStorage.getItem(ALUMNI_BEWAAR);
+    if (!rauw) return null;
+    const d = JSON.parse(rauw);
+    if (!d || !Array.isArray(d.alumni) || Date.now() - d.op > ALUMNI_HOUDBAAR) return null;
+    return d.alumni;
+  } catch (e) { return null; }          // privémodus, of rommel in de opslag
+}
+
+function bewaarAlumni(lijst) {
+  try {
+    localStorage.setItem(ALUMNI_BEWAAR, JSON.stringify({ op: Date.now(), alumni: lijst }));
+  } catch (e) { /* vol of geblokkeerd: dan gewoon niet bewaren */ }
+}
+
 function initAlumniloket() {
   bindVoorbeeldvragen();
 
@@ -2016,15 +2050,27 @@ function initAlumniloket() {
   if (!bak) return;
   if (!FORM_ENDPOINT) return alumniStatus("lok.uit");
 
+  const toon = (lijst) => {
+    alumniLijst = lijst;
+    tekenAlumniFilters();
+    tekenAlumniLijst();
+  };
+
+  // Testprofielen bewaren we niet: die wil je juist elke keer vers zien.
+  const bewaard = LOKET_TESTMODUS ? null : bewaardeAlumni();
+  if (bewaard && bewaard.length) toon(bewaard);
+
   fetch(FORM_ENDPOINT + "?lijst=alumni" + (LOKET_TESTMODUS ? "&test=1" : ""), { cache: "no-store" })
     .then((res) => res.json())
     .then((d) => {
-      alumniLijst = (d && d.alumni) || [];
-      if (!alumniLijst.length) return alumniStatus("lok.leeg");
-      tekenAlumniFilters();
-      tekenAlumniLijst();
+      const vers = (d && d.alumni) || [];
+      if (!vers.length) return bewaard ? null : alumniStatus("lok.leeg");
+      if (!LOKET_TESTMODUS) bewaarAlumni(vers);
+      // Alleen opnieuw tekenen als er echt iets veranderd is, anders knippert
+      // de lijst onder de handen van iemand die net aan het filteren was.
+      if (JSON.stringify(vers) !== JSON.stringify(alumniLijst)) toon(vers);
     })
-    .catch(() => alumniStatus("lok.fout"));
+    .catch(() => { if (!bewaard) alumniStatus("lok.fout"); });
 }
 
 function alumniStatus(sleutel) {
